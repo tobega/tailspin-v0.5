@@ -1,6 +1,8 @@
 package tailspin.language;
 
 import com.oracle.truffle.api.CallTarget;
+import tailspin.language.nodes.ExpressionNode;
+import tailspin.language.nodes.TailspinRootNode;
 
 public class TestUtil {
   public static Object evaluate(ExpressionNode node) {

@@ -1,11 +1,11 @@
-package tailspin.language.math;
+package tailspin.language.nodes.math;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import java.math.BigInteger;
-import tailspin.language.ExpressionNode;
+import tailspin.language.nodes.ExpressionNode;
 import tailspin.language.TypeError;
 
 @NodeChild("leftNode") @NodeChild("rightNode")

@@ -1,9 +1,9 @@
-package tailspin.language.math;
+package tailspin.language.nodes.math;
 
 import java.math.BigInteger;
-import tailspin.language.ExpressionNode;
+import tailspin.language.nodes.ExpressionNode;
 import tailspin.language.TestUtil;
-import tailspin.language.literals.IntegerLiteral;
+import tailspin.language.nodes.literals.IntegerLiteral;
 
 import org.junit.jupiter.api.Test;
 

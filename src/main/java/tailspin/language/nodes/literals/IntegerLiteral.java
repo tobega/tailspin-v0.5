@@ -1,8 +1,8 @@
-package tailspin.language.literals;
+package tailspin.language.nodes.literals;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import tailspin.language.ExpressionNode;
+import tailspin.language.nodes.ExpressionNode;
 
 public class IntegerLiteral extends ExpressionNode {
   private final long value;

@@ -1,4 +1,4 @@
-package tailspin.language;
+package tailspin.language.nodes;
 
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
