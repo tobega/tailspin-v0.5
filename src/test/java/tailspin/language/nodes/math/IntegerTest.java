@@ -1,15 +1,14 @@
 package tailspin.language.nodes.math;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.math.BigInteger;
 import java.util.Random;
-import tailspin.language.nodes.ExpressionNode;
+import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
+import tailspin.language.nodes.ExpressionNode;
 import tailspin.language.nodes.literals.BigIntegerLiteral;
 import tailspin.language.nodes.literals.IntegerLiteral;
-
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class IntegerTest {
   @Test
