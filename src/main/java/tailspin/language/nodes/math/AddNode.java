@@ -17,7 +17,7 @@ public abstract class AddNode extends ExpressionNode {
 
   @Specialization
   @TruffleBoundary
-  protected BigInteger doSLBigInteger(BigInteger left, BigInteger right) {
+  protected BigInteger doBigInteger(BigInteger left, BigInteger right) {
     return left.add(right);
   }
 

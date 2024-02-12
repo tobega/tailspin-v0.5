@@ -1,8 +1,10 @@
 package tailspin.language.nodes.math;
 
 import java.math.BigInteger;
+import java.util.Random;
 import tailspin.language.nodes.ExpressionNode;
 import tailspin.language.TestUtil;
+import tailspin.language.nodes.literals.BigIntegerLiteral;
 import tailspin.language.nodes.literals.IntegerLiteral;
 
 import org.junit.jupiter.api.Test;
@@ -26,4 +28,13 @@ public class IntegerTest {
     assertEquals(BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE), TestUtil.evaluate(exprNode));
   }
 
+  @Test
+  public void adding_long_to_BigInteger_works() {
+    BigInteger rndBig = new BigInteger(100, new Random());
+    ExpressionNode exprNode = AddNodeGen.create(
+        new BigIntegerLiteral(rndBig),
+        new IntegerLiteral(5)
+    );
+    assertEquals(rndBig.add(BigInteger.valueOf(5)), TestUtil.evaluate(exprNode));
+  }
 }
