@@ -1,9 +1,10 @@
 package tailspin.language.nodes.transform;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import java.util.Queue;
+import java.util.Iterator;
 import tailspin.language.nodes.ExpressionNode;
 import tailspin.language.nodes.TransformNode;
+import tailspin.language.runtime.OneResultValue;
 
 public class ExpressionTransformNode extends TransformNode {
   @SuppressWarnings("FieldMayBeFinal")
@@ -14,10 +15,8 @@ public class ExpressionTransformNode extends TransformNode {
     this.expression = expression;
   }
 
-  public void executeGeneric(VirtualFrame frame) {
-    @SuppressWarnings("unchecked")
-    Queue<Object> results = (Queue<Object>) frame.getArguments()[1];
-    results.add(expression.executeGeneric(frame));
+  public Iterator<Object> executeGeneric(VirtualFrame frame) {
+    return new OneResultValue(expression.executeGeneric(frame));
   }
 
 }

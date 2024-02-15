@@ -1,8 +1,8 @@
 package tailspin.language.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node;
+import java.util.Iterator;
 
-public abstract class TransformNode extends Node {
-  public abstract void executeGeneric(VirtualFrame frame);
+public abstract class TransformNode extends TailspinNode {
+  public abstract Iterator<Object> executeGeneric(VirtualFrame frame);
 }

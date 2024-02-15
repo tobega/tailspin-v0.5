@@ -1,10 +1,12 @@
 package tailspin.language.nodes.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlotKind;
+import java.util.Iterator;
 import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
 import tailspin.language.TypeError;
@@ -16,30 +18,36 @@ public class TransformTest {
 
   @Test
   void adds_current_value() {
+    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, "", null);
     ExpressionNode exprNode = AddNodeGen.create(
         new IntegerLiteral(12),
-        new CurrentValueReferenceNode());
-    assertEquals(46L, TestUtil.evaluate(exprNode, 34L));
+        CurrentValueReferenceNodeGen.create(cvSlot));
+    assertEquals(46L, TestUtil.evaluate(exprNode, fdb.build(), cvSlot, 34L));
   }
 
   @Test
   void reference_null_current_value_blows_up() {
+    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, "", null);
     ExpressionNode exprNode = AddNodeGen.create(
         new IntegerLiteral(12),
-        new CurrentValueReferenceNode());
-    assertThrows(TypeError.class, () -> TestUtil.evaluate(exprNode, null, null));
+        CurrentValueReferenceNodeGen.create(cvSlot));
+    assertThrows(TypeError.class, () -> TestUtil.evaluate(exprNode, fdb.build(), cvSlot, null));
   }
 
   @Test
   void expression_transform() {
+    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, "", null);
     ExpressionTransformNode exprTr = new ExpressionTransformNode(
         AddNodeGen.create(
             new IntegerLiteral(12),
-            new CurrentValueReferenceNode())
+            CurrentValueReferenceNodeGen.create(cvSlot))
     );
     @SuppressWarnings("unchecked")
-    Queue<Object> result = (Queue<Object>) TestUtil.run(exprTr, 23L, new ArrayDeque<>());
-    assertEquals(1, result.size());
-    assertEquals(35L, result.poll());
+    Iterator<Object> result = (Iterator<Object>) TestUtil.evaluate(exprTr, fdb.build(), cvSlot, 23L);
+    assertEquals(35L, result.next());
+    assertFalse(result.hasNext());
   }
 }
