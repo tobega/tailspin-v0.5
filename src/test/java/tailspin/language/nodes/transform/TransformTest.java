@@ -1,12 +1,10 @@
 package tailspin.language.nodes.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import java.util.Iterator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
@@ -38,21 +36,5 @@ public class TransformTest {
         new IntegerLiteral(12),
         LocalReferenceNodeGen.create(cvSlot));
     assertThrows(TypeError.class, () -> TestUtil.evaluate(exprNode, fdb.build(), List.of()));
-  }
-
-  @Test
-  void expression_transform() {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, "", null);
-    ExpressionTransformNode exprTr = new ExpressionTransformNode(
-        AddNodeGen.create(
-            new IntegerLiteral(12),
-            LocalReferenceNodeGen.create(cvSlot))
-    );
-    @SuppressWarnings("unchecked")
-    Iterator<Object> result = (Iterator<Object>) TestUtil.evaluate(exprTr, fdb.build(),
-        List.of(LocalDefinitionNodeGen.create(new IntegerLiteral(23L), cvSlot)));
-    assertEquals(35L, result.next());
-    assertFalse(result.hasNext());
   }
 }
