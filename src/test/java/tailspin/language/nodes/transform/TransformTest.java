@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import java.util.Iterator;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
 import tailspin.language.TypeError;
@@ -22,8 +23,11 @@ public class TransformTest {
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, "", null);
     ExpressionNode exprNode = AddNodeGen.create(
         new IntegerLiteral(12),
-        CurrentValueReferenceNodeGen.create(cvSlot));
-    assertEquals(46L, TestUtil.evaluate(exprNode, fdb.build(), cvSlot, 34L));
+        LocalReferenceNodeGen.create(cvSlot));
+    assertEquals(46L,
+        TestUtil.evaluate(exprNode,
+            fdb.build(),
+            List.of(LocalDefinitionNodeGen.create(new IntegerLiteral(34L), cvSlot))));
   }
 
   @Test
@@ -32,8 +36,8 @@ public class TransformTest {
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, "", null);
     ExpressionNode exprNode = AddNodeGen.create(
         new IntegerLiteral(12),
-        CurrentValueReferenceNodeGen.create(cvSlot));
-    assertThrows(TypeError.class, () -> TestUtil.evaluate(exprNode, fdb.build(), cvSlot, null));
+        LocalReferenceNodeGen.create(cvSlot));
+    assertThrows(TypeError.class, () -> TestUtil.evaluate(exprNode, fdb.build(), List.of()));
   }
 
   @Test
@@ -43,10 +47,11 @@ public class TransformTest {
     ExpressionTransformNode exprTr = new ExpressionTransformNode(
         AddNodeGen.create(
             new IntegerLiteral(12),
-            CurrentValueReferenceNodeGen.create(cvSlot))
+            LocalReferenceNodeGen.create(cvSlot))
     );
     @SuppressWarnings("unchecked")
-    Iterator<Object> result = (Iterator<Object>) TestUtil.evaluate(exprTr, fdb.build(), cvSlot, 23L);
+    Iterator<Object> result = (Iterator<Object>) TestUtil.evaluate(exprTr, fdb.build(),
+        List.of(LocalDefinitionNodeGen.create(new IntegerLiteral(23L), cvSlot)));
     assertEquals(35L, result.next());
     assertFalse(result.hasNext());
   }

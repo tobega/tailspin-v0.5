@@ -6,7 +6,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import tailspin.language.nodes.ExpressionNode;
 
 @NodeField(name = "frameSlot", type = int.class)
-public abstract class CurrentValueReferenceNode extends ExpressionNode {
+public abstract class LocalReferenceNode extends ExpressionNode {
 
   protected abstract int getFrameSlot();
 

@@ -15,7 +15,7 @@ public class ExpressionTransformNode extends TransformNode {
     this.expression = expression;
   }
 
-  public Iterator<Object> executeGeneric(VirtualFrame frame) {
+  public Iterator<Object> execute(VirtualFrame frame) {
     return new OneResultValue(expression.executeGeneric(frame));
   }
 
