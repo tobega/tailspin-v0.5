@@ -14,7 +14,7 @@ public class GetNextStreamValueNode extends ExpressionNode {
   @Override
   public Object executeGeneric(VirtualFrame frame) {
     @SuppressWarnings("unchecked")
-    Iterator<Object> values = (Iterator<Object>) frame.getObject(valuesSlot);
+    Iterator<Object> values = (Iterator<Object>) frame.getObjectStatic(valuesSlot);
     if (!values.hasNext()) throw new EndOfStreamException();
     return values.next();
   }

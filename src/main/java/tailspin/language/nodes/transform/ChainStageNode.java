@@ -26,8 +26,9 @@ public class ChainStageNode extends ExpressionNode {
   @Override
   public Object executeGeneric(VirtualFrame frame) {
     Queue<Object> results = new ArrayDeque<>();
-    frame.setObject(resultSlot, results);
+    frame.setObjectStatic(resultSlot, results);
     loop.execute(frame);
+    frame.clearObjectStatic(resultSlot);
     return new DeepIterator(results.iterator());
   }
 
@@ -54,7 +55,7 @@ public class ChainStageNode extends ExpressionNode {
         return false;
       }
       @SuppressWarnings("unchecked")
-      Queue<Object> results = (Queue<Object>) frame.getObject(resultSlot);
+      Queue<Object> results = (Queue<Object>) frame.getObjectStatic(resultSlot);
       results.add(stage.executeGeneric(frame));
       return true;
     }

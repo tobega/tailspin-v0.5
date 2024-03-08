@@ -31,7 +31,7 @@ public class TestUtil {
 
     public TestRootNode(FrameDescriptor fd, List<StatementNode> definitions, ExpressionNode node) {
       super(null, fd);
-      this.definitions = definitions.toArray(new StatementNode[definitions.size()]);
+      this.definitions = definitions.toArray(new StatementNode[0]);
       this.node = node;
     }
 
