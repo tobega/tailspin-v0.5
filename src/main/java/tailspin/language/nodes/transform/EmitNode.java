@@ -1,17 +1,10 @@
 package tailspin.language.nodes.transform;
 
-import com.oracle.truffle.api.dsl.ImportStatic;
-import com.oracle.truffle.api.dsl.NodeChild;
-import com.oracle.truffle.api.dsl.NodeField;
-import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import java.util.Queue;
 import tailspin.language.nodes.ExpressionNode;
 import tailspin.language.nodes.StatementNode;
 
-@NodeChild("resultExpr")
-@NodeField(name = "emitSlot", type = int.class)
-@ImportStatic(FrameSlotKind.class)
 public class EmitNode extends StatementNode {
   @Child
   @SuppressWarnings("FieldMayBeFinal")

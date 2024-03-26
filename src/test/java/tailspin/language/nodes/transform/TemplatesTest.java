@@ -10,8 +10,11 @@ import java.util.Iterator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.nodes.ExpressionNode;
+import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.literals.IntegerLiteral;
+import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
+import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
 import tailspin.language.nodes.math.AddNodeGen;
 
 public class TemplatesTest {
@@ -37,5 +40,35 @@ public class TemplatesTest {
     assertEquals(8L, result.next());
     assertEquals(10L, result.next());
     assertFalse(result.hasNext());
+  }
+
+  @Test
+  void simple_matcher() {
+    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+
+    MatcherNode eq3 = EqualityMatcherNodeGen.create(
+        LocalReferenceNodeGen.create(cvSlot), new IntegerLiteral(3));
+    StatementNode whenEq3 = new EmitNode(new IntegerLiteral(0), resultSlot);
+
+    MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
+    StatementNode otherwise = new EmitNode(LocalReferenceNodeGen.create(cvSlot), resultSlot);
+
+    MatchStatementNode matchStatement = new MatchStatementNode(List.of(
+        new MatchTemplateNode(eq3, whenEq3),
+        new MatchTemplateNode(alwaysTrue, otherwise)
+    ));
+
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, matchStatement, resultSlot);
+    @SuppressWarnings("unchecked")
+    Iterator<Object> result = (Iterator<Object>) callTarget.call(new Object[]{3L});
+    assertEquals(0L, result.next());
+    assertFalse(result.hasNext());
+
+    @SuppressWarnings("unchecked")
+    Iterator<Object> result2 = (Iterator<Object>) callTarget.call(new Object[]{5L});
+    assertEquals(5L, result2.next());
+    assertFalse(result2.hasNext());
   }
 }
