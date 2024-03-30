@@ -7,20 +7,20 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import tailspin.language.nodes.ExpressionNode;
+import tailspin.language.nodes.StatementNode;
 
-@NodeChild("valueExpr")
+@NodeChild(value = "valueExpr", type = ExpressionNode.class)
 @NodeField(name = "frameSlot", type = int.class)
 @ImportStatic(FrameSlotKind.class)
-public abstract class LocalDefinitionNode extends ExpressionNode {
+public abstract class LocalDefinitionNode extends StatementNode {
   protected abstract int getFrameSlot();
 
   @Specialization(guards = "frame.getFrameDescriptor().getSlotKind(getFrameSlot()) == Illegal || " +
       "frame.getFrameDescriptor().getSlotKind(getFrameSlot()) == Long")
-  protected long longAssignment(VirtualFrame frame, long value) {
+  protected void longAssignment(VirtualFrame frame, long value) {
     int frameSlot = this.getFrameSlot();
     frame.getFrameDescriptor().setSlotKind(frameSlot, FrameSlotKind.Long);
     frame.setLong(frameSlot, value);
-    return value;
   }
 
   @Specialization(replaces = "longAssignment")
