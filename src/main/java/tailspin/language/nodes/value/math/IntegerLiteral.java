@@ -1,10 +1,10 @@
-package tailspin.language.nodes.literals;
+package tailspin.language.nodes.value.math;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import tailspin.language.nodes.ExpressionNode;
+import tailspin.language.nodes.ValueNode;
 
-public class IntegerLiteral extends ExpressionNode {
+public class IntegerLiteral extends ValueNode {
   private final long value;
 
   public IntegerLiteral(long value) {

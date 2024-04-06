@@ -9,13 +9,14 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import java.util.Iterator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import tailspin.language.nodes.ExpressionNode;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.StatementNode;
-import tailspin.language.nodes.literals.IntegerLiteral;
+import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
 import tailspin.language.nodes.math.AddNodeGen;
+import tailspin.language.nodes.value.ValueTransformNode;
+import tailspin.language.nodes.value.math.IntegerLiteral;
 
 public class TemplatesTest {
   @Test
@@ -24,15 +25,15 @@ public class TemplatesTest {
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
-    ExpressionNode expr1 = AddNodeGen.create(
+    ValueNode expr1 = AddNodeGen.create(
         new IntegerLiteral(5),
         LocalReferenceNodeGen.create(cvSlot));
-    StatementNode first = new EmitNode(expr1, resultSlot);
+    StatementNode first = new EmitNode(new ValueTransformNode(expr1), resultSlot);
 
-    ExpressionNode expr2 = AddNodeGen.create(
+    ValueNode expr2 = AddNodeGen.create(
         new IntegerLiteral(7),
         LocalReferenceNodeGen.create(cvSlot));
-    StatementNode second = new EmitNode(expr2,resultSlot);
+    StatementNode second = new EmitNode(new ValueTransformNode(expr2),resultSlot);
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, new BlockNode(List.of(first, second)), resultSlot);
     @SuppressWarnings("unchecked")
@@ -50,10 +51,10 @@ public class TemplatesTest {
 
     MatcherNode eq3 = EqualityMatcherNodeGen.create(
         LocalReferenceNodeGen.create(cvSlot), new IntegerLiteral(3));
-    StatementNode whenEq3 = new EmitNode(new IntegerLiteral(0), resultSlot);
+    StatementNode whenEq3 = new EmitNode(new ValueTransformNode(new IntegerLiteral(0)), resultSlot);
 
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
-    StatementNode otherwise = new EmitNode(LocalReferenceNodeGen.create(cvSlot), resultSlot);
+    StatementNode otherwise = new EmitNode(new ValueTransformNode(LocalReferenceNodeGen.create(cvSlot)), resultSlot);
 
     MatchStatementNode matchStatement = new MatchStatementNode(List.of(
         new MatchTemplateNode(eq3, whenEq3),

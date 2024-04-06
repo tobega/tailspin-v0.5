@@ -5,11 +5,11 @@ import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import java.math.BigInteger;
-import tailspin.language.nodes.ExpressionNode;
 import tailspin.language.nodes.MatcherNode;
+import tailspin.language.nodes.ValueNode;
 
-@NodeChild(value = "toMatchNode", type = ExpressionNode.class)
-@NodeChild(value = "valueNode", type = ExpressionNode.class)
+@NodeChild(value = "toMatchNode", type = ValueNode.class)
+@NodeChild(value = "valueNode", type = ValueNode.class)
 public abstract class EqualityMatcherNode extends MatcherNode {
   @Specialization
   protected boolean longEquals(long toMatch, long value) {

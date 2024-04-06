@@ -1,12 +1,12 @@
-package tailspin.language.nodes.transform;
+package tailspin.language.nodes.value;
 
 import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import tailspin.language.nodes.ExpressionNode;
+import tailspin.language.nodes.ValueNode;
 
 @NodeField(name = "frameSlot", type = int.class)
-public abstract class LocalReferenceNode extends ExpressionNode {
+public abstract class LocalReferenceNode extends ValueNode {
 
   protected abstract int getFrameSlot();
 

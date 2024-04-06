@@ -6,25 +6,26 @@ import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.Queue;
-import tailspin.language.nodes.ExpressionNode;
 import tailspin.language.nodes.StatementNode;
+import tailspin.language.nodes.TransformNode;
 import tailspin.language.runtime.DeepIterator;
 
-public class ChainStageNode extends ExpressionNode {
+public class ChainStageNode extends TransformNode {
 
   private final int resultSlot;
   @SuppressWarnings("FieldMayBeFinal")
   @Child
   private LoopNode loop;
 
-  public ChainStageNode(StatementNode setCurrentValue, ExpressionNode stage, int resultSlot) {
+  public ChainStageNode(StatementNode setCurrentValue, TransformNode stage, int resultSlot) {
     this.resultSlot = resultSlot;
     loop = Truffle.getRuntime().createLoopNode(new ChainStageRepeatingNode(setCurrentValue, stage, resultSlot));
   }
 
   @Override
-  public Object executeGeneric(VirtualFrame frame) {
+  public Iterator<Object> executeTransform(VirtualFrame frame) {
     Queue<Object> results = new ArrayDeque<>();
     frame.setObjectStatic(resultSlot, results);
     loop.execute(frame);
@@ -39,9 +40,9 @@ public class ChainStageNode extends ExpressionNode {
     private StatementNode setCurrentValue;
     @SuppressWarnings("FieldMayBeFinal")
     @Child
-    ExpressionNode stage;
+    TransformNode stage;
 
-    ChainStageRepeatingNode(StatementNode setCurrentValue, ExpressionNode stage, int resultSlot) {
+    ChainStageRepeatingNode(StatementNode setCurrentValue, TransformNode stage, int resultSlot) {
       this.setCurrentValue = setCurrentValue;
       this.stage = stage;
       this.resultSlot = resultSlot;
@@ -56,7 +57,7 @@ public class ChainStageNode extends ExpressionNode {
       }
       @SuppressWarnings("unchecked")
       Queue<Object> results = (Queue<Object>) frame.getObjectStatic(resultSlot);
-      results.add(stage.executeGeneric(frame));
+      results.add(stage.executeTransform(frame));
       return true;
     }
   }

@@ -1,10 +1,11 @@
-package tailspin.language.nodes.transform;
+package tailspin.language.nodes.value;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import java.util.Iterator;
-import tailspin.language.nodes.ExpressionNode;
+import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.transform.EndOfStreamException;
 
-public class GetNextStreamValueNode extends ExpressionNode {
+public class GetNextStreamValueNode extends ValueNode {
   private final int valuesSlot;
 
   public GetNextStreamValueNode(int valuesSlot) {

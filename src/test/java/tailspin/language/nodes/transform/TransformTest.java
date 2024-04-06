@@ -9,9 +9,10 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
 import tailspin.language.TypeError;
-import tailspin.language.nodes.ExpressionNode;
-import tailspin.language.nodes.literals.IntegerLiteral;
+import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.math.AddNodeGen;
+import tailspin.language.nodes.value.ValueTransformNode;
+import tailspin.language.nodes.value.math.IntegerLiteral;
 
 public class TransformTest {
 
@@ -19,22 +20,22 @@ public class TransformTest {
   void adds_current_value() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    ExpressionNode exprNode = AddNodeGen.create(
+    ValueNode valueNode = AddNodeGen.create(
         new IntegerLiteral(12),
         LocalReferenceNodeGen.create(cvSlot));
     assertEquals(46L,
-        TestUtil.evaluate(exprNode,
+        TestUtil.evaluate(new ValueTransformNode(valueNode),
             fdb.build(),
-            List.of(LocalDefinitionNodeGen.create(new IntegerLiteral(34L), cvSlot))));
+            List.of(LocalDefinitionNodeGen.create(new IntegerLiteral(34L), cvSlot))).next());
   }
 
   @Test
   void reference_null_current_value_blows_up() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    ExpressionNode exprNode = AddNodeGen.create(
+    ValueNode valueNode  = AddNodeGen.create(
         new IntegerLiteral(12),
         LocalReferenceNodeGen.create(cvSlot));
-    assertThrows(TypeError.class, () -> TestUtil.evaluate(exprNode, fdb.build(), List.of()));
+    assertThrows(TypeError.class, () -> TestUtil.evaluate(new ValueTransformNode(valueNode), fdb.build(), List.of()));
   }
 }

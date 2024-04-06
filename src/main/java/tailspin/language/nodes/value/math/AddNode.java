@@ -1,15 +1,15 @@
-package tailspin.language.nodes.math;
+package tailspin.language.nodes.value.math;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import java.math.BigInteger;
-import tailspin.language.nodes.ExpressionNode;
 import tailspin.language.TypeError;
+import tailspin.language.nodes.ValueNode;
 
 @NodeChild("leftNode") @NodeChild("rightNode")
-public abstract class AddNode extends ExpressionNode {
+public abstract class AddNode extends ValueNode {
   @Specialization(rewriteOn = ArithmeticException.class)
   protected long doLong(long left, long right) {
     return Math.addExact(left, right);
