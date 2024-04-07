@@ -15,7 +15,6 @@ import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
 import tailspin.language.nodes.value.LocalReferenceNodeGen;
-import tailspin.language.nodes.value.ValueTransformNode;
 import tailspin.language.nodes.value.math.AddNodeGen;
 import tailspin.language.nodes.value.math.IntegerLiteral;
 

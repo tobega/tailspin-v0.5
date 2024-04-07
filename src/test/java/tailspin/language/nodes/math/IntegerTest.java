@@ -7,6 +7,7 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.value.math.AddNodeGen;
 import tailspin.language.nodes.value.math.BigIntegerLiteral;
 import tailspin.language.nodes.value.math.IntegerLiteral;
 

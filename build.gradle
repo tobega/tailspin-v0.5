@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'me.champeau.jmh' version '0.6.6'
 }
 
 group = 'tailspin'
@@ -7,6 +8,9 @@ version = '0.5-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    flatDir {
+        dirs("../tailspin-v0")
+    }
 }
 ext {
     graal_version = '23.1.2'
@@ -15,9 +19,15 @@ ext {
 dependencies {
     implementation "org.graalvm.truffle:truffle-api:$graal_version"
     annotationProcessor "org.graalvm.truffle:truffle-dsl-processor:$graal_version"
+    implementation "org.graalvm.js:js:23.0.3"
+    implementation "org.graalvm.truffle:truffle-sl:$graal_version"
+    implementation "org.graalvm.sdk:graal-sdk:$graal_version"
+    implementation(":tailspin:")
 
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    runtimeOnly 'org.graalvm.truffle:truffle-runtime:23.1.2'
 }
 
 test {
@@ -29,7 +39,8 @@ test {
             '--add-exports',
             'org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED',
             '--add-exports',
-            'org.graalvm.truffle/com.oracle.truffle.api.staticobject=ALL-UNNAMED'
+            'org.graalvm.truffle/com.oracle.truffle.api.staticobject=ALL-UNNAMED',
+            '-Dgraalvm.locatorDisabled=true'
 
     testLogging {
         events 'failed'

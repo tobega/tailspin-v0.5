@@ -12,4 +12,14 @@ Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.c
 - The magic property of the structure transform projection to apply no matter how many array dimensions down, will disappear. Maybe it will be enabled by an explicit `**`
 - Probably an underscore `_` will be introduced as a way to reference a transform without applying it, so passing templates as parameters would be prefixed by `_`
 - Speculatively, I might remove the `.` syntax to access fields, so it has to be `$record(field:)` instead of `$record.field`
+- The `#` for sending to matchers is just a transform call and must be followed by an emit `!` to emit or could be followed by more chained transforms.
 
+## Performance check
+Implemented jmh tests as in Adam Ruka's tutorial. Frustrating debug to find I needed to add a truffle-runtime dependency
+
+|Benchmark                                      |Mode  |Cnt     |Score    |Error  |Units|
+|FibonacciBenchmark.recursive_eval_js           |avgt    |5    |62,309 |±  |2,355  |us/op|
+|FibonacciBenchmark.recursive_eval_sl           |avgt    |5    |63,485 |±  |0,783  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin     |avgt    |5  |1168,769 |± |21,090  |us/op|
+|FibonacciBenchmark.recursive_eval_v0_tailspin  |avgt    |5  |2212,986 |± |46,117  |us/op|
+|FibonacciBenchmark.recursive_java              |avgt    |5    |36,587 |±  |0,111  |us/op|

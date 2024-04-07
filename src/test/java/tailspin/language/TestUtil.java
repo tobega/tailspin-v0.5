@@ -10,7 +10,7 @@ import java.util.List;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.value.ValueTransformNode;
+import tailspin.language.nodes.transform.ValueTransformNode;
 
 public class TestUtil {
   public static Iterator<Object> evaluate(ValueNode node) {

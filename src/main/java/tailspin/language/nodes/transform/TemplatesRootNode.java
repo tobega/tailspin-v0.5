@@ -8,6 +8,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import tailspin.language.nodes.StatementNode;
+import tailspin.language.nodes.value.LocalDefinitionNodeGen;
 import tailspin.language.runtime.DeepIterator;
 
 public class TemplatesRootNode extends RootNode {
