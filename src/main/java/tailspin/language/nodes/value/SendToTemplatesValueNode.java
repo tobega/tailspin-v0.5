@@ -1,14 +1,12 @@
-package tailspin.language.nodes.transform;
+package tailspin.language.nodes.value;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import java.util.Iterator;
 import tailspin.language.nodes.DispatchNode;
 import tailspin.language.nodes.DispatchNodeGen;
-import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.Templates;
 
-public class SendToTemplatesNode extends TransformNode {
+public class SendToTemplatesValueNode extends ValueNode {
   @Child
   @SuppressWarnings("FieldMayBeFinal")
   private ValueNode valueNode;
@@ -19,17 +17,15 @@ public class SendToTemplatesNode extends TransformNode {
 
   private final Templates templates;
 
-  public SendToTemplatesNode(ValueNode valueNode, Templates templates) {
+  public SendToTemplatesValueNode(ValueNode valueNode, Templates templates) {
     this.valueNode = valueNode;
     this.dispatchNode = DispatchNodeGen.create();
     this.templates = templates;
   }
 
   @Override
-  public Iterator<Object> executeTransform(VirtualFrame frame) {
+  public Object executeGeneric(VirtualFrame frame) {
     Object value = valueNode.executeGeneric(frame);
-    @SuppressWarnings("unchecked")
-    Iterator<Object> result = (Iterator<Object>) dispatchNode.executeDispatch(templates, value);
-    return result;
+    return dispatchNode.executeDispatch(templates, value);
   }
 }

@@ -18,8 +18,14 @@ Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.c
 Implemented jmh tests as in Adam Ruka's tutorial. Frustrating debug to find I needed to add a truffle-runtime dependency
 
 |Benchmark                                      |Mode  |Cnt     |Score    |Error  |Units|
-|FibonacciBenchmark.recursive_eval_js           |avgt    |5    |62,309 |±  |2,355  |us/op|
-|FibonacciBenchmark.recursive_eval_sl           |avgt    |5    |63,485 |±  |0,783  |us/op|
-|FibonacciBenchmark.recursive_eval_tailspin     |avgt    |5  |1168,769 |± |21,090  |us/op|
-|FibonacciBenchmark.recursive_eval_v0_tailspin  |avgt    |5  |2212,986 |± |46,117  |us/op|
-|FibonacciBenchmark.recursive_java              |avgt    |5    |36,587 |±  |0,111  |us/op|
+|FibonacciBenchmark.recursive_eval_js           |avgt    |5    |62,309 |±  2,355  |us/op|
+|FibonacciBenchmark.recursive_eval_sl           |avgt    |5    |63,485 |±  0,783  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin     |avgt    |5  |1168,769 |± 21,090  |us/op|
+|FibonacciBenchmark.recursive_eval_v0_tailspin  |avgt    |5  |2212,986 |± 46,117  |us/op|
+|FibonacciBenchmark.recursive_java              |avgt    |5    |36,587 |±  0,111  |us/op|
+
+Going to just returning value instead of mucking with iterators:
+|Benchmark                                         |Mode  |Cnt  |   Score    |Error  |Units
+|FibonacciBenchmark.recursive_eval_tailspin        |avgt  |  5  |1194,630 |± 46,617  |us/op
+|FibonacciBenchmark.recursive_eval_tailspin_value  |avgt  |  5  |  53,368 |±  0,559  |us/op
+|FibonacciBenchmark.recursive_java                 |avgt  |  5  |  36,893 |±  0,252  |us/op
