@@ -29,3 +29,5 @@ Going to just returning value instead of mucking with iterators:
 |FibonacciBenchmark.recursive_eval_tailspin        |avgt  |  5  |1194,630 |± 46,617  |us/op
 |FibonacciBenchmark.recursive_eval_tailspin_value  |avgt  |  5  |  53,368 |±  0,559  |us/op
 |FibonacciBenchmark.recursive_java                 |avgt  |  5  |  36,893 |±  0,252  |us/op
+
+Tried to replace iterators with MaterializedFrame, but that was worse (1573,9 us/op)
