@@ -37,3 +37,8 @@ Creating an array-based ResultIterator instead of using java Collectons really d
 |FibonacciBenchmark.recursive_eval_tailspin        |avgt  |  5  |88,607 |± 1,519  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin_value  |avgt  |  5  |53,632 |± 1,517  |us/op|
 |FibonacciBenchmark.recursive_java                 |avgt  |  5  |36,708 |± 0,115  |us/op|
+
+Shaving a bit more by allowing single results from a transform
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |53,055 |± 0,592  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |36,966 |± 1,233  |us/op|

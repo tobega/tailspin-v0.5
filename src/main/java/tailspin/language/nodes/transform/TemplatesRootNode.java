@@ -7,7 +7,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.value.LocalDefinitionNodeGen;
-import tailspin.language.runtime.ResultIterator;
 
 public class TemplatesRootNode extends RootNode {
   private final StatementNode setCurrentValue;
@@ -23,10 +22,9 @@ public class TemplatesRootNode extends RootNode {
 
   @Override
   public Object execute(VirtualFrame frame) {
-    ResultIterator results = ResultIterator.empty();
-    frame.setObjectStatic(resultSlot, results);
     setCurrentValue.executeVoid(frame);
     statement.executeVoid(frame);
+    Object results = frame.getObjectStatic(resultSlot);
     frame.clearObjectStatic(resultSlot);
     return results;
   }

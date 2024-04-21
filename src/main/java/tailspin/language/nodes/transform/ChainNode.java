@@ -4,7 +4,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import java.util.List;
 import tailspin.language.nodes.TransformNode;
-import tailspin.language.runtime.ResultIterator;
 
 public class ChainNode extends TransformNode {
   private final int valuesSlot;
@@ -18,11 +17,11 @@ public class ChainNode extends TransformNode {
 
   @Override
   @ExplodeLoop
-  public ResultIterator executeTransform(VirtualFrame frame) {
+  public Object executeTransform(VirtualFrame frame) {
     for (int i = 0; i < stages.length - 1; i++) {
       frame.setObjectStatic(valuesSlot, stages[i].executeTransform(frame));
     }
-    ResultIterator result = stages[stages.length - 1].executeTransform(frame);
+    Object result = stages[stages.length - 1].executeTransform(frame);
     frame.clearObjectStatic(valuesSlot);
     return result;
   }

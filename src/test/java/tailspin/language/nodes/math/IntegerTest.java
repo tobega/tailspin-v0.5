@@ -17,7 +17,7 @@ public class IntegerTest {
     ValueNode exprNode = AddNodeGen.create(
         new IntegerLiteral(12),
         new IntegerLiteral(34));
-    assertEquals(46L, TestUtil.evaluate(exprNode).getIteratorNextElement());
+    assertEquals(46L, TestUtil.evaluate(exprNode));
   }
 
   @Test
@@ -25,7 +25,7 @@ public class IntegerTest {
     ValueNode exprNode = AddNodeGen.create(
         new IntegerLiteral(Long.MAX_VALUE),
         new IntegerLiteral(1));
-    assertEquals(BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE), TestUtil.evaluate(exprNode).getIteratorNextElement());
+    assertEquals(BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE), TestUtil.evaluate(exprNode));
   }
 
   @Test
@@ -35,6 +35,6 @@ public class IntegerTest {
         new BigIntegerLiteral(rndBig),
         new IntegerLiteral(5)
     );
-    assertEquals(rndBig.add(BigInteger.valueOf(5)), TestUtil.evaluate(exprNode).getIteratorNextElement());
+    assertEquals(rndBig.add(BigInteger.valueOf(5)), TestUtil.evaluate(exprNode));
   }
 }

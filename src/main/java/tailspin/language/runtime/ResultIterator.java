@@ -57,4 +57,13 @@ public class ResultIterator implements TruffleObject {
     System.arraycopy(results.elements, 0, elements, end, results.end);
     end += results.end;
   }
+
+  public void addObject(Object result) {
+    if (result instanceof ResultIterator) throw new AssertionError("Trying to add result iterator as object");
+    if (end == elements.length) {
+      elements = Arrays.copyOf(elements, end + 10);
+    }
+    elements[end] = result;
+    end++;
+  }
 }

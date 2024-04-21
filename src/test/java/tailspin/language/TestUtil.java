@@ -13,15 +13,15 @@ import tailspin.language.nodes.transform.ValueTransformNode;
 import tailspin.language.runtime.ResultIterator;
 
 public class TestUtil {
-  public static ResultIterator evaluate(ValueNode node) {
+  public static Object evaluate(ValueNode node) {
     return evaluate(new ValueTransformNode(node), FrameDescriptor.newBuilder().build(), List.of());
   }
 
-  public static ResultIterator evaluate(TransformNode node, FrameDescriptor fd, List<StatementNode> definitions) {
+  public static Object evaluate(TransformNode node, FrameDescriptor fd, List<StatementNode> definitions) {
     var rootNode = new TestRootNode(fd, definitions, node);
     CallTarget callTarget = rootNode.getCallTarget();
 
-    return (ResultIterator) callTarget.call();
+    return callTarget.call();
   }
 
   public static final class TestRootNode extends RootNode {

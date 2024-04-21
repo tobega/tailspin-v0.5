@@ -35,7 +35,7 @@ public class ChainTest {
     ChainStageNode chainStage = new ChainStageNode(setCurrentValue, new ValueTransformNode(expr), resultSlot);
     TestSource source = new TestSource(new Object[]{1L, 2L, 3L});
     ChainNode chain = new ChainNode(valuesSlot, List.of(source, chainStage));
-    ResultIterator result = TestUtil.evaluate(chain, fdb.build(),
+    ResultIterator result = (ResultIterator) TestUtil.evaluate(chain, fdb.build(),
         List.of());
     assertEquals(13L, result.getIteratorNextElement());
     assertEquals(14L, result.getIteratorNextElement());

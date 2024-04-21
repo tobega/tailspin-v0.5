@@ -36,7 +36,7 @@ public class TemplatesTest {
     StatementNode second = new EmitNode(new ValueTransformNode(expr2),resultSlot);
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, new BlockNode(List.of(first, second)), resultSlot);
-    ResultIterator result = (ResultIterator) callTarget.call(new Object[]{3L});
+    ResultIterator result = (ResultIterator) callTarget.call(3L);
     assertEquals(8L, result.getIteratorNextElement());
     assertEquals(10L, result.getIteratorNextElement());
     assertFalse(result.hasIteratorNextElement());
@@ -61,12 +61,8 @@ public class TemplatesTest {
     ));
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, matchStatement, resultSlot);
-    ResultIterator result = (ResultIterator) callTarget.call(new Object[]{3L});
-    assertEquals(0L, result.getIteratorNextElement());
-    assertFalse(result.hasIteratorNextElement());
+    assertEquals(0L, callTarget.call(3L));
 
-    ResultIterator result2 = (ResultIterator) callTarget.call(new Object[]{5L});
-    assertEquals(5L, result2.getIteratorNextElement());
-    assertFalse(result2.hasIteratorNextElement());
+    assertEquals(5L, callTarget.call(5L));
   }
 }
