@@ -1,9 +1,9 @@
 package tailspin.language.nodes.value;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import java.util.Iterator;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.transform.EndOfStreamException;
+import tailspin.language.runtime.ResultIterator;
 
 public class GetNextStreamValueNode extends ValueNode {
   private final int valuesSlot;
@@ -14,9 +14,8 @@ public class GetNextStreamValueNode extends ValueNode {
 
   @Override
   public Object executeGeneric(VirtualFrame frame) {
-    @SuppressWarnings("unchecked")
-    Iterator<Object> values = (Iterator<Object>) frame.getObjectStatic(valuesSlot);
-    if (!values.hasNext()) throw new EndOfStreamException();
-    return values.next();
+    ResultIterator values = (ResultIterator) frame.getObjectStatic(valuesSlot);
+    if (!values.hasIteratorNextElement()) throw new EndOfStreamException();
+    return values.getIteratorNextElement();
   }
 }

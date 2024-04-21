@@ -3,7 +3,6 @@ package tailspin;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -27,6 +26,7 @@ import tailspin.language.nodes.value.TransformValueNode;
 import tailspin.language.nodes.value.ValueTemplatesRootNode;
 import tailspin.language.nodes.value.math.AddNodeGen;
 import tailspin.language.nodes.value.math.IntegerLiteral;
+import tailspin.language.runtime.ResultIterator;
 import tailspin.language.runtime.Templates;
 
 /**
@@ -95,9 +95,8 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, matchStatement, resultSlot);
     templates.setCallTarget(callTarget);
     return () -> {
-      @SuppressWarnings("unchecked")
-      Iterator<Object> results = (Iterator<Object>) callTarget.call(new Object[]{20L});
-      return ((Long) results.next()).intValue();
+      ResultIterator results = (ResultIterator) callTarget.call(new Object[]{20L});
+      return ((Long) results.getIteratorNextElement()).intValue();
     };
   }
 

@@ -5,12 +5,9 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
-import java.util.ArrayDeque;
-import java.util.Iterator;
-import java.util.Queue;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.TransformNode;
-import tailspin.language.runtime.DeepIterator;
+import tailspin.language.runtime.ResultIterator;
 
 public class ChainStageNode extends TransformNode {
 
@@ -25,12 +22,12 @@ public class ChainStageNode extends TransformNode {
   }
 
   @Override
-  public Iterator<Object> executeTransform(VirtualFrame frame) {
-    Queue<Object> results = new ArrayDeque<>();
+  public ResultIterator executeTransform(VirtualFrame frame) {
+    ResultIterator results = ResultIterator.empty();
     frame.setObjectStatic(resultSlot, results);
     loop.execute(frame);
     frame.clearObjectStatic(resultSlot);
-    return new DeepIterator(results.iterator());
+    return results;
   }
 
   private static class ChainStageRepeatingNode extends Node implements RepeatingNode {
@@ -55,8 +52,7 @@ public class ChainStageNode extends TransformNode {
       } catch (EndOfStreamException e) {
         return false;
       }
-      @SuppressWarnings("unchecked")
-      Queue<Object> results = (Queue<Object>) frame.getObjectStatic(resultSlot);
+      ResultIterator results = (ResultIterator) frame.getObjectStatic(resultSlot);
       results.add(stage.executeTransform(frame));
       return true;
     }

@@ -5,11 +5,9 @@ import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
-import java.util.ArrayDeque;
-import java.util.Queue;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.value.LocalDefinitionNodeGen;
-import tailspin.language.runtime.DeepIterator;
+import tailspin.language.runtime.ResultIterator;
 
 public class TemplatesRootNode extends RootNode {
   private final StatementNode setCurrentValue;
@@ -25,12 +23,12 @@ public class TemplatesRootNode extends RootNode {
 
   @Override
   public Object execute(VirtualFrame frame) {
-    Queue<Object> results = new ArrayDeque<>();
+    ResultIterator results = ResultIterator.empty();
     frame.setObjectStatic(resultSlot, results);
     setCurrentValue.executeVoid(frame);
     statement.executeVoid(frame);
     frame.clearObjectStatic(resultSlot);
-    return new DeepIterator(results.iterator());
+    return results;
   }
 
   public static CallTarget create(FrameDescriptor fd, int cvSlot, StatementNode body, int resultSlot) {

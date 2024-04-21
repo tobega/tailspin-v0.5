@@ -25,9 +25,15 @@ Implemented jmh tests as in Adam Ruka's tutorial. Frustrating debug to find I ne
 |FibonacciBenchmark.recursive_java              |avgt    |5    |36,587 |±  0,111  |us/op|
 
 Going to just returning value instead of mucking with iterators:
-|Benchmark                                         |Mode  |Cnt  |   Score    |Error  |Units
-|FibonacciBenchmark.recursive_eval_tailspin        |avgt  |  5  |1194,630 |± 46,617  |us/op
-|FibonacciBenchmark.recursive_eval_tailspin_value  |avgt  |  5  |  53,368 |±  0,559  |us/op
-|FibonacciBenchmark.recursive_java                 |avgt  |  5  |  36,893 |±  0,252  |us/op
+|Benchmark                                         |Mode  |Cnt  |   Score    |Error  |Units|
+|FibonacciBenchmark.recursive_eval_tailspin        |avgt  |  5  |1194,630 |± 46,617  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin_value  |avgt  |  5  |  53,368 |±  0,559  |us/op|
+|FibonacciBenchmark.recursive_java                 |avgt  |  5  |  36,893 |±  0,252  |us/op|
 
 Tried to replace iterators with MaterializedFrame, but that was worse (1573,9 us/op)
+
+Creating an array-based ResultIterator instead of using java Collectons really did the trick
+|Benchmark                                         |Mode  |Cnt  | Score |  Error  |Units|
+|FibonacciBenchmark.recursive_eval_tailspin        |avgt  |  5  |88,607 |± 1,519  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin_value  |avgt  |  5  |53,632 |± 1,517  |us/op|
+|FibonacciBenchmark.recursive_java                 |avgt  |  5  |36,708 |± 0,115  |us/op|

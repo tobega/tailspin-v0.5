@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import java.util.Iterator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.nodes.MatcherNode;
@@ -17,6 +16,7 @@ import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
 import tailspin.language.nodes.value.LocalReferenceNodeGen;
 import tailspin.language.nodes.value.math.AddNodeGen;
 import tailspin.language.nodes.value.math.IntegerLiteral;
+import tailspin.language.runtime.ResultIterator;
 
 public class TemplatesTest {
   @Test
@@ -36,11 +36,10 @@ public class TemplatesTest {
     StatementNode second = new EmitNode(new ValueTransformNode(expr2),resultSlot);
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, new BlockNode(List.of(first, second)), resultSlot);
-    @SuppressWarnings("unchecked")
-    Iterator<Object> result = (Iterator<Object>) callTarget.call(new Object[]{3L});
-    assertEquals(8L, result.next());
-    assertEquals(10L, result.next());
-    assertFalse(result.hasNext());
+    ResultIterator result = (ResultIterator) callTarget.call(new Object[]{3L});
+    assertEquals(8L, result.getIteratorNextElement());
+    assertEquals(10L, result.getIteratorNextElement());
+    assertFalse(result.hasIteratorNextElement());
   }
 
   @Test
@@ -62,14 +61,12 @@ public class TemplatesTest {
     ));
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, matchStatement, resultSlot);
-    @SuppressWarnings("unchecked")
-    Iterator<Object> result = (Iterator<Object>) callTarget.call(new Object[]{3L});
-    assertEquals(0L, result.next());
-    assertFalse(result.hasNext());
+    ResultIterator result = (ResultIterator) callTarget.call(new Object[]{3L});
+    assertEquals(0L, result.getIteratorNextElement());
+    assertFalse(result.hasIteratorNextElement());
 
-    @SuppressWarnings("unchecked")
-    Iterator<Object> result2 = (Iterator<Object>) callTarget.call(new Object[]{5L});
-    assertEquals(5L, result2.next());
-    assertFalse(result2.hasNext());
+    ResultIterator result2 = (ResultIterator) callTarget.call(new Object[]{5L});
+    assertEquals(5L, result2.getIteratorNextElement());
+    assertFalse(result2.hasIteratorNextElement());
   }
 }

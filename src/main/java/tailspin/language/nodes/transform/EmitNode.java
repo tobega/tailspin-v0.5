@@ -1,9 +1,9 @@
 package tailspin.language.nodes.transform;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import java.util.Queue;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.TransformNode;
+import tailspin.language.runtime.ResultIterator;
 
 public class EmitNode extends StatementNode {
   @Child
@@ -18,8 +18,7 @@ public class EmitNode extends StatementNode {
 
   @Override
   public void executeVoid(VirtualFrame frame) {
-    @SuppressWarnings("unchecked")
-    Queue<Object> results = (Queue<Object>) frame.getObjectStatic(emitSlot);
+    ResultIterator results = (ResultIterator) frame.getObjectStatic(emitSlot);
     results.add(resultExpr.executeTransform(frame));
   }
 }

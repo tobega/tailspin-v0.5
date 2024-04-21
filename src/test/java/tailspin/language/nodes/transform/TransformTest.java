@@ -27,7 +27,7 @@ public class TransformTest {
     assertEquals(46L,
         TestUtil.evaluate(new ValueTransformNode(valueNode),
             fdb.build(),
-            List.of(LocalDefinitionNodeGen.create(new IntegerLiteral(34L), cvSlot))).next());
+            List.of(LocalDefinitionNodeGen.create(new IntegerLiteral(34L), cvSlot))).getIteratorNextElement());
   }
 
   @Test

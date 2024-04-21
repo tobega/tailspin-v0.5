@@ -1,10 +1,9 @@
 package tailspin.language.nodes.transform;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import java.util.Iterator;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.runtime.OneValueIterator;
+import tailspin.language.runtime.ResultIterator;
 
 public class ValueTransformNode extends TransformNode {
   @Child
@@ -16,7 +15,8 @@ public class ValueTransformNode extends TransformNode {
   }
 
   @Override
-  public Iterator<Object> executeTransform(VirtualFrame frame) {
-    return new OneValueIterator(valueNode.executeGeneric(frame));
+  public ResultIterator executeTransform(VirtualFrame frame) {
+    Object value = valueNode.executeGeneric(frame);
+    return ResultIterator.of(new Object[]{value});
   }
 }

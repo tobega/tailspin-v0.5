@@ -1,10 +1,10 @@
 package tailspin.language.nodes.value;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import java.util.Iterator;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.ResultIterator;
 
 public class TransformValueNode extends ValueNode {
   @Child
@@ -17,9 +17,9 @@ public class TransformValueNode extends ValueNode {
 
   @Override
   public Object executeGeneric(VirtualFrame frame) {
-    Iterator<Object> results = transformNode.executeTransform(frame);
-    Object value = results.next();
-    if (results.hasNext()) {
+    ResultIterator results = transformNode.executeTransform(frame);
+    Object value = results.getIteratorNextElement();
+    if (results.hasIteratorNextElement()) {
       throw new TypeError("Got more than one value");
     }
     return value;

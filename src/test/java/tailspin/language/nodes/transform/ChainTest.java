@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import java.util.Iterator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
@@ -17,6 +16,7 @@ import tailspin.language.nodes.value.LocalDefinitionNodeGen;
 import tailspin.language.nodes.value.LocalReferenceNodeGen;
 import tailspin.language.nodes.value.math.AddNodeGen;
 import tailspin.language.nodes.value.math.IntegerLiteral;
+import tailspin.language.runtime.ResultIterator;
 
 public class ChainTest {
   @Test
@@ -33,14 +33,14 @@ public class ChainTest {
             new IntegerLiteral(12),
             LocalReferenceNodeGen.create(cvSlot));
     ChainStageNode chainStage = new ChainStageNode(setCurrentValue, new ValueTransformNode(expr), resultSlot);
-    TestSource source = new TestSource(List.of(1L, 2L, 3L).iterator());
+    TestSource source = new TestSource(new Object[]{1L, 2L, 3L});
     ChainNode chain = new ChainNode(valuesSlot, List.of(source, chainStage));
-    Iterator<Object> result = TestUtil.evaluate(chain, fdb.build(),
+    ResultIterator result = TestUtil.evaluate(chain, fdb.build(),
         List.of());
-    assertEquals(13L, result.next());
-    assertEquals(14L, result.next());
-    assertEquals(15L, result.next());
-    assertFalse(result.hasNext());
+    assertEquals(13L, result.getIteratorNextElement());
+    assertEquals(14L, result.getIteratorNextElement());
+    assertEquals(15L, result.getIteratorNextElement());
+    assertFalse(result.hasIteratorNextElement());
   }
 
 }

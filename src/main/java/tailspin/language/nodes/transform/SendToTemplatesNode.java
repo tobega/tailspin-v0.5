@@ -1,11 +1,11 @@
 package tailspin.language.nodes.transform;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import java.util.Iterator;
 import tailspin.language.nodes.DispatchNode;
 import tailspin.language.nodes.DispatchNodeGen;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.ResultIterator;
 import tailspin.language.runtime.Templates;
 
 public class SendToTemplatesNode extends TransformNode {
@@ -26,10 +26,8 @@ public class SendToTemplatesNode extends TransformNode {
   }
 
   @Override
-  public Iterator<Object> executeTransform(VirtualFrame frame) {
+  public ResultIterator executeTransform(VirtualFrame frame) {
     Object value = valueNode.executeGeneric(frame);
-    @SuppressWarnings("unchecked")
-    Iterator<Object> result = (Iterator<Object>) dispatchNode.executeDispatch(templates, value);
-    return result;
+    return (ResultIterator) dispatchNode.executeDispatch(templates, value);
   }
 }

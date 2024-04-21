@@ -5,25 +5,23 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
-import java.util.Iterator;
 import java.util.List;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.transform.ValueTransformNode;
+import tailspin.language.runtime.ResultIterator;
 
 public class TestUtil {
-  public static Iterator<Object> evaluate(ValueNode node) {
+  public static ResultIterator evaluate(ValueNode node) {
     return evaluate(new ValueTransformNode(node), FrameDescriptor.newBuilder().build(), List.of());
   }
 
-  public static Iterator<Object> evaluate(TransformNode node, FrameDescriptor fd, List<StatementNode> definitions) {
+  public static ResultIterator evaluate(TransformNode node, FrameDescriptor fd, List<StatementNode> definitions) {
     var rootNode = new TestRootNode(fd, definitions, node);
     CallTarget callTarget = rootNode.getCallTarget();
 
-    @SuppressWarnings("unchecked")
-    Iterator<Object> result = (Iterator<Object>) callTarget.call();
-    return result;
+    return (ResultIterator) callTarget.call();
   }
 
   public static final class TestRootNode extends RootNode {
@@ -51,16 +49,15 @@ public class TestUtil {
   }
 
   public static class TestSource extends TransformNode {
-    private final Iterator<?> values;
+    private final Object[] values;
 
-    public TestSource(Iterator<?> values) {
+    public TestSource(Object[] values) {
       this.values = values;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Iterator<Object> executeTransform(VirtualFrame frame) {
-      return (Iterator<Object>) values;
+    public ResultIterator executeTransform(VirtualFrame frame) {
+      return ResultIterator.of(values);
     }
   }
 }
