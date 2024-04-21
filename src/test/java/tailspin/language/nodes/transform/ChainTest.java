@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
 import tailspin.language.TestUtil.TestSource;
 import tailspin.language.nodes.StatementNode;
+import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.GetNextStreamValueNode;
 import tailspin.language.nodes.value.LocalDefinitionNodeGen;
@@ -43,4 +44,23 @@ public class ChainTest {
     assertFalse(result.hasIteratorNextElement());
   }
 
+  @Test
+  void expression_chain_stage_single_values() {
+    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    StatementNode setCurrentValue = LocalDefinitionNodeGen.create(
+        new GetNextStreamValueNode(valuesSlot),
+        cvSlot
+    );
+    ValueNode expr = AddNodeGen.create(
+            new IntegerLiteral(12),
+            LocalReferenceNodeGen.create(cvSlot));
+    ChainStageNode chainStage = new ChainStageNode(setCurrentValue, new ValueTransformNode(expr), resultSlot);
+    TransformNode source = new ValueTransformNode(new IntegerLiteral(1L));
+    ChainNode chain = new ChainNode(valuesSlot, List.of(source, chainStage));
+    assertEquals(13L, TestUtil.evaluate(chain, fdb.build(),
+        List.of()));
+  }
 }

@@ -7,6 +7,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.TransformNode;
+import tailspin.language.runtime.ResultIterator;
 
 public class ChainStageNode extends TransformNode {
 
@@ -24,7 +25,7 @@ public class ChainStageNode extends TransformNode {
   public Object executeTransform(VirtualFrame frame) {
     loop.execute(frame);
     Object results = frame.getObjectStatic(resultSlot);
-    frame.clearObjectStatic(resultSlot);
+    frame.setObjectStatic(resultSlot, null);
     return results;
   }
 
@@ -35,11 +36,11 @@ public class ChainStageNode extends TransformNode {
     private StatementNode setCurrentValue;
     @SuppressWarnings("FieldMayBeFinal")
     @Child
-    MergeResultNode mergedResult;
+    TransformNode stage;
 
     ChainStageRepeatingNode(StatementNode setCurrentValue, TransformNode stage, int resultSlot) {
       this.setCurrentValue = setCurrentValue;
-      this.mergedResult = MergeResultNode.create(resultSlot, stage);
+      this.stage = stage;
       this.resultSlot = resultSlot;
     }
 
@@ -50,7 +51,9 @@ public class ChainStageNode extends TransformNode {
       } catch (EndOfStreamException e) {
         return false;
       }
-      frame.setObjectStatic(resultSlot, mergedResult.executeTransform(frame));
+      Object previous = frame.getObjectStatic(resultSlot);
+      Object result = stage.executeTransform(frame);
+      frame.setObjectStatic(resultSlot, ResultIterator.merge(previous, result));
       return true;
     }
   }

@@ -30,6 +30,24 @@ public class ResultIterator implements TruffleObject {
     return iterator;
   }
 
+  public static Object merge(Object previous, Object result) {
+    if (previous == null) return result;
+    if (result == null) return previous;
+    ResultIterator merged;
+    if (previous instanceof ResultIterator ri) {
+      merged = ri;
+    } else {
+      merged = ResultIterator.empty();
+      merged.addObject(previous);
+    }
+    if (result instanceof ResultIterator ri) {
+      merged.add(ri);
+    } else {
+      merged.addObject(result);
+    }
+    return merged;
+  }
+
   @ExportMessage
   public boolean isIterator() {
     return true;

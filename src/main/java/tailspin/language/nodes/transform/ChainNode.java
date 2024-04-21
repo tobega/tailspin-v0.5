@@ -22,7 +22,7 @@ public class ChainNode extends TransformNode {
       frame.setObjectStatic(valuesSlot, stages[i].executeTransform(frame));
     }
     Object result = stages[stages.length - 1].executeTransform(frame);
-    frame.clearObjectStatic(valuesSlot);
+    frame.setObjectStatic(valuesSlot, null);
     return result;
   }
 }

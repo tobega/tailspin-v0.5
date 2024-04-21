@@ -25,7 +25,7 @@ public class TemplatesRootNode extends RootNode {
     setCurrentValue.executeVoid(frame);
     statement.executeVoid(frame);
     Object results = frame.getObjectStatic(resultSlot);
-    frame.clearObjectStatic(resultSlot);
+    frame.setObjectStatic(resultSlot, null);
     return results;
   }
 

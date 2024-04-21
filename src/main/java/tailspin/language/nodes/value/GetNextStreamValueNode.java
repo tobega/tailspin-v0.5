@@ -14,8 +14,14 @@ public class GetNextStreamValueNode extends ValueNode {
 
   @Override
   public Object executeGeneric(VirtualFrame frame) {
-    ResultIterator values = (ResultIterator) frame.getObjectStatic(valuesSlot);
-    if (!values.hasIteratorNextElement()) throw new EndOfStreamException();
-    return values.getIteratorNextElement();
+    Object value = frame.getObjectStatic(valuesSlot);
+    if (value == null) throw new EndOfStreamException();
+    if (value instanceof ResultIterator values) {
+      if (!values.hasIteratorNextElement())
+        throw new EndOfStreamException();
+      return values.getIteratorNextElement();
+    }
+    frame.setObjectStatic(valuesSlot, null);
+    return value;
   }
 }
