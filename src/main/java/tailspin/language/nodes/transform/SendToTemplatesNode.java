@@ -3,11 +3,10 @@ package tailspin.language.nodes.transform;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import tailspin.language.nodes.DispatchNode;
 import tailspin.language.nodes.DispatchNodeGen;
-import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.Templates;
 
-public class SendToTemplatesNode extends TransformNode {
+public class SendToTemplatesNode extends ValueNode {
   @Child
   @SuppressWarnings("FieldMayBeFinal")
   private ValueNode valueNode;
@@ -25,7 +24,7 @@ public class SendToTemplatesNode extends TransformNode {
   }
 
   @Override
-  public Object executeTransform(VirtualFrame frame) {
+  public Object executeGeneric(VirtualFrame frame) {
     Object value = valueNode.executeGeneric(frame);
     return dispatchNode.executeDispatch(templates, value);
   }

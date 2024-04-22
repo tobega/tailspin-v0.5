@@ -28,12 +28,12 @@ public class TemplatesTest {
     ValueNode expr1 = AddNodeGen.create(
         new IntegerLiteral(5),
         LocalReferenceNodeGen.create(cvSlot));
-    StatementNode first = new EmitNode(new ValueTransformNode(expr1), resultSlot);
+    StatementNode first = new EmitNode(expr1, resultSlot);
 
     ValueNode expr2 = AddNodeGen.create(
         new IntegerLiteral(7),
         LocalReferenceNodeGen.create(cvSlot));
-    StatementNode second = new EmitNode(new ValueTransformNode(expr2),resultSlot);
+    StatementNode second = new EmitNode(expr2,resultSlot);
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, new BlockNode(List.of(first, second)), resultSlot);
     ResultIterator result = (ResultIterator) callTarget.call(3L);
@@ -50,10 +50,10 @@ public class TemplatesTest {
 
     MatcherNode eq3 = EqualityMatcherNodeGen.create(
         LocalReferenceNodeGen.create(cvSlot), new IntegerLiteral(3));
-    StatementNode whenEq3 = new EmitNode(new ValueTransformNode(new IntegerLiteral(0)), resultSlot);
+    StatementNode whenEq3 = new EmitNode(new IntegerLiteral(0), resultSlot);
 
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
-    StatementNode otherwise = new EmitNode(new ValueTransformNode(LocalReferenceNodeGen.create(cvSlot)), resultSlot);
+    StatementNode otherwise = new EmitNode(LocalReferenceNodeGen.create(cvSlot), resultSlot);
 
     MatchStatementNode matchStatement = new MatchStatementNode(List.of(
         new MatchTemplateNode(eq3, whenEq3),

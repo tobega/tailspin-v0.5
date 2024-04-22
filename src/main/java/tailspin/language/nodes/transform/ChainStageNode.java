@@ -6,23 +6,23 @@ import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import tailspin.language.nodes.StatementNode;
-import tailspin.language.nodes.TransformNode;
+import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.ResultIterator;
 
-public class ChainStageNode extends TransformNode {
+public class ChainStageNode extends ValueNode {
 
   private final int resultSlot;
   @SuppressWarnings("FieldMayBeFinal")
   @Child
   private LoopNode loop;
 
-  public ChainStageNode(StatementNode setCurrentValue, TransformNode stage, int resultSlot) {
+  public ChainStageNode(StatementNode setCurrentValue, ValueNode stage, int resultSlot) {
     this.resultSlot = resultSlot;
     loop = Truffle.getRuntime().createLoopNode(new ChainStageRepeatingNode(setCurrentValue, stage, resultSlot));
   }
 
   @Override
-  public Object executeTransform(VirtualFrame frame) {
+  public Object executeGeneric(VirtualFrame frame) {
     loop.execute(frame);
     Object results = frame.getObjectStatic(resultSlot);
     frame.setObjectStatic(resultSlot, null);
@@ -36,9 +36,9 @@ public class ChainStageNode extends TransformNode {
     private StatementNode setCurrentValue;
     @SuppressWarnings("FieldMayBeFinal")
     @Child
-    TransformNode stage;
+    ValueNode stage;
 
-    ChainStageRepeatingNode(StatementNode setCurrentValue, TransformNode stage, int resultSlot) {
+    ChainStageRepeatingNode(StatementNode setCurrentValue, ValueNode stage, int resultSlot) {
       this.setCurrentValue = setCurrentValue;
       this.stage = stage;
       this.resultSlot = resultSlot;
@@ -52,7 +52,7 @@ public class ChainStageNode extends TransformNode {
         return false;
       }
       Object previous = frame.getObjectStatic(resultSlot);
-      Object result = stage.executeTransform(frame);
+      Object result = stage.executeGeneric(frame);
       frame.setObjectStatic(resultSlot, ResultIterator.merge(previous, result));
       return true;
     }

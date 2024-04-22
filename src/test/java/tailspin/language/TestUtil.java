@@ -7,17 +7,15 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
 import java.util.List;
 import tailspin.language.nodes.StatementNode;
-import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.transform.ValueTransformNode;
 import tailspin.language.runtime.ResultIterator;
 
 public class TestUtil {
   public static Object evaluate(ValueNode node) {
-    return evaluate(new ValueTransformNode(node), FrameDescriptor.newBuilder().build(), List.of());
+    return evaluate(node, FrameDescriptor.newBuilder().build(), List.of());
   }
 
-  public static Object evaluate(TransformNode node, FrameDescriptor fd, List<StatementNode> definitions) {
+  public static Object evaluate(ValueNode node, FrameDescriptor fd, List<StatementNode> definitions) {
     var rootNode = new TestRootNode(fd, definitions, node);
     CallTarget callTarget = rootNode.getCallTarget();
 
@@ -30,9 +28,9 @@ public class TestUtil {
     private StatementNode[] definitions;
     @SuppressWarnings("FieldMayBeFinal")
     @Child
-    private TransformNode node;
+    private ValueNode node;
 
-    public TestRootNode(FrameDescriptor fd, List<StatementNode> definitions, TransformNode node) {
+    public TestRootNode(FrameDescriptor fd, List<StatementNode> definitions, ValueNode node) {
       super(null, fd);
       this.definitions = definitions.toArray(new StatementNode[0]);
       this.node = node;
@@ -44,11 +42,11 @@ public class TestUtil {
       for (StatementNode definition : definitions) {
         definition.executeVoid(frame);
       }
-      return node.executeTransform(frame);
+      return node.executeGeneric(frame);
     }
   }
 
-  public static class TestSource extends TransformNode {
+  public static class TestSource extends ValueNode {
     private final Object[] values;
 
     public TestSource(Object[] values) {
@@ -56,7 +54,7 @@ public class TestUtil {
     }
 
     @Override
-    public ResultIterator executeTransform(VirtualFrame frame) {
+    public ResultIterator executeGeneric(VirtualFrame frame) {
       return ResultIterator.of(values);
     }
   }

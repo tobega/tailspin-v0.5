@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
 import tailspin.language.TestUtil.TestSource;
 import tailspin.language.nodes.StatementNode;
-import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.GetNextStreamValueNode;
 import tailspin.language.nodes.value.LocalDefinitionNodeGen;
@@ -33,7 +32,7 @@ public class ChainTest {
     ValueNode expr = AddNodeGen.create(
             new IntegerLiteral(12),
             LocalReferenceNodeGen.create(cvSlot));
-    ChainStageNode chainStage = new ChainStageNode(setCurrentValue, new ValueTransformNode(expr), resultSlot);
+    ChainStageNode chainStage = new ChainStageNode(setCurrentValue, expr, resultSlot);
     TestSource source = new TestSource(new Object[]{1L, 2L, 3L});
     ChainNode chain = new ChainNode(valuesSlot, List.of(source, chainStage));
     ResultIterator result = (ResultIterator) TestUtil.evaluate(chain, fdb.build(),
@@ -57,8 +56,8 @@ public class ChainTest {
     ValueNode expr = AddNodeGen.create(
             new IntegerLiteral(12),
             LocalReferenceNodeGen.create(cvSlot));
-    ChainStageNode chainStage = new ChainStageNode(setCurrentValue, new ValueTransformNode(expr), resultSlot);
-    TransformNode source = new ValueTransformNode(new IntegerLiteral(1L));
+    ChainStageNode chainStage = new ChainStageNode(setCurrentValue, expr, resultSlot);
+    ValueNode source = new IntegerLiteral(1L);
     ChainNode chain = new ChainNode(valuesSlot, List.of(source, chainStage));
     assertEquals(13L, TestUtil.evaluate(chain, fdb.build(),
         List.of()));

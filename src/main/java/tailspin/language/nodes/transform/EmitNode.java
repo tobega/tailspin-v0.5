@@ -2,16 +2,16 @@ package tailspin.language.nodes.transform;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import tailspin.language.nodes.StatementNode;
-import tailspin.language.nodes.TransformNode;
+import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.ResultIterator;
 
 public class EmitNode extends StatementNode {
   @Child
   @SuppressWarnings("FieldMayBeFinal")
-  private TransformNode resultExpr;
+  private ValueNode resultExpr;
   private final int emitSlot;
 
-  public EmitNode(TransformNode resultExpr, int emitSlot) {
+  public EmitNode(ValueNode resultExpr, int emitSlot) {
     this.resultExpr = resultExpr;
     this.emitSlot = emitSlot;
   }
@@ -19,7 +19,7 @@ public class EmitNode extends StatementNode {
   @Override
   public void executeVoid(VirtualFrame frame) {
     Object previous = frame.getObjectStatic(emitSlot);
-    Object result = resultExpr.executeTransform(frame);
+    Object result = resultExpr.executeGeneric(frame);
     frame.setObjectStatic(emitSlot, ResultIterator.merge(previous, result));
   }
 }

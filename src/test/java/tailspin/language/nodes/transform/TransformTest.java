@@ -25,7 +25,7 @@ public class TransformTest {
         new IntegerLiteral(12),
         LocalReferenceNodeGen.create(cvSlot));
     assertEquals(46L,
-        TestUtil.evaluate(new ValueTransformNode(valueNode),
+        TestUtil.evaluate(valueNode,
             fdb.build(),
             List.of(LocalDefinitionNodeGen.create(new IntegerLiteral(34L), cvSlot))));
   }
@@ -37,6 +37,6 @@ public class TransformTest {
     ValueNode valueNode  = AddNodeGen.create(
         new IntegerLiteral(12),
         LocalReferenceNodeGen.create(cvSlot));
-    assertThrows(TypeError.class, () -> TestUtil.evaluate(new ValueTransformNode(valueNode), fdb.build(), List.of()));
+    assertThrows(TypeError.class, () -> TestUtil.evaluate(valueNode, fdb.build(), List.of()));
   }
 }
