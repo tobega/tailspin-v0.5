@@ -17,8 +17,12 @@ public abstract class AssertSingleValueNode extends ValueNode {
     return value;
   }
 
-  @Specialization
+  @Specialization(guards = "!isIterator(result)")
   public Object doSingle(Object result) {
     return result;
+  }
+
+  protected static boolean isIterator(Object result) {
+    return (result instanceof ResultIterator);
   }
 }
