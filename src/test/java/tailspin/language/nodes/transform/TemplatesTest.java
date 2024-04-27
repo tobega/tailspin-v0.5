@@ -12,11 +12,11 @@ import org.junit.jupiter.api.Test;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.literals.IntegerLiteral;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
+import tailspin.language.nodes.math.AddNodeGen;
 import tailspin.language.nodes.value.LocalReferenceNodeGen;
-import tailspin.language.nodes.value.math.AddNodeGen;
-import tailspin.language.nodes.value.math.IntegerLiteral;
 import tailspin.language.runtime.ResultIterator;
 
 public class TemplatesTest {

@@ -8,7 +8,6 @@ import com.oracle.truffle.api.nodes.RootNode;
 import java.util.List;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.runtime.ResultIterator;
 
 public class TestUtil {
   public static Object evaluate(ValueNode node) {
@@ -43,19 +42,6 @@ public class TestUtil {
         definition.executeVoid(frame);
       }
       return node.executeGeneric(frame);
-    }
-  }
-
-  public static class TestSource extends ValueNode {
-    private final Object[] values;
-
-    public TestSource(Object[] values) {
-      this.values = values;
-    }
-
-    @Override
-    public ResultIterator executeGeneric(VirtualFrame frame) {
-      return ResultIterator.of(values);
     }
   }
 }

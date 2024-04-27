@@ -9,8 +9,10 @@ import org.openjdk.jmh.annotations.Benchmark;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.literals.IntegerLiteral;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
+import tailspin.language.nodes.math.AddNodeGen;
 import tailspin.language.nodes.math.SubtractNodeGen;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
@@ -19,14 +21,13 @@ import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.nodes.value.AssertSingleValueNodeGen;
 import tailspin.language.nodes.value.LocalReferenceNodeGen;
-import tailspin.language.nodes.value.math.AddNodeGen;
-import tailspin.language.nodes.value.math.IntegerLiteral;
 import tailspin.language.runtime.Templates;
 
 /**
  * A benchmark that uses the naive implementation of the Fibonacci function.
  * The code calculates the 20th Fibonacci number.
  */
+@SuppressWarnings("unused")
 public class FibonacciBenchmark extends TruffleBenchmark {
   private static final Supplier<Integer> tailspinFibonacci = createTailspinCall();
 
