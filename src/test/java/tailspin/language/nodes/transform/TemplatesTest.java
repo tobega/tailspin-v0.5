@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
+import com.oracle.truffle.api.interop.StopIterationException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.nodes.MatcherNode;
@@ -20,7 +21,7 @@ import tailspin.language.runtime.ResultIterator;
 
 public class TemplatesTest {
   @Test
-  void simple_function() {
+  void simple_function() throws StopIterationException {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);

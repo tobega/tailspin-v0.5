@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
+import com.oracle.truffle.api.interop.StopIterationException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
@@ -20,13 +21,13 @@ import tailspin.language.runtime.ResultIterator;
 
 public class ChainTest {
   @Test
-  void expression_chain_stage() {
+  void expression_chain_stage() throws StopIterationException {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     StatementNode setCurrentValue = LocalDefinitionNodeGen.create(
-        new GetNextStreamValueNode(valuesSlot),
+        GetNextStreamValueNode.create(valuesSlot),
         cvSlot
     );
     ValueNode expr = AddNodeGen.create(
@@ -50,7 +51,7 @@ public class ChainTest {
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     StatementNode setCurrentValue = LocalDefinitionNodeGen.create(
-        new GetNextStreamValueNode(valuesSlot),
+        GetNextStreamValueNode.create(valuesSlot),
         cvSlot
     );
     ValueNode expr = AddNodeGen.create(

@@ -1,6 +1,7 @@
 package tailspin.language.runtime;
 
 import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.StopIterationException;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
@@ -59,13 +60,13 @@ public class ResultIterator implements TruffleObject {
   }
 
   @ExportMessage
-  public Object getIteratorNextElement() {
+  public Object getIteratorNextElement() throws StopIterationException {
     if (hasIteratorNextElement()) {
       Object result = elements[current];
       current++;
       return result;
     }
-    return null;
+    throw StopIterationException.create();
   }
 
   public void add(ResultIterator results) {

@@ -1,27 +1,75 @@
 package tailspin.language.nodes.value;
 
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.StopIterationException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.library.CachedLibrary;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.transform.EndOfStreamException;
-import tailspin.language.runtime.ResultIterator;
+import tailspin.language.nodes.value.GetNextStreamValueNode.StaticReferenceNode;
 
-public class GetNextStreamValueNode extends ValueNode {
-  private final int valuesSlot;
+@SuppressWarnings("unused")
+@NodeChild(value = "valuesNode", type = StaticReferenceNode.class)
+public abstract class GetNextStreamValueNode extends ValueNode {
 
-  public GetNextStreamValueNode(int valuesSlot) {
+  private int valuesSlot;
+
+  public static GetNextStreamValueNode create(int valuesSlot) {
+    GetNextStreamValueNode result = GetNextStreamValueNodeGen.create(
+        new StaticReferenceNode(valuesSlot));
+    result.setValuesSlot(valuesSlot);
+    return result;
+  }
+
+  @Specialization
+  public long doLong(VirtualFrame frame, long value) {
+    frame.setObjectStatic(valuesSlot, null);
+    return value;
+  }
+
+  @Specialization(guards = "value == null")
+  public Object doNull(VirtualFrame frame, Object value) {
+    throw new EndOfStreamException();
+  }
+
+  @Specialization(limit = "2", guards = {"value != null", "!valueInteropLibrary.isIterator(value)"})
+  public Object doSingle(VirtualFrame frame, Object value,
+      @CachedLibrary("value") InteropLibrary valueInteropLibrary) {
+    frame.setObjectStatic(valuesSlot, null);
+    return value;
+  }
+
+  @Specialization(limit = "2", guards = {"value != null", "valueInteropLibrary.isIterator(value)"})
+  public Object doIterator(VirtualFrame frame, Object value,
+      @CachedLibrary("value") InteropLibrary valueInteropLibrary) {
+    try {
+      if (!valueInteropLibrary.hasIteratorNextElement(value)) {
+        throw new EndOfStreamException();
+      }
+      return valueInteropLibrary.getIteratorNextElement(value);
+    } catch (UnsupportedMessageException | StopIterationException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void setValuesSlot(int valuesSlot) {
     this.valuesSlot = valuesSlot;
   }
 
-  @Override
-  public Object executeGeneric(VirtualFrame frame) {
-    Object value = frame.getObjectStatic(valuesSlot);
-    if (value == null) throw new EndOfStreamException();
-    if (value instanceof ResultIterator values) {
-      if (!values.hasIteratorNextElement())
-        throw new EndOfStreamException();
-      return values.getIteratorNextElement();
+  protected static class StaticReferenceNode extends ValueNode {
+
+    private final int slot;
+
+    protected StaticReferenceNode(int slot) {
+      this.slot = slot;
     }
-    frame.setObjectStatic(valuesSlot, null);
-    return value;
+
+    @Override
+    public Object executeGeneric(VirtualFrame frame) {
+      return frame.getObjectStatic(slot);
+    }
   }
 }
