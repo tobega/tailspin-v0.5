@@ -3,6 +3,7 @@ package tailspin.language.runtime;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.InvalidArrayIndexException;
 import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
@@ -74,5 +75,28 @@ public class TailspinArray implements TruffleObject {
   @SuppressWarnings("unused")
   void writeArrayElement(long index, Object value) throws UnsupportedMessageException {
     throw UnsupportedMessageException.create();
+  }
+
+  @ExportMessage
+  boolean hasMembers() {
+    return true;
+  }
+
+  @ExportMessage
+  boolean isMemberReadable(String member) {
+    return "length".equals(member);
+  }
+
+  @ExportMessage
+  Object readMember(String member) throws UnknownIdentifierException {
+    return switch(member) {
+      case "length" -> length;
+      default -> throw UnknownIdentifierException.create(member);
+    };
+  }
+
+  @ExportMessage
+  Object getMembers(@SuppressWarnings("unused") boolean includeInternal) {
+    return TailspinArray.value(new String[]{"length"}, 1);
   }
 }
