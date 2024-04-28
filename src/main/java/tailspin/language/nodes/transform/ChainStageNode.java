@@ -7,6 +7,8 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.value.GetNextStreamValueNode;
+import tailspin.language.nodes.value.LocalDefinitionNode;
 import tailspin.language.runtime.ResultIterator;
 
 public class ChainStageNode extends ValueNode {
@@ -16,9 +18,9 @@ public class ChainStageNode extends ValueNode {
   @Child
   private LoopNode loop;
 
-  public ChainStageNode(StatementNode setCurrentValue, ValueNode stage, int resultSlot) {
+  private ChainStageNode(int valuesSlot, int cvSlot, ValueNode stage, int resultSlot) {
     this.resultSlot = resultSlot;
-    loop = Truffle.getRuntime().createLoopNode(new ChainStageRepeatingNode(setCurrentValue, stage, resultSlot));
+    loop = Truffle.getRuntime().createLoopNode(new ChainStageRepeatingNode(valuesSlot, cvSlot, stage, resultSlot));
   }
 
   @Override
@@ -27,6 +29,11 @@ public class ChainStageNode extends ValueNode {
     Object results = frame.getObjectStatic(resultSlot);
     frame.setObjectStatic(resultSlot, null);
     return results;
+  }
+
+  static ChainStageNode create(int chainValuesSlot, int chainCvSlot, ValueNode stage, int chainResultSlot) {
+    return new ChainStageNode(chainValuesSlot, chainCvSlot,
+        stage, chainResultSlot);
   }
 
   private static class ChainStageRepeatingNode extends Node implements RepeatingNode {
@@ -38,8 +45,8 @@ public class ChainStageNode extends ValueNode {
     @Child
     ValueNode stage;
 
-    ChainStageRepeatingNode(StatementNode setCurrentValue, ValueNode stage, int resultSlot) {
-      this.setCurrentValue = setCurrentValue;
+    ChainStageRepeatingNode(int chainValuesSlot, int chainCvSlot, ValueNode stage, int resultSlot) {
+      this.setCurrentValue = LocalDefinitionNode.create(GetNextStreamValueNode.create(chainValuesSlot), chainCvSlot);
       this.stage = stage;
       this.resultSlot = resultSlot;
     }

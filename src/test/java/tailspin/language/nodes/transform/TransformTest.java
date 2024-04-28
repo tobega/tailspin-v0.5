@@ -13,7 +13,7 @@ import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.literals.IntegerLiteral;
 import tailspin.language.nodes.math.AddNodeGen;
 import tailspin.language.nodes.value.LocalDefinitionNodeGen;
-import tailspin.language.nodes.value.LocalReferenceNodeGen;
+import tailspin.language.nodes.value.LocalReferenceNode;
 
 public class TransformTest {
 
@@ -22,12 +22,12 @@ public class TransformTest {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     ValueNode valueNode = AddNodeGen.create(
-        new IntegerLiteral(12),
-        LocalReferenceNodeGen.create(cvSlot));
+        IntegerLiteral.create(12),
+        LocalReferenceNode.create(cvSlot));
     assertEquals(46L,
         TestUtil.evaluate(valueNode,
             fdb.build(),
-            List.of(LocalDefinitionNodeGen.create(new IntegerLiteral(34L), cvSlot))));
+            List.of(LocalDefinitionNodeGen.create(IntegerLiteral.create(34L), cvSlot))));
   }
 
   @Test
@@ -35,8 +35,8 @@ public class TransformTest {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     ValueNode valueNode  = AddNodeGen.create(
-        new IntegerLiteral(12),
-        LocalReferenceNodeGen.create(cvSlot));
+        IntegerLiteral.create(12),
+        LocalReferenceNode.create(cvSlot));
     assertThrows(TypeError.class, () -> TestUtil.evaluate(valueNode, fdb.build(), List.of()));
   }
 }

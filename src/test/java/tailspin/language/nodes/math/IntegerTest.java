@@ -14,16 +14,16 @@ public class IntegerTest {
   @Test
   public void adds_12_and_34_correctly() {
     ValueNode exprNode = AddNodeGen.create(
-        new IntegerLiteral(12),
-        new IntegerLiteral(34));
+        IntegerLiteral.create(12),
+        IntegerLiteral.create(34));
     assertEquals(46L, TestUtil.evaluate(exprNode));
   }
 
   @Test
   public void adding_1_to_int_max_does_not_overflow() {
     ValueNode exprNode = AddNodeGen.create(
-        new IntegerLiteral(Long.MAX_VALUE),
-        new IntegerLiteral(1));
+        IntegerLiteral.create(Long.MAX_VALUE),
+        IntegerLiteral.create(1));
     assertEquals(BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE), TestUtil.evaluate(exprNode));
   }
 
@@ -32,7 +32,7 @@ public class IntegerTest {
     BigInteger rndBig = new BigInteger(100, new Random());
     ValueNode exprNode = AddNodeGen.create(
         new BigIntegerLiteral(rndBig),
-        new IntegerLiteral(5)
+        IntegerLiteral.create(5)
     );
     assertEquals(rndBig.add(BigInteger.valueOf(5)), TestUtil.evaluate(exprNode));
   }

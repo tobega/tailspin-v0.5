@@ -10,6 +10,11 @@ import tailspin.language.runtime.IntegerRangeIterator;
 @NodeChild(value = "end", type = ValueNode.class)
 @NodeChild(value = "increment", type = ValueNode.class)
 public abstract class RangeLiteral extends ValueNode {
+
+  public static RangeLiteral create(ValueNode start, ValueNode end, ValueNode increment) {
+    return RangeLiteralNodeGen.create(start, end, increment);
+  }
+
   @Specialization
   public Object doLong(long start, long end, long increment) {
     return new IntegerRangeIterator(start, end, increment);

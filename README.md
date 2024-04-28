@@ -42,3 +42,8 @@ Shaving a bit more by allowing single results from a transform
 |Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |53,055 |± 0,592  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |36,966 |± 1,233  |us/op|
+
+More realistic code with a chain on the recursion. Can we optimize when parsing?
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |376,848 |± 8,904 |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,806 |± 0,459 |us/op|

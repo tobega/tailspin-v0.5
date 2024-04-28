@@ -11,8 +11,12 @@ public class ArrayLiteral extends ValueNode {
   @Children
   private final ValueNode[] contents;
 
-  public ArrayLiteral(List<ValueNode> contents) {
+  private ArrayLiteral(List<ValueNode> contents) {
     this.contents = contents.toArray(new ValueNode[0]);
+  }
+
+  public static ArrayLiteral create(List<ValueNode> contents) {
+    return new ArrayLiteral(contents);
   }
 
   @Override

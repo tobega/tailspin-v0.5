@@ -10,9 +10,16 @@ public class ChainNode extends ValueNode {
   @Children
   private final ValueNode[] stages;
 
-  public ChainNode(int valuesSlot, List<ValueNode> stages) {
+  private ChainNode(int valuesSlot, int cvSlot, int resultSlot, List<ValueNode> stages) {
     this.valuesSlot = valuesSlot;
     this.stages = stages.toArray(new ValueNode[0]);
+    for (int i = 1; i < this.stages.length; i++) {
+      this.stages[i] = ChainStageNode.create(valuesSlot, cvSlot, this.stages[i], resultSlot);
+    }
+  }
+
+  public static ChainNode create(int chainValuesSlot, int chainCvSlot, int chainResultSlot, List<ValueNode> stages) {
+    return new ChainNode(chainValuesSlot, chainCvSlot, chainResultSlot, stages);
   }
 
   @Override

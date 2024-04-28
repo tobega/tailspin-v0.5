@@ -9,8 +9,12 @@ public class BlockNode extends StatementNode {
   @Children
   private final StatementNode[] statements;
 
-  public BlockNode(List<StatementNode> statements) {
+  private BlockNode(List<StatementNode> statements) {
     this.statements = statements.toArray(new StatementNode[0]);
+  }
+
+  public static BlockNode create(List<StatementNode> statements) {
+    return new BlockNode(statements);
   }
 
 

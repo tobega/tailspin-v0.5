@@ -19,5 +19,9 @@ public abstract class LocalReferenceNode extends ValueNode {
   protected Object readObject(VirtualFrame frame) {
     return frame.getObject(this.getFrameSlot());
   }
+
+  public static LocalReferenceNode create(int frameSlot) {
+    return LocalReferenceNodeGen.create(frameSlot);
+  }
 }
 

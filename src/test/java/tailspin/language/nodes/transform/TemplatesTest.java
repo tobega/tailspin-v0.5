@@ -16,7 +16,7 @@ import tailspin.language.nodes.literals.IntegerLiteral;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
 import tailspin.language.nodes.math.AddNodeGen;
-import tailspin.language.nodes.value.LocalReferenceNodeGen;
+import tailspin.language.nodes.value.LocalReferenceNode;
 import tailspin.language.runtime.ResultIterator;
 
 public class TemplatesTest {
@@ -27,16 +27,16 @@ public class TemplatesTest {
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     ValueNode expr1 = AddNodeGen.create(
-        new IntegerLiteral(5),
-        LocalReferenceNodeGen.create(cvSlot));
-    StatementNode first = new EmitNode(expr1, resultSlot);
+        IntegerLiteral.create(5),
+        LocalReferenceNode.create(cvSlot));
+    StatementNode first = EmitNode.create(expr1, resultSlot);
 
     ValueNode expr2 = AddNodeGen.create(
-        new IntegerLiteral(7),
-        LocalReferenceNodeGen.create(cvSlot));
-    StatementNode second = new EmitNode(expr2,resultSlot);
+        IntegerLiteral.create(7),
+        LocalReferenceNode.create(cvSlot));
+    StatementNode second = EmitNode.create(expr2,resultSlot);
 
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, new BlockNode(List.of(first, second)), resultSlot);
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, BlockNode.create(List.of(first, second)), resultSlot);
     ResultIterator result = (ResultIterator) callTarget.call(3L);
     assertEquals(8L, result.getIteratorNextElement());
     assertEquals(10L, result.getIteratorNextElement());
@@ -50,11 +50,11 @@ public class TemplatesTest {
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     MatcherNode eq3 = EqualityMatcherNodeGen.create(
-        LocalReferenceNodeGen.create(cvSlot), new IntegerLiteral(3));
-    StatementNode whenEq3 = new EmitNode(new IntegerLiteral(0), resultSlot);
+        LocalReferenceNode.create(cvSlot), IntegerLiteral.create(3));
+    StatementNode whenEq3 = EmitNode.create(IntegerLiteral.create(0), resultSlot);
 
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
-    StatementNode otherwise = new EmitNode(LocalReferenceNodeGen.create(cvSlot), resultSlot);
+    StatementNode otherwise = EmitNode.create(LocalReferenceNode.create(cvSlot), resultSlot);
 
     MatchStatementNode matchStatement = new MatchStatementNode(List.of(
         new MatchTemplateNode(eq3, whenEq3),

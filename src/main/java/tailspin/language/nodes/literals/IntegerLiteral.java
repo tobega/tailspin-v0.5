@@ -7,8 +7,12 @@ import tailspin.language.nodes.ValueNode;
 public class IntegerLiteral extends ValueNode {
   private final long value;
 
-  public IntegerLiteral(long value) {
+  private IntegerLiteral(long value) {
     this.value = value;
+  }
+
+  public static IntegerLiteral create(long l) {
+    return new IntegerLiteral(l);
   }
 
   @Override

@@ -13,14 +13,15 @@ import tailspin.language.nodes.literals.IntegerLiteral;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
 import tailspin.language.nodes.math.AddNodeGen;
-import tailspin.language.nodes.math.SubtractNodeGen;
+import tailspin.language.nodes.math.SubtractNode;
+import tailspin.language.nodes.transform.ChainNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.nodes.value.AssertSingleValueNodeGen;
-import tailspin.language.nodes.value.LocalReferenceNodeGen;
+import tailspin.language.nodes.value.LocalReferenceNode;
 import tailspin.language.runtime.Templates;
 
 /**
@@ -55,29 +56,39 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
+    // templates fibonacci
     Templates templates = new Templates();
+    // when <=0> do 0 !
     MatcherNode eq0 = EqualityMatcherNodeGen.create(
-        LocalReferenceNodeGen.create(cvSlot), new IntegerLiteral(0));
-    StatementNode whenEq0 = new EmitNode(new IntegerLiteral(0), resultSlot);
+        LocalReferenceNode.create(cvSlot), IntegerLiteral.create(0));
+    StatementNode whenEq0 = EmitNode.create(IntegerLiteral.create(0), resultSlot);
 
+    // when <=1> do 1!
     MatcherNode eq1 = EqualityMatcherNodeGen.create(
-        LocalReferenceNodeGen.create(cvSlot), new IntegerLiteral(1));
-    StatementNode whenEq1 = new EmitNode(new IntegerLiteral(1), resultSlot);
+        LocalReferenceNode.create(cvSlot), IntegerLiteral.create(1));
+    StatementNode whenEq1 = EmitNode.create(IntegerLiteral.create(1), resultSlot);
 
+    // otherwise ($ - 1 -> #) + ($ - 2 -> #) !
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
-    ValueNode prevInd = SubtractNodeGen.create(LocalReferenceNodeGen.create(cvSlot), new IntegerLiteral(1));
-    ValueNode sendPrev = new SendToTemplatesNode(prevInd, templates);
-    ValueNode prevPrevInd = SubtractNodeGen.create(LocalReferenceNodeGen.create(cvSlot), new IntegerLiteral(2));
-    ValueNode sendPrevPrev = new SendToTemplatesNode(prevPrevInd, templates);
-    ValueNode sum = AddNodeGen.create(AssertSingleValueNodeGen.create(sendPrev), AssertSingleValueNodeGen.create(sendPrevPrev));
-    StatementNode otherwise = new EmitNode(sum, resultSlot);
+    SubtractNode prevInd = SubtractNode.create(LocalReferenceNode.create(cvSlot), IntegerLiteral.create(1));
+    SendToTemplatesNode sendPrev = SendToTemplatesNode.create(chainCvSlot, templates);
+    SubtractNode prevPrevInd = SubtractNode.create(LocalReferenceNode.create(cvSlot), IntegerLiteral.create(2));
+    SendToTemplatesNode sendPrevPrev = SendToTemplatesNode.create(chainCvSlot, templates);
+    ValueNode sum = AddNodeGen.create(
+        AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevInd, sendPrev))),
+        AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevPrevInd, sendPrevPrev))));
+    StatementNode otherwise = EmitNode.create(sum, resultSlot);
 
     MatchStatementNode matchStatement = new MatchStatementNode(List.of(
         new MatchTemplateNode(eq0, whenEq0),
         new MatchTemplateNode(eq1, whenEq1),
         new MatchTemplateNode(alwaysTrue, otherwise)
     ));
+    // end fibonacci
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, matchStatement, resultSlot);
     templates.setCallTarget(callTarget);

@@ -11,9 +11,13 @@ public class EmitNode extends StatementNode {
   private ValueNode resultExpr;
   private final int emitSlot;
 
-  public EmitNode(ValueNode resultExpr, int emitSlot) {
+  private EmitNode(ValueNode resultExpr, int emitSlot) {
     this.resultExpr = resultExpr;
     this.emitSlot = emitSlot;
+  }
+
+  public static EmitNode create(ValueNode resultExpr, int emitSlot) {
+    return new EmitNode(resultExpr, emitSlot);
   }
 
   @Override

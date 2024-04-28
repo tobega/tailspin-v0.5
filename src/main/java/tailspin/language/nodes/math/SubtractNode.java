@@ -25,4 +25,8 @@ public abstract class SubtractNode extends ValueNode {
   protected Object typeError(Object left, Object right) {
     throw TypeError.at(this, left, right);
   }
+
+  public static SubtractNode create(ValueNode leftNode, ValueNode rightNode) {
+    return SubtractNodeGen.create(leftNode, rightNode);
+  }
 }

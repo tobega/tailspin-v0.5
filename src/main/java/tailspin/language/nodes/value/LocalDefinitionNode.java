@@ -29,4 +29,8 @@ public abstract class LocalDefinitionNode extends StatementNode {
     frame.getFrameDescriptor().setSlotKind(frameSlot, FrameSlotKind.Object);
     frame.setObject(frameSlot, value);
   }
+
+  public static LocalDefinitionNode create(ValueNode valueNode, int frameSlot) {
+    return LocalDefinitionNodeGen.create(valueNode, frameSlot);
+  }
 }
