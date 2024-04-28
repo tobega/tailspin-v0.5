@@ -8,7 +8,8 @@ import com.oracle.truffle.api.library.ExportMessage;
 import java.util.Arrays;
 
 @ExportLibrary(InteropLibrary.class)
-public class ResultIterator implements TruffleObject {
+public class ResultIterator implements TruffleObject, ValueStream {
+  private static final int EXTRA = 10;
   private Object[] elements;
   private int end;
   private int current;
@@ -17,36 +18,41 @@ public class ResultIterator implements TruffleObject {
     elements = values;
   }
 
-  public static ResultIterator of(Object[] values) {
-    ResultIterator iterator = new ResultIterator(values);
-    iterator.end = values.length;
-    iterator.current = 0;
-    return iterator;
+  public Object[] asArray() {
+    return Arrays.copyOf(elements, end);
   }
 
   public static ResultIterator empty() {
-    ResultIterator iterator = new ResultIterator(new Object[10]);
+    ResultIterator iterator = new ResultIterator(new Object[EXTRA]);
     iterator.end = 0;
     iterator.current = 0;
     return iterator;
   }
 
   public static Object merge(Object previous, Object result) {
-    if (previous == null) return result;
-    if (result == null) return previous;
-    ResultIterator merged;
-    if (previous instanceof ResultIterator ri) {
-      merged = ri;
-    } else {
-      merged = ResultIterator.empty();
-      merged.addObject(previous);
-    }
-    if (result instanceof ResultIterator ri) {
-      merged.add(ri);
-    } else {
-      merged.addObject(result);
-    }
-    return merged;
+      if (previous == null)
+        return result;
+      if (result == null)
+        return previous;
+      ResultIterator merged;
+      if (previous instanceof ResultIterator ri) {
+        merged = ri;
+      } else {
+        merged = ResultIterator.empty();
+        if (previous instanceof ValueStream vs) {
+          merged.addArray(vs.asArray());
+        } else {
+          merged.addObject(previous);
+        }
+      }
+      if (result instanceof ResultIterator ri) {
+        merged.add(ri);
+      } else if (result instanceof ValueStream vs) {
+        merged.addArray(vs.asArray());
+      } else {
+        merged.addObject(result);
+      }
+      return merged;
   }
 
   @ExportMessage
@@ -69,20 +75,36 @@ public class ResultIterator implements TruffleObject {
     throw StopIterationException.create();
   }
 
-  public void add(ResultIterator results) {
+  private void add(ResultIterator results) {
     if (elements.length < end + results.end) {
-      elements = Arrays.copyOf(elements, end + results.end + 10);
+      elements = Arrays.copyOf(elements, end + results.end + EXTRA);
     }
     System.arraycopy(results.elements, 0, elements, end, results.end);
     end += results.end;
   }
 
-  public void addObject(Object result) {
+  private void addArray(Object[] results) {
+    if (elements.length < end + results.length) {
+      elements = Arrays.copyOf(elements, end + results.length + EXTRA);
+    }
+    System.arraycopy(results, 0, elements, end, results.length);
+    end += results.length;
+  }
+
+  private void addObject(Object result) {
     if (result instanceof ResultIterator) throw new AssertionError("Trying to add result iterator as object");
     if (end == elements.length) {
-      elements = Arrays.copyOf(elements, end + 10);
+      elements = Arrays.copyOf(elements, end + EXTRA);
     }
     elements[end] = result;
     end++;
+  }
+
+  public long getEnd() {
+    return end;
+  }
+
+  public Object[] getArray() {
+    return elements;
   }
 }
