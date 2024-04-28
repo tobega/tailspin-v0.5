@@ -8,16 +8,21 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.LongStream;
 import org.openjdk.jmh.annotations.Benchmark;
+import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.array.ArrayLiteral;
+import tailspin.language.nodes.array.ArrayReadNode;
 import tailspin.language.nodes.literals.IntegerLiteral;
 import tailspin.language.nodes.literals.RangeLiteral;
+import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.math.SubtractNode;
+import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.ChainNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.nodes.value.LocalReferenceNode;
+import tailspin.language.nodes.value.StaticReferenceNode;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.Templates;
 
@@ -70,6 +75,33 @@ public class BubblesortBenchmark extends TruffleBenchmark {
 
     // templates sortedCopy
     Templates sortedCopy = new Templates();
+    Templates sortedCopyMatchers = new Templates();
+    // @: $;
+    // $::length..2:-1
+    RangeLiteral allI = RangeLiteral.create(
+        MessageNode.create("length", LocalReferenceNode.create(cvSlot)),
+        IntegerLiteral.create(2),
+        IntegerLiteral.create(-1));
+    // -> 2..$
+    RangeLiteral allJ = RangeLiteral.create(
+        IntegerLiteral.create(2),
+        LocalReferenceNode.create(chainCvSlot),
+        IntegerLiteral.create(1)
+    );
+    // -> #
+    SendToTemplatesNode toMatchers = SendToTemplatesNode.create(chainCvSlot, sortedCopyMatchers);
+    // TODO: expect no output
+    // $@ !
+    // when <?($@($) <..~$@($ - 1)>)> do
+    // TODO: How do we access state?
+    MatcherNode whenDisordered = LessThanMatcherNode.create(false,
+        ArrayReadNode.create(StaticReferenceNode.create(9999), LocalReferenceNode.create(cvSlot)),
+        ArrayReadNode.create(StaticReferenceNode.create(9999),
+            SubtractNode.create(LocalReferenceNode.create(cvSlot), IntegerLiteral.create(1)))
+    );
+    //   def temp: $@($);
+    //   @($): $@($ - 1);
+    //   @($ - 1): $temp;
     // TODO: actually sort these
     EmitNode result = EmitNode.create(LocalReferenceNode.create(cvSlot), resultSlot);
     sortedCopy.setCallTarget(TemplatesRootNode.create(fdb.build(), cvSlot, result, resultSlot));
