@@ -9,7 +9,6 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.CachedLibrary;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.transform.EndOfStreamException;
-import tailspin.language.nodes.value.GetNextStreamValueNode.StaticReferenceNode;
 
 @SuppressWarnings("unused")
 @NodeChild(value = "valuesNode", type = StaticReferenceNode.class)
@@ -19,7 +18,7 @@ public abstract class GetNextStreamValueNode extends ValueNode {
 
   public static GetNextStreamValueNode create(int valuesSlot) {
     GetNextStreamValueNode result = GetNextStreamValueNodeGen.create(
-        new StaticReferenceNode(valuesSlot));
+        StaticReferenceNode.create(valuesSlot));
     result.setValuesSlot(valuesSlot);
     return result;
   }
@@ -57,19 +56,5 @@ public abstract class GetNextStreamValueNode extends ValueNode {
 
   private void setValuesSlot(int valuesSlot) {
     this.valuesSlot = valuesSlot;
-  }
-
-  protected static class StaticReferenceNode extends ValueNode {
-
-    private final int slot;
-
-    protected StaticReferenceNode(int slot) {
-      this.slot = slot;
-    }
-
-    @Override
-    public Object executeGeneric(VirtualFrame frame) {
-      return frame.getObjectStatic(slot);
-    }
   }
 }

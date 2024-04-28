@@ -47,3 +47,8 @@ More realistic code with a chain on the recursion. Can we optimize when parsing?
 |Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |376,848 |± 8,904 |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,806 |± 0,459 |us/op|
+
+Order restored by specialization on ChainNode
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |51,804 |± 0,650  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |36,582 |± 0,495  |us/op|
