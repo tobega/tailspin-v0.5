@@ -1,4 +1,4 @@
-package tailspin.language.nodes.math;
+package tailspin.language.nodes.numeric;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -7,8 +7,6 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.literals.BigIntegerLiteral;
-import tailspin.language.nodes.literals.IntegerLiteral;
 
 public class IntegerTest {
   @Test

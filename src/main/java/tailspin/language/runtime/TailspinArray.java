@@ -41,54 +41,54 @@ public class TailspinArray implements TruffleObject {
   }
 
   @ExportMessage
-  boolean hasArrayElements() {
+  public boolean hasArrayElements() {
     return true;
   }
 
   @ExportMessage
-  long getArraySize() {
+  public long getArraySize() {
     return length;
   }
 
   @ExportMessage
-  boolean isArrayElementReadable(long index) {
+  public boolean isArrayElementReadable(long index) {
     return index >= 0 && index < length;
   }
 
   @ExportMessage
-  Object readArrayElement(long index) throws InvalidArrayIndexException {
+  public Object readArrayElement(long index) throws InvalidArrayIndexException {
     if (!isArrayElementReadable(index)) throw InvalidArrayIndexException.create(index);
     return this.arrayElements[(int) index];
   }
 
   @ExportMessage
-  boolean isArrayElementModifiable(@SuppressWarnings("unused") long index) {
+  public boolean isArrayElementModifiable(@SuppressWarnings("unused") long index) {
     return false;
   }
 
   @ExportMessage
-  boolean isArrayElementInsertable(@SuppressWarnings("unused") long index) {
+  public boolean isArrayElementInsertable(@SuppressWarnings("unused") long index) {
     return false;
   }
 
   @ExportMessage
   @SuppressWarnings("unused")
-  void writeArrayElement(long index, Object value) throws UnsupportedMessageException {
+  public void writeArrayElement(long index, Object value) throws UnsupportedMessageException {
     throw UnsupportedMessageException.create();
   }
 
   @ExportMessage
-  boolean hasMembers() {
+  public boolean hasMembers() {
     return true;
   }
 
   @ExportMessage
-  boolean isMemberReadable(String member) {
+  public boolean isMemberReadable(String member) {
     return "length".equals(member);
   }
 
   @ExportMessage
-  Object readMember(String member) throws UnknownIdentifierException {
+  public Object readMember(String member) throws UnknownIdentifierException {
     return switch(member) {
       case "length" -> length;
       default -> throw UnknownIdentifierException.create(member);
@@ -96,7 +96,7 @@ public class TailspinArray implements TruffleObject {
   }
 
   @ExportMessage
-  Object getMembers(@SuppressWarnings("unused") boolean includeInternal) {
+  public Object getMembers(@SuppressWarnings("unused") boolean includeInternal) {
     return TailspinArray.value(new String[]{"length"}, 1);
   }
 }

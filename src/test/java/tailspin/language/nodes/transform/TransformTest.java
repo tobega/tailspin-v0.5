@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.literals.IntegerLiteral;
-import tailspin.language.nodes.math.AddNodeGen;
+import tailspin.language.nodes.numeric.IntegerLiteral;
+import tailspin.language.nodes.numeric.AddNodeGen;
 import tailspin.language.nodes.value.LocalDefinitionNodeGen;
 import tailspin.language.nodes.value.LocalReferenceNode;
 

@@ -1,4 +1,4 @@
-package tailspin.language.nodes.literals;
+package tailspin.language.nodes.numeric;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;

@@ -12,12 +12,17 @@ import org.junit.jupiter.api.Test;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.literals.IntegerLiteral;
+import tailspin.language.nodes.array.ArrayLiteral;
+import tailspin.language.nodes.numeric.IntegerLiteral;
+import tailspin.language.nodes.numeric.RangeLiteral;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
-import tailspin.language.nodes.math.AddNodeGen;
+import tailspin.language.nodes.numeric.AddNodeGen;
+import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.value.LocalReferenceNode;
 import tailspin.language.runtime.ResultIterator;
+import tailspin.language.runtime.TailspinArray;
+import tailspin.language.runtime.Templates;
 
 public class TemplatesTest {
   @Test
@@ -65,5 +70,43 @@ public class TemplatesTest {
     assertEquals(0L, callTarget.call(3L));
 
     assertEquals(5L, callTarget.call(5L));
+  }
+
+  @Test
+  void array_chain() {
+    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+
+    // [100..1:-1
+    RangeLiteral backwards = RangeLiteral.create(IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
+
+    // -> \($! 100 - $!\)
+    Templates flatMap = new Templates();
+    BlockNode flatMapBlock = BlockNode.create(List.of(
+        EmitNode.create(LocalReferenceNode.create(cvSlot), resultSlot),
+        EmitNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(cvSlot)), resultSlot)
+    ));
+    flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), cvSlot, flatMapBlock, resultSlot));
+
+    ChainNode arrayContents = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
+        backwards,
+        SendToTemplatesNode.create(chainCvSlot, flatMap)
+    ));
+    // ]
+    ArrayLiteral input = ArrayLiteral.create(List.of(arrayContents));
+
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, EmitNode.create(input, resultSlot), resultSlot);
+    TailspinArray result = (TailspinArray) callTarget.call(0);
+    assertEquals(200, result.getArraySize());
+    assertEquals(100L, result.getNative(0));
+    assertEquals(0L, result.getNative(1));
+    assertEquals(75L, result.getNative(50));
+    assertEquals(25L, result.getNative(51));
+    assertEquals(1L, result.getNative(198));
+    assertEquals(99L, result.getNative(199));
   }
 }

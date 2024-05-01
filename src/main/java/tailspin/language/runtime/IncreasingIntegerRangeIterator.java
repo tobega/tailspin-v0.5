@@ -7,12 +7,12 @@ import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
 
 @ExportLibrary(InteropLibrary.class)
-public class IntegerRangeIterator implements TruffleObject, ValueStream {
+public class IncreasingIntegerRangeIterator implements TruffleObject, ValueStream {
   private final long end;
   private final long increment;
   private long current;
 
-  public IntegerRangeIterator(long start, long end, long increment) {
+  public IncreasingIntegerRangeIterator(long start, long end, long increment) {
     this.end = end;
     this.increment = increment;
     current = start;
@@ -23,7 +23,7 @@ public class IntegerRangeIterator implements TruffleObject, ValueStream {
     Object[] result = new Object[length];
     for (int i = 0; i < length; i++) {
       result[i] = current;
-      current++;
+      current += increment;
     }
     return result;
   }

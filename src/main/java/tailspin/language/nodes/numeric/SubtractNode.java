@@ -1,4 +1,4 @@
-package tailspin.language.nodes.math;
+package tailspin.language.nodes.numeric;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Fallback;

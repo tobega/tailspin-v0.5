@@ -9,8 +9,12 @@ import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.value.LocalDefinitionNodeGen;
 
 public class TemplatesRootNode extends RootNode {
-  private final StatementNode setCurrentValue;
-  private final StatementNode statement;
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child
+  private StatementNode setCurrentValue;
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child
+  private StatementNode statement;
   private final int resultSlot;
   private TemplatesRootNode(TruffleLanguage<?> language,
       FrameDescriptor frameDescriptor, StatementNode setCurrentValue, StatementNode statement, int resultSlot) {

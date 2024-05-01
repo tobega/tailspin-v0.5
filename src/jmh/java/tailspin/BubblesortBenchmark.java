@@ -11,10 +11,10 @@ import org.openjdk.jmh.annotations.Benchmark;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.array.ArrayReadNode;
-import tailspin.language.nodes.literals.IntegerLiteral;
-import tailspin.language.nodes.literals.RangeLiteral;
+import tailspin.language.nodes.numeric.IntegerLiteral;
+import tailspin.language.nodes.numeric.RangeLiteral;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
-import tailspin.language.nodes.math.SubtractNode;
+import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.ChainNode;
@@ -35,8 +35,9 @@ public class BubblesortBenchmark extends TruffleBenchmark {
 
   @Benchmark
   public void sort_tailspin() {
-    tailspinSort.get();
+    TailspinArray sorted = tailspinSort.get();
     // TODO: verify result
+    if (sorted.getArraySize() != 200) throw new AssertionError("Out of order " + sorted.getArraySize());
   }
 
   @Benchmark
@@ -90,10 +91,16 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     );
     // -> #
     SendToTemplatesNode toMatchers = SendToTemplatesNode.create(chainCvSlot, sortedCopyMatchers);
-    // TODO: expect no output
+    ChainNode iterate = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
+        allI,
+        allJ,
+        toMatchers
+    ));
     // $@ !
+    // TODO: emit actual state
+    EmitNode emitState = EmitNode.create(LocalReferenceNode.create(cvSlot), resultSlot);
     // when <?($@($) <..~$@($ - 1)>)> do
-    // TODO: How do we access state?
+    // TODO: How do we access state? Not 9999
     MatcherNode whenDisordered = LessThanMatcherNode.create(false,
         ArrayReadNode.create(StaticReferenceNode.create(9999), LocalReferenceNode.create(cvSlot)),
         ArrayReadNode.create(StaticReferenceNode.create(9999),
@@ -102,9 +109,16 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     //   def temp: $@($);
     //   @($): $@($ - 1);
     //   @($ - 1): $temp;
-    // TODO: actually sort these
-    EmitNode result = EmitNode.create(LocalReferenceNode.create(cvSlot), resultSlot);
-    sortedCopy.setCallTarget(TemplatesRootNode.create(fdb.build(), cvSlot, result, resultSlot));
+    // TODO: replace empty block with actual functionality
+    BlockNode fakeMatchStatement = BlockNode.create(List.of());
+    sortedCopyMatchers.setCallTarget(TemplatesRootNode.create(fdb.build(), cvSlot, fakeMatchStatement, resultSlot));
+
+    BlockNode sortedCopyBlock = BlockNode.create(List.of(
+        // TODO: setState
+        EmitNode.create(iterate, resultSlot), // TODO: this should be a void block
+        emitState
+    ));
+    sortedCopy.setCallTarget(TemplatesRootNode.create(fdb.build(), cvSlot, sortedCopyBlock, resultSlot));
     // end sortedCopy
 
     // [100..1:-1

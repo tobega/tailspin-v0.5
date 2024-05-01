@@ -9,6 +9,8 @@ public class TypeError extends Error {
 
   @SuppressWarnings("unused")
   public static TypeError at(TailspinNode node, Object... values) {
-    return new TypeError("oops!");
+    StringBuilder s = new StringBuilder("oops! ");
+    for (Object value : values) s.append(value == null ? "null" : value.getClass().getName()).append('\n');
+    return new TypeError(s.toString());
   }
 }
