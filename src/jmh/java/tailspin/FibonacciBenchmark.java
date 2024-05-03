@@ -76,9 +76,9 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     // otherwise ($ - 1 -> #) + ($ - 2 -> #) !
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
     SubtractNode prevInd = SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1));
-    SendToTemplatesNode sendPrev = SendToTemplatesNode.create(chainCvSlot, templates, 1);
+    SendToTemplatesNode sendPrev = SendToTemplatesNode.create(chainCvSlot, templates, -1);
     SubtractNode prevPrevInd = SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(2));
-    SendToTemplatesNode sendPrevPrev = SendToTemplatesNode.create(chainCvSlot, templates, 1);
+    SendToTemplatesNode sendPrevPrev = SendToTemplatesNode.create(chainCvSlot, templates, -1);
     ValueNode sum = AddNodeGen.create(
         AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevInd, sendPrev))),
         AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevPrevInd, sendPrevPrev))));

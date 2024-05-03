@@ -1,6 +1,5 @@
 package tailspin.language.nodes.transform;
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Executed;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.Frame;
@@ -24,7 +23,6 @@ public abstract class SendToTemplatesNode extends ValueNode {
   private DispatchNode dispatchNode;
 
   private final Templates templates;
-  @CompilationFinal
   protected final int definitionLevel;
 
   protected SendToTemplatesNode(int chainCvSlot, Templates templates, int definitionLevel) {

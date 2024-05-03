@@ -19,6 +19,9 @@ import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.RangeLiteral;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.processor.MessageNode;
+import tailspin.language.nodes.state.FreezeNode;
+import tailspin.language.nodes.state.GetStateNode;
+import tailspin.language.nodes.state.SetStateNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.ChainNode;
 import tailspin.language.nodes.transform.EmitNode;
@@ -115,10 +118,12 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int stateSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     Templates sortedCopyMatchers = new Templates();
-    defineSortedCopyMatchers(sortedCopyMatchers);
+    defineSortedCopyMatchers(sortedCopyMatchers, stateSlot);
     // @: $;
+    SetStateNode setState = SetStateNode.create(LocalReferenceNode.create(CV_SLOT), 0, stateSlot);
     // $::length..2:-1
     RangeLiteral allI = RangeLiteral.create(
         MessageNode.create("length", LocalReferenceNode.create(CV_SLOT)),
@@ -138,11 +143,10 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         toMatchers
     ));
     // $@ !
-    // TODO: emit actual state
-    EmitNode emitState = EmitNode.create(LocalReferenceNode.create(CV_SLOT), RESULT_SLOT);
+    EmitNode emitState = EmitNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot)), RESULT_SLOT);
 
     BlockNode sortedCopyBlock = BlockNode.create(List.of(
-        // TODO: setState
+        setState,
         EmitNode.create(iterate, RESULT_SLOT), // TODO: this should be a void block
         emitState
     ));
@@ -150,7 +154,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     sortedCopy.setCallTarget(callTarget);
   }
 
-  private static void defineSortedCopyMatchers(Templates sortedCopyMatchers) {
+  private static void defineSortedCopyMatchers(Templates sortedCopyMatchers, int stateSlot) {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     // when <?($@($) <..~$@($ - 1)>)> do
     // TODO: How do we access state? Not 9999

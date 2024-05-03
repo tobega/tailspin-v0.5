@@ -1,5 +1,6 @@
 package tailspin.language.runtime;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.InvalidArrayIndexException;
 import com.oracle.truffle.api.interop.TruffleObject;
@@ -13,7 +14,7 @@ import java.util.Arrays;
 public class TailspinArray implements TruffleObject {
   private final Object[] arrayElements;
   private final long length;
-  private final boolean isMutable;
+  private boolean isMutable;
 
   private TailspinArray(Object[] arrayElements, long length, boolean isMutable) {
     this.arrayElements = arrayElements;
@@ -27,6 +28,17 @@ public class TailspinArray implements TruffleObject {
   public TailspinArray getThawed() {
     if (isMutable) return this;
     return new TailspinArray(Arrays.copyOf(arrayElements, arrayElements.length), length, true);
+  }
+
+  @TruffleBoundary
+  public void freeze() {
+    if (!isMutable) return;
+    isMutable = false;
+    for (int i = 0; i < length; i++) {
+      if (arrayElements[i] instanceof TailspinArray ta) {
+        ta.freeze();
+      }
+    }
   }
 
   public Object getNative(int i) {
