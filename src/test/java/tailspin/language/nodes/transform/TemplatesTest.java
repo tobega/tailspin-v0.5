@@ -2,6 +2,8 @@ package tailspin.language.nodes.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static tailspin.language.runtime.Templates.CV_SLOT;
+import static tailspin.language.runtime.Templates.RESULT_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -27,21 +29,19 @@ import tailspin.language.runtime.Templates;
 public class TemplatesTest {
   @Test
   void simple_function() throws StopIterationException {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
 
     ValueNode expr1 = AddNodeGen.create(
         IntegerLiteral.create(5),
-        LocalReferenceNode.create(cvSlot));
-    StatementNode first = EmitNode.create(expr1, resultSlot);
+        LocalReferenceNode.create(CV_SLOT));
+    StatementNode first = EmitNode.create(expr1, RESULT_SLOT);
 
     ValueNode expr2 = AddNodeGen.create(
         IntegerLiteral.create(7),
-        LocalReferenceNode.create(cvSlot));
-    StatementNode second = EmitNode.create(expr2,resultSlot);
+        LocalReferenceNode.create(CV_SLOT));
+    StatementNode second = EmitNode.create(expr2,RESULT_SLOT);
 
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, BlockNode.create(List.of(first, second)), resultSlot);
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(first, second)));
     ResultIterator result = (ResultIterator) callTarget.call(3L);
     assertEquals(8L, result.getIteratorNextElement());
     assertEquals(10L, result.getIteratorNextElement());
@@ -50,23 +50,21 @@ public class TemplatesTest {
 
   @Test
   void simple_matcher() {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
 
     MatcherNode eq3 = EqualityMatcherNodeGen.create(
-        LocalReferenceNode.create(cvSlot), IntegerLiteral.create(3));
-    StatementNode whenEq3 = EmitNode.create(IntegerLiteral.create(0), resultSlot);
+        LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(3));
+    StatementNode whenEq3 = EmitNode.create(IntegerLiteral.create(0), RESULT_SLOT);
 
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
-    StatementNode otherwise = EmitNode.create(LocalReferenceNode.create(cvSlot), resultSlot);
+    StatementNode otherwise = EmitNode.create(LocalReferenceNode.create(CV_SLOT), RESULT_SLOT);
 
     MatchStatementNode matchStatement = new MatchStatementNode(List.of(
         new MatchTemplateNode(eq3, whenEq3),
         new MatchTemplateNode(alwaysTrue, otherwise)
     ));
 
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, matchStatement, resultSlot);
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), matchStatement);
     assertEquals(0L, callTarget.call(3L));
 
     assertEquals(5L, callTarget.call(5L));
@@ -74,9 +72,7 @@ public class TemplatesTest {
 
   @Test
   void array_chain() {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
@@ -87,20 +83,20 @@ public class TemplatesTest {
     // -> \($! 100 - $!\)
     Templates flatMap = new Templates();
     BlockNode flatMapBlock = BlockNode.create(List.of(
-        EmitNode.create(LocalReferenceNode.create(cvSlot), resultSlot),
-        EmitNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(cvSlot)), resultSlot)
+        EmitNode.create(LocalReferenceNode.create(CV_SLOT), RESULT_SLOT),
+        EmitNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(CV_SLOT)), RESULT_SLOT)
     ));
-    flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), cvSlot, flatMapBlock, resultSlot));
+    flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), flatMapBlock));
 
     ChainNode arrayContents = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
         backwards,
-        SendToTemplatesNode.create(chainCvSlot, flatMap)
+        SendToTemplatesNode.create(chainCvSlot, flatMap, 0)
     ));
     // ]
     ArrayLiteral input = ArrayLiteral.create(List.of(arrayContents));
 
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, EmitNode.create(input, resultSlot), resultSlot);
-    TailspinArray result = (TailspinArray) callTarget.call(0);
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), EmitNode.create(input, RESULT_SLOT));
+    TailspinArray result = (TailspinArray) callTarget.call((Object) null);
     assertEquals(200, result.getArraySize());
     assertEquals(100L, result.getNative(0));
     assertEquals(0L, result.getNative(1));

@@ -1,5 +1,8 @@
 package tailspin;
 
+import static tailspin.language.runtime.Templates.CV_SLOT;
+import static tailspin.language.runtime.Templates.RESULT_SLOT;
+
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
@@ -53,9 +56,7 @@ public class FibonacciBenchmark extends TruffleBenchmark {
   }
 
   private static Supplier<Integer> createTailspinCall() {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
@@ -64,24 +65,24 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     Templates templates = new Templates();
     // when <=0> do 0 !
     MatcherNode eq0 = EqualityMatcherNodeGen.create(
-        LocalReferenceNode.create(cvSlot), IntegerLiteral.create(0));
-    StatementNode whenEq0 = EmitNode.create(IntegerLiteral.create(0), resultSlot);
+        LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(0));
+    StatementNode whenEq0 = EmitNode.create(IntegerLiteral.create(0), RESULT_SLOT);
 
     // when <=1> do 1!
     MatcherNode eq1 = EqualityMatcherNodeGen.create(
-        LocalReferenceNode.create(cvSlot), IntegerLiteral.create(1));
-    StatementNode whenEq1 = EmitNode.create(IntegerLiteral.create(1), resultSlot);
+        LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1));
+    StatementNode whenEq1 = EmitNode.create(IntegerLiteral.create(1), RESULT_SLOT);
 
     // otherwise ($ - 1 -> #) + ($ - 2 -> #) !
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
-    SubtractNode prevInd = SubtractNode.create(LocalReferenceNode.create(cvSlot), IntegerLiteral.create(1));
-    SendToTemplatesNode sendPrev = SendToTemplatesNode.create(chainCvSlot, templates);
-    SubtractNode prevPrevInd = SubtractNode.create(LocalReferenceNode.create(cvSlot), IntegerLiteral.create(2));
-    SendToTemplatesNode sendPrevPrev = SendToTemplatesNode.create(chainCvSlot, templates);
+    SubtractNode prevInd = SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1));
+    SendToTemplatesNode sendPrev = SendToTemplatesNode.create(chainCvSlot, templates, 1);
+    SubtractNode prevPrevInd = SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(2));
+    SendToTemplatesNode sendPrevPrev = SendToTemplatesNode.create(chainCvSlot, templates, 1);
     ValueNode sum = AddNodeGen.create(
         AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevInd, sendPrev))),
         AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevPrevInd, sendPrevPrev))));
-    StatementNode otherwise = EmitNode.create(sum, resultSlot);
+    StatementNode otherwise = EmitNode.create(sum, RESULT_SLOT);
 
     MatchStatementNode matchStatement = new MatchStatementNode(List.of(
         new MatchTemplateNode(eq0, whenEq0),
@@ -90,10 +91,10 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     ));
     // end fibonacci
 
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), cvSlot, matchStatement, resultSlot);
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), matchStatement);
     templates.setCallTarget(callTarget);
     return () -> {
-      Long results = (Long) callTarget.call(20L);
+      Long results = (Long) callTarget.call(20L, null);
       return results.intValue();
     };
   }

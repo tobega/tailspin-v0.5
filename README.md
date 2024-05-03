@@ -52,3 +52,9 @@ Order restored by specialization on ChainNode
 |Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |51,804 |± 0,650  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |36,582 |± 0,495  |us/op|
+
+Introduced a way to pass the defining scope. There is a slight cost for accessing the parent scope (BTW, @ExplodeLoop was 100x faster)
+If no parent scope needs to be accessed, it can be optimized away
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |59,101 |± 1,034  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |36,857 |± 0,384  |us/op|
