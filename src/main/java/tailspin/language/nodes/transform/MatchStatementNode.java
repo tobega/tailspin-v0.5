@@ -9,7 +9,7 @@ public class MatchStatementNode extends StatementNode {
   @Children
   private final MatchTemplateNode[] matchTemplates;
 
-  public MatchStatementNode(List<MatchTemplateNode> matchTemplates) {
+  private MatchStatementNode(List<MatchTemplateNode> matchTemplates) {
     this.matchTemplates = matchTemplates.toArray(new MatchTemplateNode[0]);
   }
 
@@ -19,5 +19,9 @@ public class MatchStatementNode extends StatementNode {
     for (MatchTemplateNode matchTemplate : matchTemplates) {
       if (matchTemplate.executeMatcher(frame)) return;
     }
+  }
+
+  public static MatchStatementNode create(List<MatchTemplateNode> matchTemplates) {
+    return new MatchStatementNode(matchTemplates);
   }
 }

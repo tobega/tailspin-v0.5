@@ -59,8 +59,10 @@ public abstract class ChainStageNode extends ValueNode {
   @SuppressWarnings("unused")
   public Object doSingle(VirtualFrame frame, Object value,
       @CachedLibrary("value") InteropLibrary valueInteropLibrary) {
+    frame.getFrameDescriptor().setSlotKind(cvSlot, FrameSlotKind.Object);
+    frame.setObject(cvSlot, value);
     frame.setObjectStatic(valuesSlot, null);
-    return value;
+    return stage.executeGeneric(frame);
   }
 
   @Fallback

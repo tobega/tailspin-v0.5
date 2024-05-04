@@ -84,10 +84,10 @@ public class FibonacciBenchmark extends TruffleBenchmark {
         AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevPrevInd, sendPrevPrev))));
     StatementNode otherwise = EmitNode.create(sum, RESULT_SLOT);
 
-    MatchStatementNode matchStatement = new MatchStatementNode(List.of(
-        new MatchTemplateNode(eq0, whenEq0),
-        new MatchTemplateNode(eq1, whenEq1),
-        new MatchTemplateNode(alwaysTrue, otherwise)
+    MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
+        MatchTemplateNode.create(eq0, whenEq0),
+        MatchTemplateNode.create(eq1, whenEq1),
+        MatchTemplateNode.create(alwaysTrue, otherwise)
     ));
     // end fibonacci
 

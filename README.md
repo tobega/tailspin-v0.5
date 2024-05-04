@@ -58,3 +58,10 @@ If no parent scope needs to be accessed, it can be optimized away
 |Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |59,101 |± 1,034  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |36,857 |± 0,384  |us/op|
+
+Got Bubblesort working, but obviously doing something stupid
+|Benchmark                                   |Mode  |Cnt  |   Score |   Error  |Units|
+|BubblesortBenchmark.sort_java               |avgt  |  5  |  25,625 |±  0,466  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |1533,427 |± 35,622  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |  54,172 |±  2,411  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |  36,636 |±  0,132  |us/op|

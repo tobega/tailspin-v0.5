@@ -9,4 +9,8 @@ public class AlwaysTrueMatcherNode extends MatcherNode {
   public boolean executeMatcher(VirtualFrame frame) {
     return true;
   }
+
+  public static AlwaysTrueMatcherNode create() {
+    return new AlwaysTrueMatcherNode();
+  }
 }

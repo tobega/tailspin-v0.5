@@ -59,9 +59,9 @@ public class TemplatesTest {
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
     StatementNode otherwise = EmitNode.create(LocalReferenceNode.create(CV_SLOT), RESULT_SLOT);
 
-    MatchStatementNode matchStatement = new MatchStatementNode(List.of(
-        new MatchTemplateNode(eq3, whenEq3),
-        new MatchTemplateNode(alwaysTrue, otherwise)
+    MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
+        MatchTemplateNode.create(eq3, whenEq3),
+        MatchTemplateNode.create(alwaysTrue, otherwise)
     ));
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), matchStatement);

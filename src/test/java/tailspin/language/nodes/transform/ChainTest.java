@@ -10,9 +10,11 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.array.ArrayLiteral;
+import tailspin.language.nodes.array.ArrayReadNode;
+import tailspin.language.nodes.numeric.AddNodeGen;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.RangeLiteral;
-import tailspin.language.nodes.numeric.AddNodeGen;
 import tailspin.language.nodes.value.LocalReferenceNode;
 import tailspin.language.runtime.ResultIterator;
 
@@ -37,7 +39,7 @@ public class ChainTest {
   }
 
   @Test
-  void expression_chain_stage_single_values() {
+  void expression_chain_stage_single_value() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
@@ -48,6 +50,19 @@ public class ChainTest {
     ValueNode source = IntegerLiteral.create(1L);
     ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(source, expr));
     assertEquals(13L, TestUtil.evaluate(chain, fdb.build(),
+        List.of()));
+  }
+
+  @Test
+  void expression_chain_stage_single_array() {
+    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    ValueNode source = ArrayLiteral.create(List.of(IntegerLiteral.create(12)));
+    ValueNode expr = ArrayReadNode.create(LocalReferenceNode.create(cvSlot), IntegerLiteral.create(1));
+    ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(source, expr));
+    assertEquals(12L, TestUtil.evaluate(chain, fdb.build(),
         List.of()));
   }
 }

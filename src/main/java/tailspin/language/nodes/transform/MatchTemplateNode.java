@@ -13,7 +13,7 @@ public class MatchTemplateNode extends TailspinNode {
   @SuppressWarnings("FieldMayBeFinal")
   private StatementNode body;
 
-  public MatchTemplateNode(MatcherNode matcher, StatementNode body) {
+  private MatchTemplateNode(MatcherNode matcher, StatementNode body) {
     this.matcher = matcher;
     this.body = body;
   }
@@ -24,5 +24,9 @@ public class MatchTemplateNode extends TailspinNode {
       return true;
     }
     return false;
+  }
+
+  public static MatchTemplateNode create(MatcherNode matcher, StatementNode body) {
+    return new MatchTemplateNode(matcher, body);
   }
 }

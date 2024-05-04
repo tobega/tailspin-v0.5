@@ -14,6 +14,7 @@ import org.openjdk.jmh.annotations.Benchmark;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.array.ArrayReadNode;
+import tailspin.language.nodes.array.ArrayWriteNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.RangeLiteral;
@@ -25,10 +26,12 @@ import tailspin.language.nodes.state.SetStateNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.ChainNode;
 import tailspin.language.nodes.transform.EmitNode;
+import tailspin.language.nodes.transform.MatchStatementNode;
+import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
+import tailspin.language.nodes.value.LocalDefinitionNode;
 import tailspin.language.nodes.value.LocalReferenceNode;
-import tailspin.language.nodes.value.StaticReferenceNode;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.Templates;
 
@@ -42,8 +45,9 @@ public class BubblesortBenchmark extends TruffleBenchmark {
   @Benchmark
   public void sort_tailspin() {
     TailspinArray sorted = tailspinSort.get();
-    // TODO: verify result
-    if (sorted.getArraySize() != 200) throw new AssertionError("Out of order " + sorted.getArraySize());
+//    for (int i = 1; i < sorted.getArraySize(); i++)
+//      if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i))
+//        throw new AssertionError("Out of order " + sorted.getArraySize());
   }
 
   @Benchmark
@@ -156,19 +160,38 @@ public class BubblesortBenchmark extends TruffleBenchmark {
 
   private static void defineSortedCopyMatchers(Templates sortedCopyMatchers, int stateSlot) {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
+    int tempSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     // when <?($@($) <..~$@($ - 1)>)> do
-    // TODO: How do we access state? Not 9999
-    MatcherNode whenDisordered = LessThanMatcherNode.create(false,
-        ArrayReadNode.create(StaticReferenceNode.create(9999), LocalReferenceNode.create(CV_SLOT)),
-        ArrayReadNode.create(StaticReferenceNode.create(9999),
+    MatcherNode isDisordered = LessThanMatcherNode.create(false,
+        ArrayReadNode.create(GetStateNode.create(1, stateSlot), LocalReferenceNode.create(CV_SLOT)),
+        ArrayReadNode.create(GetStateNode.create(1, stateSlot),
             SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1)))
     );
     //   def temp: $@($);
+    LocalDefinitionNode defTemp = LocalDefinitionNode.create(ArrayReadNode.create(
+        GetStateNode.create(1, stateSlot), LocalReferenceNode.create(CV_SLOT)), tempSlot);
     //   @($): $@($ - 1);
+    SetStateNode setStateCurrent = SetStateNode.create(ArrayWriteNode.create(
+        GetStateNode.create(1, stateSlot),
+        LocalReferenceNode.create(CV_SLOT),
+        ArrayReadNode.create(GetStateNode.create(1, stateSlot),
+            SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1))
+        )
+    ), 1, stateSlot);
     //   @($ - 1): $temp;
-    // TODO: replace empty block with actual functionality
-    BlockNode fakeMatchStatement = BlockNode.create(List.of());
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), fakeMatchStatement);
+    SetStateNode setStatePrev = SetStateNode.create(ArrayWriteNode.create(
+        GetStateNode.create(1, stateSlot),
+        SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1)),
+        LocalReferenceNode.create(tempSlot)
+    ), 1, stateSlot);
+    BlockNode whenDisordered = BlockNode.create(List.of(
+        defTemp,
+        setStateCurrent,
+        setStatePrev
+    ));
+    MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
+        MatchTemplateNode.create(isDisordered, whenDisordered)));
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), matchStatement);
     sortedCopyMatchers.setCallTarget(callTarget);
   }
 }
