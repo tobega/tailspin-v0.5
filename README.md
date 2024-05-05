@@ -72,3 +72,7 @@ A little less stupid
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |1003,520 |± 122,934  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |  54,288 |±   2,761  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |  36,961 |±   0,360  |us/op|
+
+Notes trying to find bottleneck: The matcher doesn't matter much, nor does the mutation of state.
+SendToTemplates itself takes ~400 usec, so ~500 seems down to the iteration in chain stages.
+Allocating bigger chunks to ResultIterator didn't matter

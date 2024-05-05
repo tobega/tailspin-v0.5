@@ -1,6 +1,5 @@
 package tailspin.language.runtime;
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.InvalidArrayIndexException;
 import com.oracle.truffle.api.interop.TruffleObject;
@@ -30,7 +29,6 @@ public class TailspinArray implements TruffleObject {
     return new TailspinArray(Arrays.copyOf(arrayElements, arrayElements.length), length, true);
   }
 
-  @TruffleBoundary
   public void freeze() {
     if (!isMutable) return;
     isMutable = false;

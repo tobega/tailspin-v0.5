@@ -45,9 +45,9 @@ public class BubblesortBenchmark extends TruffleBenchmark {
   @Benchmark
   public void sort_tailspin() {
     TailspinArray sorted = tailspinSort.get();
-//    for (int i = 1; i < sorted.getArraySize(); i++)
-//      if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i))
-//        throw new AssertionError("Out of order " + sorted.getArraySize());
+    for (int i = 1; i < sorted.getArraySize(); i++)
+      if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i))
+        throw new AssertionError("Out of order " + sorted.getArraySize());
   }
 
   @Benchmark
@@ -151,7 +151,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
 
     BlockNode sortedCopyBlock = BlockNode.create(List.of(
         setState,
-        EmitNode.create(iterate, RESULT_SLOT), // TODO: this should be a void block
+        EmitNode.create(iterate, RESULT_SLOT),
         emitState
     ));
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), sortedCopyBlock);
