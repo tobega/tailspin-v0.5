@@ -65,3 +65,10 @@ Got Bubblesort working, but obviously doing something stupid
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |1533,427 |± 35,622  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |  54,172 |±  2,411  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |  36,636 |±  0,132  |us/op|
+
+A little less stupid
+|Benchmark                                   |Mode  |Cnt  |   Score |    Error  |Units|
+|BubblesortBenchmark.sort_java               |avgt  |  5  |  25,862 |±   0,894  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |1003,520 |± 122,934  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |  54,288 |±   2,761  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |  36,961 |±   0,360  |us/op|

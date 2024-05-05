@@ -18,10 +18,6 @@ public class ResultIterator implements TruffleObject, ValueStream {
     elements = values;
   }
 
-  public Object[] asArray() {
-    return Arrays.copyOf(elements, end);
-  }
-
   public static ResultIterator empty() {
     ResultIterator iterator = new ResultIterator(new Object[EXTRA]);
     iterator.end = 0;
@@ -39,19 +35,9 @@ public class ResultIterator implements TruffleObject, ValueStream {
         merged = ri;
       } else {
         merged = ResultIterator.empty();
-        if (previous instanceof ValueStream vs) {
-          merged.addArray(vs.asArray());
-        } else {
-          merged.addObject(previous);
-        }
+        merged.addObject(previous);
       }
-      if (result instanceof ResultIterator ri) {
-        merged.add(ri);
-      } else if (result instanceof ValueStream vs) {
-        merged.addArray(vs.asArray());
-      } else {
-        merged.addObject(result);
-      }
+      merged.addObject(result);
       return merged;
   }
 
@@ -60,39 +46,29 @@ public class ResultIterator implements TruffleObject, ValueStream {
     return true;
   }
 
+  @Override
   @ExportMessage
   public boolean hasIteratorNextElement() {
+    while (current < end && elements[current] instanceof ValueStream vs && !vs.hasIteratorNextElement())
+      current++;
     return current < end;
   }
 
+  @Override
   @ExportMessage
   public Object getIteratorNextElement() throws StopIterationException {
-    if (hasIteratorNextElement()) {
-      Object result = elements[current];
-      current++;
-      return result;
+    if (!hasIteratorNextElement()) {
+      throw StopIterationException.create();
     }
-    throw StopIterationException.create();
-  }
-
-  private void add(ResultIterator results) {
-    if (elements.length < end + results.end) {
-      elements = Arrays.copyOf(elements, end + results.end + EXTRA);
+    if (elements[current] instanceof ValueStream vs) {
+      return vs.getIteratorNextElement();
     }
-    System.arraycopy(results.elements, 0, elements, end, results.end);
-    end += results.end;
-  }
-
-  private void addArray(Object[] results) {
-    if (elements.length < end + results.length) {
-      elements = Arrays.copyOf(elements, end + results.length + EXTRA);
-    }
-    System.arraycopy(results, 0, elements, end, results.length);
-    end += results.length;
+    Object result = elements[current];
+    current++;
+    return result;
   }
 
   private void addObject(Object result) {
-    if (result instanceof ResultIterator) throw new AssertionError("Trying to add result iterator as object");
     if (end == elements.length) {
       elements = Arrays.copyOf(elements, end + EXTRA);
     }
@@ -100,11 +76,28 @@ public class ResultIterator implements TruffleObject, ValueStream {
     end++;
   }
 
-  public long getEnd() {
-    return end;
+  @Override
+  public int getValueCount() {
+    int count = 0;
+    for (int i = 0; i < end; i++) {
+      if (elements[i] instanceof ValueStream vs) {
+        count += vs.getValueCount();
+      } else {
+        count++;
+      }
+    }
+    return count;
   }
 
-  public Object[] getArray() {
-    return elements;
+  public Object[] getValueArray() {
+    Object[] result = new Object[getValueCount()];
+    for (int i = 0; hasIteratorNextElement(); i++) {
+      try {
+        result[i] = getIteratorNextElement();
+      } catch (StopIterationException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return result;
   }
 }

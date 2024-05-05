@@ -22,8 +22,8 @@ public class TailspinArray implements TruffleObject {
     this.isMutable = isMutable;
   }
 
-  public static TailspinArray value(Object[] arrayElements, long length) {
-    return new TailspinArray(arrayElements, length, false);
+  public static TailspinArray value(Object[] arrayElements) {
+    return new TailspinArray(arrayElements, arrayElements.length, false);
   }
   public TailspinArray getThawed() {
     if (isMutable) return this;
@@ -109,6 +109,6 @@ public class TailspinArray implements TruffleObject {
 
   @ExportMessage
   public Object getMembers(@SuppressWarnings("unused") boolean includeInternal) {
-    return TailspinArray.value(new String[]{"length"}, 1);
+    return TailspinArray.value(new String[]{"length"});
   }
 }

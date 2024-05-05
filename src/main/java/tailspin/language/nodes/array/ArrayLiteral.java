@@ -26,6 +26,6 @@ public class ArrayLiteral extends ValueNode {
     for (ValueNode content : this.contents) {
       collector = (ResultIterator) ResultIterator.merge(collector, content.executeGeneric(frame));
     }
-    return TailspinArray.value(collector.getArray(), collector.getEnd());
+    return TailspinArray.value(collector.getValueArray());
   }
 }

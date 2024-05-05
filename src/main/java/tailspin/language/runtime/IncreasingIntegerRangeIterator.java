@@ -18,14 +18,9 @@ public class IncreasingIntegerRangeIterator implements TruffleObject, ValueStrea
     current = start;
   }
 
-  public Object[] asArray() {
-    int length = (int) ((end + increment - current) / increment);
-    Object[] result = new Object[length];
-    for (int i = 0; i < length; i++) {
-      result[i] = current;
-      current += increment;
-    }
-    return result;
+  @Override
+  public int getValueCount() {
+    return (int) ((end + increment - current) / increment);
   }
 
   @ExportMessage
@@ -33,11 +28,13 @@ public class IncreasingIntegerRangeIterator implements TruffleObject, ValueStrea
     return true;
   }
 
+  @Override
   @ExportMessage
   public boolean hasIteratorNextElement() {
     return current <= end;
   }
 
+  @Override
   @ExportMessage
   public Object getIteratorNextElement() throws StopIterationException {
     if (hasIteratorNextElement()) {
