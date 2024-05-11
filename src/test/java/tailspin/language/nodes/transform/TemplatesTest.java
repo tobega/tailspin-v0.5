@@ -3,7 +3,7 @@ package tailspin.language.nodes.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static tailspin.language.runtime.Templates.CV_SLOT;
-import static tailspin.language.runtime.Templates.RESULT_SLOT;
+import static tailspin.language.runtime.Templates.EMIT_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -34,12 +34,12 @@ public class TemplatesTest {
     ValueNode expr1 = AddNodeGen.create(
         IntegerLiteral.create(5),
         LocalReferenceNode.create(CV_SLOT));
-    StatementNode first = EmitNode.create(expr1, RESULT_SLOT);
+    StatementNode first = EmitNode.create(expr1, EMIT_SLOT);
 
     ValueNode expr2 = AddNodeGen.create(
         IntegerLiteral.create(7),
         LocalReferenceNode.create(CV_SLOT));
-    StatementNode second = EmitNode.create(expr2,RESULT_SLOT);
+    StatementNode second = EmitNode.create(expr2, EMIT_SLOT);
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(first, second)));
     ResultIterator result = (ResultIterator) callTarget.call(3L);
@@ -54,10 +54,10 @@ public class TemplatesTest {
 
     MatcherNode eq3 = EqualityMatcherNodeGen.create(
         LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(3));
-    StatementNode whenEq3 = EmitNode.create(IntegerLiteral.create(0), RESULT_SLOT);
+    StatementNode whenEq3 = EmitNode.create(IntegerLiteral.create(0), EMIT_SLOT);
 
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
-    StatementNode otherwise = EmitNode.create(LocalReferenceNode.create(CV_SLOT), RESULT_SLOT);
+    StatementNode otherwise = EmitNode.create(LocalReferenceNode.create(CV_SLOT), EMIT_SLOT);
 
     MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
         MatchTemplateNode.create(eq3, whenEq3),
@@ -83,8 +83,9 @@ public class TemplatesTest {
     // -> \($! 100 - $!\)
     Templates flatMap = new Templates();
     BlockNode flatMapBlock = BlockNode.create(List.of(
-        EmitNode.create(LocalReferenceNode.create(CV_SLOT), RESULT_SLOT),
-        EmitNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(CV_SLOT)), RESULT_SLOT)
+        EmitNode.create(LocalReferenceNode.create(CV_SLOT), EMIT_SLOT),
+        EmitNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(CV_SLOT)),
+            EMIT_SLOT)
     ));
     flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), flatMapBlock));
 
@@ -95,7 +96,7 @@ public class TemplatesTest {
     // ]
     ArrayLiteral input = ArrayLiteral.create(List.of(arrayContents));
 
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), EmitNode.create(input, RESULT_SLOT));
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), EmitNode.create(input, EMIT_SLOT));
     TailspinArray result = (TailspinArray) callTarget.call((Object) null);
     assertEquals(200, result.getArraySize());
     assertEquals(100L, result.getNative(0));

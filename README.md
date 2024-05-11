@@ -76,3 +76,11 @@ A little less stupid
 Notes trying to find bottleneck: The matcher doesn't matter much, nor does the mutation of state.
 SendToTemplates itself takes ~400 usec, so ~500 seems down to the iteration in chain stages.
 Allocating bigger chunks to ResultIterator didn't matter
+
+Added a differently coded bubblesort with more templates calls and more state access
+|Benchmark                                   |Mode  |Cnt  |  Score |   Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |935,129 |± 12,307  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  | 25,562 |±  0,402  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |979,289 |± 78,278  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 56,546 |±  1,739  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,977 |±  1,192  |us/op|

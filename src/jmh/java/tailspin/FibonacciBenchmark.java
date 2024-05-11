@@ -1,7 +1,7 @@
 package tailspin;
 
 import static tailspin.language.runtime.Templates.CV_SLOT;
-import static tailspin.language.runtime.Templates.RESULT_SLOT;
+import static tailspin.language.runtime.Templates.EMIT_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -66,12 +66,12 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     // when <=0> do 0 !
     MatcherNode eq0 = EqualityMatcherNodeGen.create(
         LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(0));
-    StatementNode whenEq0 = EmitNode.create(IntegerLiteral.create(0), RESULT_SLOT);
+    StatementNode whenEq0 = EmitNode.create(IntegerLiteral.create(0), EMIT_SLOT);
 
     // when <=1> do 1!
     MatcherNode eq1 = EqualityMatcherNodeGen.create(
         LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1));
-    StatementNode whenEq1 = EmitNode.create(IntegerLiteral.create(1), RESULT_SLOT);
+    StatementNode whenEq1 = EmitNode.create(IntegerLiteral.create(1), EMIT_SLOT);
 
     // otherwise ($ - 1 -> #) + ($ - 2 -> #) !
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
@@ -82,7 +82,7 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     ValueNode sum = AddNodeGen.create(
         AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevInd, sendPrev))),
         AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevPrevInd, sendPrevPrev))));
-    StatementNode otherwise = EmitNode.create(sum, RESULT_SLOT);
+    StatementNode otherwise = EmitNode.create(sum, EMIT_SLOT);
 
     MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
         MatchTemplateNode.create(eq0, whenEq0),

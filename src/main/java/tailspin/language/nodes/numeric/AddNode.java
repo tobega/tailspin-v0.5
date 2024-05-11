@@ -25,4 +25,8 @@ public abstract class AddNode extends ValueNode {
   protected Object typeError(Object left, Object right) {
     throw TypeError.at(this, left, right);
   }
+
+  public static AddNode create(ValueNode leftNode, ValueNode rightNode) {
+    return AddNodeGen.create(leftNode, rightNode);
+  }
 }

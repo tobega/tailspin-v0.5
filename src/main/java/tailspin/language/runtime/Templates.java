@@ -6,12 +6,12 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 
 public class Templates {
   public static final int CV_SLOT = 0;
-  public static final int RESULT_SLOT = 1;
+  public static final int EMIT_SLOT = 1;
 
   public static FrameDescriptor.Builder createBasicFdb() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     assertSlot(CV_SLOT, fdb.addSlot(FrameSlotKind.Illegal, null, null));
-    assertSlot(RESULT_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
+    assertSlot(EMIT_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
     return fdb;
   }
 

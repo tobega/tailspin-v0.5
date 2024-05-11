@@ -1,7 +1,7 @@
 package tailspin.language.nodes.transform;
 
 import static tailspin.language.runtime.Templates.CV_SLOT;
-import static tailspin.language.runtime.Templates.RESULT_SLOT;
+import static tailspin.language.runtime.Templates.EMIT_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.TruffleLanguage;
@@ -29,8 +29,8 @@ public class TemplatesRootNode extends RootNode {
   public Object execute(VirtualFrame frame) {
     setCurrentValue.executeVoid(frame);
     statement.executeVoid(frame);
-    Object results = frame.getObjectStatic(RESULT_SLOT);
-    frame.setObjectStatic(RESULT_SLOT, null);
+    Object results = frame.getObjectStatic(EMIT_SLOT);
+    frame.setObjectStatic(EMIT_SLOT, null);
     return results;
   }
 
