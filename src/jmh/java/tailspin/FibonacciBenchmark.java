@@ -1,7 +1,6 @@
 package tailspin;
 
 import static tailspin.language.runtime.Templates.CV_SLOT;
-import static tailspin.language.runtime.Templates.EMIT_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -12,10 +11,10 @@ import org.openjdk.jmh.annotations.Benchmark;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
-import tailspin.language.nodes.numeric.AddNodeGen;
+import tailspin.language.nodes.numeric.AddNode;
+import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.transform.ChainNode;
 import tailspin.language.nodes.transform.EmitNode;
@@ -66,12 +65,12 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     // when <=0> do 0 !
     MatcherNode eq0 = EqualityMatcherNodeGen.create(
         LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(0));
-    StatementNode whenEq0 = EmitNode.create(IntegerLiteral.create(0), EMIT_SLOT);
+    StatementNode whenEq0 = EmitNode.create(IntegerLiteral.create(0));
 
     // when <=1> do 1!
     MatcherNode eq1 = EqualityMatcherNodeGen.create(
         LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1));
-    StatementNode whenEq1 = EmitNode.create(IntegerLiteral.create(1), EMIT_SLOT);
+    StatementNode whenEq1 = EmitNode.create(IntegerLiteral.create(1));
 
     // otherwise ($ - 1 -> #) + ($ - 2 -> #) !
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
@@ -79,10 +78,10 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     SendToTemplatesNode sendPrev = SendToTemplatesNode.create(chainCvSlot, templates, -1);
     SubtractNode prevPrevInd = SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(2));
     SendToTemplatesNode sendPrevPrev = SendToTemplatesNode.create(chainCvSlot, templates, -1);
-    ValueNode sum = AddNodeGen.create(
+    ValueNode sum = AddNode.create(
         AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevInd, sendPrev))),
         AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevPrevInd, sendPrevPrev))));
-    StatementNode otherwise = EmitNode.create(sum, EMIT_SLOT);
+    StatementNode otherwise = EmitNode.create(sum);
 
     MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
         MatchTemplateNode.create(eq0, whenEq0),

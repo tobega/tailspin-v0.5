@@ -84,3 +84,11 @@ Added a differently coded bubblesort with more templates calls and more state ac
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |979,289 |± 78,278  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 56,546 |±  1,739  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,977 |±  1,192  |us/op|
+
+Removing cached interop libraries in favour of TruffleBoundary and java code did something good
+|Benchmark                                   |Mode  |Cnt  |  Score |   Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |368,516 |±  2,784  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  | 25,897 |±  0,574  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |932,141 |± 12,395  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 53,774 |±  0,606  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,687 |±  0,509  |us/op|

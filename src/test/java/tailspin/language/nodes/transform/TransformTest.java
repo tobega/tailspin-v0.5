@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
-import tailspin.language.nodes.numeric.AddNodeGen;
 import tailspin.language.nodes.value.LocalDefinitionNodeGen;
 import tailspin.language.nodes.value.LocalReferenceNode;
 
@@ -21,7 +21,7 @@ public class TransformTest {
   void adds_current_value() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    ValueNode valueNode = AddNodeGen.create(
+    ValueNode valueNode = AddNode.create(
         IntegerLiteral.create(12),
         LocalReferenceNode.create(cvSlot));
     assertEquals(46L,
@@ -34,7 +34,7 @@ public class TransformTest {
   void reference_null_current_value_blows_up() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    ValueNode valueNode  = AddNodeGen.create(
+    ValueNode valueNode  = AddNode.create(
         IntegerLiteral.create(12),
         LocalReferenceNode.create(cvSlot));
     assertThrows(TypeError.class, () -> TestUtil.evaluate(valueNode, fdb.build(), List.of()));

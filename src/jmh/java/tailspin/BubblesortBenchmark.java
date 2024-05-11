@@ -1,7 +1,6 @@
 package tailspin;
 
 import static tailspin.language.runtime.Templates.CV_SLOT;
-import static tailspin.language.runtime.Templates.EMIT_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -87,9 +86,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
   }
 
   private static Supplier<TailspinArray> createTailspinCall(Templates sortedCopy) {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
@@ -103,8 +100,8 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     // -> \($! 100 - $!\)
     Templates flatMap = new Templates();
     BlockNode flatMapBlock = BlockNode.create(List.of(
-        EmitNode.create(LocalReferenceNode.create(cvSlot), resultSlot),
-        EmitNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(cvSlot)), resultSlot)
+        EmitNode.create(LocalReferenceNode.create(CV_SLOT)),
+        EmitNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(CV_SLOT)))
     ));
     flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), flatMapBlock));
 
@@ -121,7 +118,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         SendToTemplatesNode.create(chainCvSlot, sortedCopy, 0)
     ));
 
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), EmitNode.create(task, resultSlot));
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), EmitNode.create(task));
     return () -> (TailspinArray) callTarget.call(null, null);
   }
 
@@ -155,12 +152,12 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         toMatchers
     ));
     // $@ !
-    EmitNode emitState = EmitNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot)),
-        EMIT_SLOT);
+    EmitNode emitState = EmitNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot))
+    );
 
     BlockNode sortedCopyBlock = BlockNode.create(List.of(
         setState,
-        EmitNode.create(iterate, EMIT_SLOT),
+        EmitNode.create(iterate),
         emitState
     ));
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), sortedCopyBlock);
@@ -226,7 +223,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         SendToTemplatesNode.create(chainCvSlot, matchers, 0)
     ));
     //    $@ !
-    EmitNode emit = EmitNode.create(GetStateNode.create(0, stateSlot), EMIT_SLOT);
+    EmitNode emit = EmitNode.create(GetStateNode.create(0, stateSlot));
     defineBubblesortMatchers(matchers, bubble);
     //    end bubblesort
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(
@@ -277,7 +274,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
             SendToTemplatesNode.create(chainCvSlot, matchers, 0)
         )));
     //    $@ !
-    EmitNode emit = EmitNode.create(GetStateNode.create(0, stateSlot), EMIT_SLOT);
+    EmitNode emit = EmitNode.create(GetStateNode.create(0, stateSlot));
     defineBubbleMatchers(matchers, stateSlot, bubblesortStateSlot);
     //    end bubble
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(

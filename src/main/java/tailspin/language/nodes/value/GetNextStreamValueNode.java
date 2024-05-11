@@ -1,14 +1,13 @@
 package tailspin.language.nodes.value;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.StopIterationException;
-import com.oracle.truffle.api.interop.UnsupportedMessageException;
-import com.oracle.truffle.api.library.CachedLibrary;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.transform.EndOfStreamException;
+import tailspin.language.runtime.ValueStream;
 
 @SuppressWarnings("unused")
 @NodeChild(value = "valuesNode", type = StaticReferenceNode.class)
@@ -34,24 +33,23 @@ public abstract class GetNextStreamValueNode extends ValueNode {
     throw new EndOfStreamException();
   }
 
-  @Specialization(limit = "2", guards = {"value != null", "!valueInteropLibrary.isIterator(value)"})
-  public Object doSingle(VirtualFrame frame, Object value,
-      @CachedLibrary("value") InteropLibrary valueInteropLibrary) {
-    frame.setObjectStatic(valuesSlot, null);
-    return value;
-  }
-
-  @Specialization(limit = "2", guards = {"value != null", "valueInteropLibrary.isIterator(value)"})
-  public Object doIterator(VirtualFrame frame, Object value,
-      @CachedLibrary("value") InteropLibrary valueInteropLibrary) {
+  @Specialization(guards = {"stream != null"})
+  @TruffleBoundary
+  public Object doValueStream(ValueStream stream) {
     try {
-      if (!valueInteropLibrary.hasIteratorNextElement(value)) {
+      if (!stream.hasIteratorNextElement()) {
         throw new EndOfStreamException();
       }
-      return valueInteropLibrary.getIteratorNextElement(value);
-    } catch (UnsupportedMessageException | StopIterationException e) {
+      return stream.getIteratorNextElement();
+    } catch (StopIterationException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Specialization(guards = {"value != null"})
+  public Object doSingle(VirtualFrame frame, Object value) {
+    frame.setObjectStatic(valuesSlot, null);
+    return value;
   }
 
   private void setValuesSlot(int valuesSlot) {

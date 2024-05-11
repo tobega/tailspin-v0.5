@@ -12,7 +12,7 @@ import tailspin.language.TestUtil;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.array.ArrayReadNode;
-import tailspin.language.nodes.numeric.AddNodeGen;
+import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.RangeLiteral;
 import tailspin.language.nodes.value.LocalReferenceNode;
@@ -25,7 +25,7 @@ public class ChainTest {
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    ValueNode expr = AddNodeGen.create(
+    ValueNode expr = AddNode.create(
             IntegerLiteral.create(12),
             LocalReferenceNode.create(cvSlot));
     RangeLiteral source = RangeLiteral.create(IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L));
@@ -44,7 +44,7 @@ public class ChainTest {
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    ValueNode expr = AddNodeGen.create(
+    ValueNode expr = AddNode.create(
             IntegerLiteral.create(12),
             LocalReferenceNode.create(cvSlot));
     ValueNode source = IntegerLiteral.create(1L);

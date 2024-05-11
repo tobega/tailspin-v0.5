@@ -2,12 +2,9 @@ package tailspin.language.nodes.transform;
 
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Executed;
-import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.interop.InteropLibrary;
-import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
@@ -16,6 +13,7 @@ import tailspin.language.nodes.value.GetNextStreamValueNode;
 import tailspin.language.nodes.value.LocalDefinitionNode;
 import tailspin.language.nodes.value.StaticReferenceNode;
 import tailspin.language.runtime.ResultIterator;
+import tailspin.language.runtime.ValueStream;
 
 public abstract class ChainStageNode extends ValueNode {
 
@@ -55,23 +53,22 @@ public abstract class ChainStageNode extends ValueNode {
     return null;
   }
 
-  @Specialization(limit = "2", guards = {"value != null", "!valueInteropLibrary.isIterator(value)"})
+  @Specialization(guards = "stream != null")
   @SuppressWarnings("unused")
-  public Object doSingle(VirtualFrame frame, Object value,
-      @CachedLibrary("value") InteropLibrary valueInteropLibrary) {
-    frame.getFrameDescriptor().setSlotKind(cvSlot, FrameSlotKind.Object);
-    frame.setObject(cvSlot, value);
-    frame.setObjectStatic(valuesSlot, null);
-    return stage.executeGeneric(frame);
-  }
-
-  @Fallback
-  @SuppressWarnings("unused")
-  public Object doMany(VirtualFrame frame, Object values) {
+  public Object doValueStream(VirtualFrame frame, ValueStream stream) {
     loop.execute(frame);
     Object results = frame.getObjectStatic(resultSlot);
     frame.setObjectStatic(resultSlot, null);
     return results;
+  }
+
+  @Specialization(guards = {"value != null"})
+  @SuppressWarnings("unused")
+  public Object doSingle(VirtualFrame frame, Object value) {
+    frame.getFrameDescriptor().setSlotKind(cvSlot, FrameSlotKind.Object);
+    frame.setObject(cvSlot, value);
+    frame.setObjectStatic(valuesSlot, null);
+    return stage.executeGeneric(frame);
   }
 
   static ChainStageNode create(int chainValuesSlot, int chainCvSlot, ValueNode stage, int chainResultSlot) {

@@ -1,15 +1,14 @@
 package tailspin.language.nodes.transform;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.StopIterationException;
-import com.oracle.truffle.api.interop.UnsupportedMessageException;
-import com.oracle.truffle.api.library.CachedLibrary;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.ValueStream;
 
 @SuppressWarnings("unused")
 @NodeChild(value = "result", type = ValueNode.class)
@@ -19,13 +18,13 @@ public abstract class SinkNode extends StatementNode {
     // all good
   }
 
-  @Specialization(limit = "2", guards = {"result != null", "resultInteropLibrary.isIterator(result)"})
-  void doEmpty(Object result,
-      @CachedLibrary("result") InteropLibrary resultInteropLibrary) {
+  @Specialization(guards = {"stream != null"})
+  @TruffleBoundary
+  void doEmpty(ValueStream stream) {
     try {
-      if (resultInteropLibrary.hasIteratorNextElement(result))
-        throw new TypeError("Got unexpected value from sink " + resultInteropLibrary.getIteratorNextElement(result));
-    } catch (UnsupportedMessageException | StopIterationException e) {
+      if (stream.hasIteratorNextElement())
+        throw new TypeError("Got unexpected value from sink " + stream.getIteratorNextElement());
+    } catch (StopIterationException e) {
       throw new RuntimeException(e);
     }
   }
