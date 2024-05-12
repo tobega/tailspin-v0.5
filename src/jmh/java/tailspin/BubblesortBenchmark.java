@@ -273,7 +273,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
             SendToTemplatesNode.create(chainCvSlot, matchers, 0)
         )));
     //    $@ !
-    EmitNode emit = EmitNode.create(GetStateNode.create(0, stateSlot));
+    EmitNode emit = EmitNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot)));
     defineBubbleMatchers(matchers, stateSlot, bubblesortStateSlot);
     //    end bubble
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(
