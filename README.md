@@ -100,3 +100,11 @@ A SinkNode is a little faster than an EmitNode
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |886,675 |± 19,197  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 56,799 |±  7,174  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  | 37,695 |±  1,232  |us/op|
+
+Simplifying a little
+|Benchmark                                   |Mode  |Cnt  |  Score |   Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |367,527 |± 11,028  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  | 25,649 |±  0,307  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |815,799 |± 63,238  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 53,959 |±  0,901  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,838 |±  0,376  |us/op|

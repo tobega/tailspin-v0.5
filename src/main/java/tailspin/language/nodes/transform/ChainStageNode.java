@@ -1,24 +1,31 @@
 package tailspin.language.nodes.transform;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.Executed;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.NeverDefault;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.StopIterationException;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.value.GetNextStreamValueNode;
-import tailspin.language.nodes.value.LocalDefinitionNode;
-import tailspin.language.nodes.value.StaticReferenceNode;
+import tailspin.language.nodes.transform.ChainStageNodeGen.GetNextStreamValueNodeGen;
+import tailspin.language.nodes.transform.ChainStageNodeGen.SetChainCvNodeGen;
 import tailspin.language.runtime.ResultIterator;
 import tailspin.language.runtime.ValueStream;
 
 public abstract class ChainStageNode extends ValueNode {
 
   private final int valuesSlot;
-  private final int cvSlot;
+  protected final int cvSlot;
   private final int resultSlot;
   @SuppressWarnings("FieldMayBeFinal")
   @Child @Executed
@@ -40,9 +47,8 @@ public abstract class ChainStageNode extends ValueNode {
   }
 
   @Specialization
-  public Object doLong(VirtualFrame frame, long value) {
-    frame.getFrameDescriptor().setSlotKind(cvSlot, FrameSlotKind.Long);
-    frame.setLong(cvSlot, value);
+  public Object doLong(VirtualFrame frame, long value, @Shared("cvSetters") @Cached(parameters = "cvSlot") SetChainCvNode setCv) {
+    setCv.setLong(frame, value);
     frame.setObjectStatic(valuesSlot, null);
     return stage.executeGeneric(frame);
   }
@@ -64,9 +70,8 @@ public abstract class ChainStageNode extends ValueNode {
 
   @Specialization(guards = {"value != null"})
   @SuppressWarnings("unused")
-  public Object doSingle(VirtualFrame frame, Object value) {
-    frame.getFrameDescriptor().setSlotKind(cvSlot, FrameSlotKind.Object);
-    frame.setObject(cvSlot, value);
+  public Object doSingle(VirtualFrame frame, Object value, @Shared("cvSetters") @Cached(parameters = "cvSlot") SetChainCvNode setCv) {
+    setCv.execute(frame, value);
     frame.setObjectStatic(valuesSlot, null);
     return stage.executeGeneric(frame);
   }
@@ -80,13 +85,19 @@ public abstract class ChainStageNode extends ValueNode {
     int resultSlot;
     @SuppressWarnings("FieldMayBeFinal")
     @Child
-    private LocalDefinitionNode setCurrentValue;
+    private SetChainCvNode setCurrentValue;
+
+    @SuppressWarnings("FieldMayBeFinal")
+    @Child
+    private GetNextStreamValueNode getNextStreamValueNode;
+
     @SuppressWarnings("FieldMayBeFinal")
     @Child
     ValueNode stage;
 
     ChainStageRepeatingNode(int chainValuesSlot, int chainCvSlot, ValueNode stage, int resultSlot) {
-      this.setCurrentValue = LocalDefinitionNode.create(GetNextStreamValueNode.create(chainValuesSlot), chainCvSlot);
+      this.setCurrentValue = SetChainCvNode.create(chainCvSlot);
+      this.getNextStreamValueNode = GetNextStreamValueNode.create(chainValuesSlot);
       this.stage = stage;
       this.resultSlot = resultSlot;
     }
@@ -94,7 +105,7 @@ public abstract class ChainStageNode extends ValueNode {
     @Override
     public boolean executeRepeating(VirtualFrame frame) {
       try {
-        setCurrentValue.executeVoid(frame);
+        setCurrentValue.execute(frame, getNextStreamValueNode.executeStream(frame));
       } catch (EndOfStreamException e) {
         return false;
       }
@@ -102,6 +113,71 @@ public abstract class ChainStageNode extends ValueNode {
       Object result = stage.executeGeneric(frame);
       frame.setObjectStatic(resultSlot, ResultIterator.merge(previous, result));
       return true;
+    }
+  }
+
+  @NodeField(name = "slot", type = int.class)
+  public abstract static class SetChainCvNode extends Node {
+    protected abstract int getSlot();
+
+    abstract void execute(VirtualFrame frame, Object value);
+
+    @Specialization
+    void setLong(VirtualFrame frame, long value) {
+      frame.getFrameDescriptor().setSlotKind(getSlot(), FrameSlotKind.Long);
+      frame.setLong(getSlot(), value);
+    }
+
+    @Fallback
+    void setObject(VirtualFrame frame, Object value) {
+      frame.getFrameDescriptor().setSlotKind(getSlot(), FrameSlotKind.Object);
+      frame.setObject(getSlot(), value);
+    }
+
+    @NeverDefault
+    public static SetChainCvNode create(int slot) {
+      return SetChainCvNodeGen.create(slot);
+    }
+  }
+
+  @SuppressWarnings("unused")
+  @NodeChild(value = "valueStream", type = StaticReferenceNode.class)
+  public abstract static class GetNextStreamValueNode extends Node {
+    public abstract Object executeStream(VirtualFrame frame);
+
+    @Specialization(guards = {"stream != null"})
+    @TruffleBoundary
+    public Object doStream(ValueStream stream) {
+      try {
+        if (!stream.hasIteratorNextElement()) {
+          throw new EndOfStreamException();
+        }
+        return stream.getIteratorNextElement();
+      } catch (StopIterationException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    public static GetNextStreamValueNode create(int valuesSlot) {
+      return GetNextStreamValueNodeGen.create(StaticReferenceNode.create(valuesSlot));
+    }
+  }
+
+  public static class StaticReferenceNode extends ValueNode {
+
+    private final int slot;
+
+    private StaticReferenceNode(int slot) {
+      this.slot = slot;
+    }
+
+    public static StaticReferenceNode create(int valuesSlot) {
+      return new StaticReferenceNode(valuesSlot);
+    }
+
+    @Override
+    public Object executeGeneric(VirtualFrame frame) {
+      return frame.getObjectStatic(slot);
     }
   }
 }
