@@ -1,6 +1,5 @@
-package tailspin.language.nodes.transform;
+package tailspin.language.nodes.iterate;
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
@@ -17,10 +16,10 @@ import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.transform.ChainStageNodeGen.GetNextStreamValueNodeGen;
-import tailspin.language.nodes.transform.ChainStageNodeGen.SetChainCvNodeGen;
+import tailspin.language.nodes.iterate.ChainStageNodeGen.GetNextStreamValueNodeGen;
+import tailspin.language.nodes.iterate.ChainStageNodeGen.SetChainCvNodeGen;
+import tailspin.language.nodes.transform.EndOfStreamException;
 import tailspin.language.runtime.ResultIterator;
-import tailspin.language.runtime.ValueStream;
 
 public abstract class ChainStageNode extends ValueNode {
 
@@ -61,7 +60,7 @@ public abstract class ChainStageNode extends ValueNode {
 
   @Specialization(guards = "stream != null")
   @SuppressWarnings("unused")
-  public Object doValueStream(VirtualFrame frame, ValueStream stream) {
+  public Object doValueStream(VirtualFrame frame, ResultIterator stream) {
     loop.execute(frame);
     Object results = frame.getObjectStatic(resultSlot);
     frame.setObjectStatic(resultSlot, null);
@@ -109,8 +108,8 @@ public abstract class ChainStageNode extends ValueNode {
       } catch (EndOfStreamException e) {
         return false;
       }
-      Object previous = frame.getObjectStatic(resultSlot);
       Object result = stage.executeGeneric(frame);
+      Object previous = frame.getObjectStatic(resultSlot);
       frame.setObjectStatic(resultSlot, ResultIterator.merge(previous, result));
       return true;
     }
@@ -120,7 +119,7 @@ public abstract class ChainStageNode extends ValueNode {
   public abstract static class SetChainCvNode extends Node {
     protected abstract int getSlot();
 
-    abstract void execute(VirtualFrame frame, Object value);
+    public abstract void execute(VirtualFrame frame, Object value);
 
     @Specialization
     void setLong(VirtualFrame frame, long value) {
@@ -146,8 +145,7 @@ public abstract class ChainStageNode extends ValueNode {
     public abstract Object executeStream(VirtualFrame frame);
 
     @Specialization(guards = {"stream != null"})
-    @TruffleBoundary
-    public Object doStream(ValueStream stream) {
+    public Object doStream(ResultIterator stream) {
       try {
         if (!stream.hasIteratorNextElement()) {
           throw new EndOfStreamException();

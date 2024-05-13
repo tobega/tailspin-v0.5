@@ -16,7 +16,7 @@ import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.SubtractNode;
-import tailspin.language.nodes.transform.ChainNode;
+import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;

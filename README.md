@@ -108,3 +108,15 @@ Simplifying a little
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |815,799 |± 63,238  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 53,959 |±  0,901  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,838 |±  0,376  |us/op|
+
+Doing range iteration as iteration made an improvement.
+TruffleBoundary was no longer needed when dispatching on a concrete class instead of an interface.
+Remaining difference between the two sorts is probably because nodes are better than regular java classes.
+Need to find a more nodesy way to express iterators.
+Do I need to make my own VM to better handle data streaming?
+|Benchmark                                   |Mode  |Cnt  |  Score |  Error|  Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |342,798 |± 2,389|  us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  | 26,082 |± 0,791|  us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |557,185 |± 7,374|  us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 54,881 |± 2,109|  us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,766 |± 0,641|  us/op|

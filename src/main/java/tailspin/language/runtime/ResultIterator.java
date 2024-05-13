@@ -8,7 +8,7 @@ import com.oracle.truffle.api.library.ExportMessage;
 import java.util.Arrays;
 
 @ExportLibrary(InteropLibrary.class)
-public class ResultIterator implements TruffleObject, ValueStream {
+public class ResultIterator implements TruffleObject {
   private static final int EXTRA = 10;
   private Object[] elements;
   private int end;
@@ -46,22 +46,20 @@ public class ResultIterator implements TruffleObject, ValueStream {
     return true;
   }
 
-  @Override
   @ExportMessage
   public boolean hasIteratorNextElement() {
-    while (current < end && elements[current] instanceof ValueStream vs && !vs.hasIteratorNextElement())
+    while (current < end && elements[current] instanceof ResultIterator ri && !ri.hasIteratorNextElement())
       current++;
     return current < end;
   }
 
-  @Override
   @ExportMessage
   public Object getIteratorNextElement() throws StopIterationException {
     if (!hasIteratorNextElement()) {
       throw StopIterationException.create();
     }
-    if (elements[current] instanceof ValueStream vs) {
-      return vs.getIteratorNextElement();
+    if (elements[current] instanceof ResultIterator ri) {
+      return ri.getIteratorNextElement();
     }
     Object result = elements[current];
     current++;
@@ -76,12 +74,11 @@ public class ResultIterator implements TruffleObject, ValueStream {
     end++;
   }
 
-  @Override
   public int getValueCount() {
     int count = 0;
     for (int i = 0; i < end; i++) {
-      if (elements[i] instanceof ValueStream vs) {
-        count += vs.getValueCount();
+      if (elements[i] instanceof ResultIterator ri) {
+        count += ri.getValueCount();
       } else {
         count++;
       }

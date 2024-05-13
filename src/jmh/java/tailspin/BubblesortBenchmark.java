@@ -19,14 +19,14 @@ import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
-import tailspin.language.nodes.numeric.RangeLiteral;
+import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.state.FreezeNode;
 import tailspin.language.nodes.state.GetStateNode;
 import tailspin.language.nodes.state.SetStateNode;
 import tailspin.language.nodes.transform.BlockNode;
-import tailspin.language.nodes.transform.ChainNode;
+import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
@@ -94,23 +94,19 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int nestedChainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int nestedChainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
+    Templates flatMap = new Templates();
     // [100..1:-1
-    RangeLiteral backwards = RangeLiteral.create(IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
+    RangeIteration backwards = RangeIteration.create(nestedChainCvSlot, SendToTemplatesNode.create(nestedChainCvSlot, flatMap, 0), nestedChainResultSlot, IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
 
     // -> \($! 100 - $!\)
-    Templates flatMap = new Templates();
     BlockNode flatMapBlock = BlockNode.create(List.of(
         EmitNode.create(LocalReferenceNode.create(CV_SLOT)),
         EmitNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(CV_SLOT)))
     ));
     flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), flatMapBlock));
 
-     ChainNode arrayContents = ChainNode.create(nestedChainValuesSlot, nestedChainCvSlot, nestedChainResultSlot, List.of(
-        backwards,
-        SendToTemplatesNode.create(nestedChainCvSlot, flatMap, 0)
-    ));
     // ]
-    ArrayLiteral input = ArrayLiteral.create(List.of(arrayContents));
+    ArrayLiteral input = ArrayLiteral.create(List.of(backwards));
 
     // -> sortedCopy
     ChainNode task = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
@@ -127,6 +123,10 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int rangeISlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int resultISlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int rangeJSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int resultJSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int stateSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     Templates sortedCopyMatchers = new Templates();
@@ -134,18 +134,24 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     // @: $;
     SetStateNode setState = SetStateNode.create(LocalReferenceNode.create(CV_SLOT), 0, stateSlot);
     // $::length..2:-1
-    RangeLiteral allI = RangeLiteral.create(
+    // -> 2..$
+    // -> !#
+    SendToTemplatesNode toMatchers = SendToTemplatesNode.create(rangeJSlot, sortedCopyMatchers, 0);
+    RangeIteration allJ = RangeIteration.create(
+        rangeJSlot,
+        toMatchers,
+        resultJSlot,
+        IntegerLiteral.create(2),
+        LocalReferenceNode.create(rangeISlot),
+        IntegerLiteral.create(1)
+    );
+    RangeIteration allI = RangeIteration.create(
+        rangeISlot,
+        allJ,
+        resultISlot,
         MessageNode.create("length", LocalReferenceNode.create(CV_SLOT)),
         IntegerLiteral.create(2),
         IntegerLiteral.create(-1));
-    // -> 2..$
-    RangeLiteral allJ = RangeLiteral.create(
-        IntegerLiteral.create(2),
-        LocalReferenceNode.create(chainCvSlot),
-        IntegerLiteral.create(1)
-    );
-    // -> !#
-    SendToTemplatesNode toMatchers = SendToTemplatesNode.create(chainCvSlot, sortedCopyMatchers, 0);
     ChainNode iterate = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
         allI,
         allJ,
@@ -265,13 +271,14 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     //    @: 1;
     SetStateNode setState = SetStateNode.create(IntegerLiteral.create(1), 0, stateSlot);
     //    1..$-1 -> !#
-    SinkNode doTemplates = SinkNode.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot,
-        List.of(
-            RangeLiteral.create(IntegerLiteral.create(1),
+    SinkNode doTemplates = SinkNode.create(RangeIteration.create(
+                chainCvSlot,
+            SendToTemplatesNode.create(chainCvSlot, matchers, 0),
+                chainResultSlot,
+                IntegerLiteral.create(1),
                 SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1)),
-                IntegerLiteral.create(1)),
-            SendToTemplatesNode.create(chainCvSlot, matchers, 0)
-        )));
+                IntegerLiteral.create(1))
+        );
     //    $@ !
     EmitNode emit = EmitNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot)));
     defineBubbleMatchers(matchers, stateSlot, bubblesortStateSlot);

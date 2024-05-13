@@ -8,7 +8,7 @@ import com.oracle.truffle.api.interop.StopIterationException;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.runtime.ValueStream;
+import tailspin.language.runtime.ResultIterator;
 
 @SuppressWarnings("unused")
 @NodeChild(value = "result", type = ValueNode.class)
@@ -20,7 +20,7 @@ public abstract class SinkNode extends StatementNode {
 
   @Specialization(guards = {"stream != null"})
   @TruffleBoundary
-  void doEmpty(ValueStream stream) {
+  void doEmpty(ResultIterator stream) {
     try {
       if (stream.hasIteratorNextElement())
         throw new TypeError("Got unexpected value from sink " + stream.getIteratorNextElement());

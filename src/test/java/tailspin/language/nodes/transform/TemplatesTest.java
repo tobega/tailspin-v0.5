@@ -18,7 +18,7 @@ import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
-import tailspin.language.nodes.numeric.RangeLiteral;
+import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.value.LocalReferenceNode;
 import tailspin.language.runtime.ResultIterator;
@@ -72,15 +72,14 @@ public class TemplatesTest {
   @Test
   void array_chain() {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
-    int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
+    Templates flatMap = new Templates();
     // [100..1:-1
-    RangeLiteral backwards = RangeLiteral.create(IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
+    RangeIteration backwards = RangeIteration.create(rangeSlot, SendToTemplatesNode.create(rangeSlot, flatMap, 0), resultSlot, IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
 
     // -> \($! 100 - $!\)
-    Templates flatMap = new Templates();
     BlockNode flatMapBlock = BlockNode.create(List.of(
         EmitNode.create(LocalReferenceNode.create(CV_SLOT)),
         EmitNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(CV_SLOT))
@@ -88,12 +87,8 @@ public class TemplatesTest {
     ));
     flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), flatMapBlock));
 
-    ChainNode arrayContents = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
-        backwards,
-        SendToTemplatesNode.create(chainCvSlot, flatMap, 0)
-    ));
     // ]
-    ArrayLiteral input = ArrayLiteral.create(List.of(arrayContents));
+    ArrayLiteral input = ArrayLiteral.create(List.of(backwards));
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), EmitNode.create(input));
     TailspinArray result = (TailspinArray) callTarget.call((Object) null);
