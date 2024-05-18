@@ -152,16 +152,12 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         MessageNode.create("length", LocalReferenceNode.create(CV_SLOT)),
         IntegerLiteral.create(2),
         IntegerLiteral.create(-1));
-    ChainNode iterate = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
-        allI,
-        toMatchers
-    ));
     // $@ !
     EmitNode emitState = EmitNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot)));
 
     BlockNode sortedCopyBlock = BlockNode.create(List.of(
         setState,
-        SinkNode.create(iterate),
+        SinkNode.create(allI),
         emitState
     ));
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), sortedCopyBlock);
