@@ -8,10 +8,10 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNode.SetChainCvNode;
+import tailspin.language.nodes.iterate.RangeIterationNodeGen.RangeIteratorNodeGen;
+import tailspin.language.nodes.transform.EndOfStreamException;
 import tailspin.language.runtime.ResultIterator;
 
 @NodeChild(value = "start", type = ValueNode.class)
@@ -39,10 +39,7 @@ public abstract class RangeIteration extends ValueNode {
 
   @Specialization
   public Object doLong(VirtualFrame frame, long start, long end, long increment) {
-    Iterator<Long> iterator = increment > 0
-        ? new IncreasingIntegerRangeIterator(start, end,increment)
-        : new DecreasingIntegerRangeIterator(start, end, -increment);
-    repeatingNode.setIterator(iterator);
+    repeatingNode.initialize(start, end, increment);
     loop.execute(frame);
     Object results = frame.getObjectStatic(resultSlot);
     frame.setObjectStatic(resultSlot, null);
@@ -55,8 +52,12 @@ public abstract class RangeIteration extends ValueNode {
   }
 
   public static class RangeRepeatingNode extends Node implements RepeatingNode {
-    private Iterator<?> iterator;
     final int resultSlot;
+
+    @SuppressWarnings("FieldMayBeFinal")
+    @Child
+    private RangeIteratorNode iterator;
+
     @SuppressWarnings("FieldMayBeFinal")
     @Child
     private SetChainCvNode setCurrentValue;
@@ -67,73 +68,64 @@ public abstract class RangeIteration extends ValueNode {
 
     public RangeRepeatingNode(int rangeCvSlot, ValueNode stage, int resultSlot) {
       this.resultSlot = resultSlot;
+      iterator = RangeIteratorNode.create();
       setCurrentValue = SetChainCvNode.create(rangeCvSlot);
       this.stage = stage;
     }
 
-    public void setIterator(Iterator<?> iterator) {
-      this.iterator = iterator;
+    public void initialize(long start, long end, long increment) {
+      this.iterator.initialize(start, end, increment);
     }
 
     @Override
     public boolean executeRepeating(VirtualFrame frame) {
-      if (!iterator.hasNext()) return false;
-      setCurrentValue.execute(frame, iterator.next());
+      try {
+        setCurrentValue.execute(frame, iterator.execute(frame));
+      } catch (EndOfStreamException e) {
+        return false;
+      }
       Object result = stage.executeGeneric(frame);
       Object previous = frame.getObjectStatic(resultSlot);
       frame.setObjectStatic(resultSlot, ResultIterator.merge(previous, result));
-      return iterator.hasNext();
+      return true;
     }
   }
 
-  public static class DecreasingIntegerRangeIterator implements Iterator<Long> {
-    private final long end;
-    private final long decrement;
-    private long current;
+  static abstract class RangeIteratorNode extends Node {
+    long current;
+    long end;
+    long increment;
 
-    public DecreasingIntegerRangeIterator(long start, long end, long decrement) {
-      this.end = end;
-      if (decrement < 0) throw new AssertionError("Negative decrement");
-      this.decrement = decrement;
+    public abstract Object execute(VirtualFrame frame);
+
+    public void initialize(long start, long end, long increment) {
       current = start;
-    }
-
-    @Override
-    public boolean hasNext() {
-      return current >= end;
-    }
-
-    @Override
-    public Long next() {
-      if (!hasNext()) throw new NoSuchElementException();
-      Long result = current;
-      current -= decrement;
-      return result;
-    }
-  }
-
-  public static class IncreasingIntegerRangeIterator implements Iterator<Long> {
-    private final long end;
-    private final long increment;
-    private long current;
-
-    public IncreasingIntegerRangeIterator(long start, long end, long increment) {
       this.end = end;
       this.increment = increment;
-      current = start;
     }
 
-    @Override
-    public boolean hasNext() {
-      return current <= end;
-    }
-
-    @Override
-    public Long next() {
-      if (!hasNext()) throw new NoSuchElementException();
-      Long result = current;
+    @Specialization(guards = "increment > 0")
+    long doIncreasingLong() {
+      if (current > end) {
+        throw new EndOfStreamException();
+      }
+      long result = current;
       current += increment;
       return result;
+    }
+
+    @Specialization(guards = "increment < 0")
+    long doDecreasingLong() {
+      if (current < end) {
+        throw new EndOfStreamException();
+      }
+      long result = current;
+      current += increment;
+      return result;
+    }
+
+    public static RangeIteratorNode create() {
+      return RangeIteratorNodeGen.create();
     }
   }
 }

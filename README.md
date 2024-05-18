@@ -120,3 +120,12 @@ Do I need to make my own VM to better handle data streaming?
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |557,185 |± 7,374|  us/op|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 54,881 |± 2,109|  us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,766 |± 0,641|  us/op|
+
+Oddly enough, making iterators nodesy had a great effect on the less iterator-heavy version, but
+not so much on the iterator-heavy version, which is the opposite of what I expected.
+|Benchmark                                   |Mode  |Cnt  |  Score |  Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |171,817 |± 1,499  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  | 26,035 |± 0,428  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |508,323 |± 6,977  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 56,662 |± 6,624  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  | 37,454 |± 0,347  |us/op|

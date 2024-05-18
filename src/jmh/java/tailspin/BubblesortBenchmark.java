@@ -154,7 +154,6 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         IntegerLiteral.create(-1));
     ChainNode iterate = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
         allI,
-        allJ,
         toMatchers
     ));
     // $@ !
