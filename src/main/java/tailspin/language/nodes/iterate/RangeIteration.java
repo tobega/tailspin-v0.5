@@ -85,8 +85,10 @@ public abstract class RangeIteration extends ValueNode {
         return false;
       }
       Object result = stage.executeGeneric(frame);
-      Object previous = frame.getObjectStatic(resultSlot);
-      frame.setObjectStatic(resultSlot, ResultIterator.merge(previous, result));
+      if (result != null) {
+        Object previous = frame.getObjectStatic(resultSlot);
+        frame.setObjectStatic(resultSlot, ResultIterator.merge(previous, result));
+      }
       return true;
     }
   }

@@ -49,6 +49,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
   @Benchmark
   public void sort_tailspin() {
     TailspinArray sorted = tailspinSort.get();
+    if (sorted.getArraySize() != 200) throw new AssertionError("Too short array " + sorted.getArraySize());
     for (int i = 1; i < sorted.getArraySize(); i++)
       if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i))
         throw new AssertionError("Out of order " + sorted.getArraySize());
@@ -57,6 +58,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
   @Benchmark
   public void sort2_tailspin() {
     TailspinArray sorted = tailspinSort2.get();
+    if (sorted.getArraySize() != 200) throw new AssertionError("Too short array " + sorted.getArraySize());
     for (int i = 1; i < sorted.getArraySize(); i++)
       if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i))
         throw new AssertionError("Out of order " + sorted.getArraySize());
@@ -66,6 +68,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
   public void sort_java() {
     long[] input = LongStream.iterate(100L, i -> i > 0L, i -> i - 1L).flatMap(i -> LongStream.of(i, 100L - i)).toArray();
     long[] output = sortedCopy(input);
+    if (output.length != 200) throw new AssertionError("Too short array " + output.length);
     for (int i = 1; i < output.length; i++)
       if (output[i - 1] > output[i])
         throw new AssertionError("Not sorted " + Arrays.toString(output));

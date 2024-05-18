@@ -129,3 +129,11 @@ not so much on the iterator-heavy version, which is the opposite of what I expec
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |508,323 |± 6,977  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 56,662 |± 6,624  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  | 37,454 |± 0,347  |us/op|
+
+Minor improvement
+|Benchmark                                   |Mode  |Cnt  |  Score |  Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |173,146 |± 4,575  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  | 26,174 |± 0,633  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |481,628 |± 6,990  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 54,624 |± 0,133  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,882 |± 0,235  |us/op|
