@@ -137,3 +137,12 @@ Minor improvement
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |481,628 |± 6,990  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 54,624 |± 0,133  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,882 |± 0,235  |us/op|
+
+Making the java code more similar to the Tailspin code makes me feel happy about the performance
+of the sort2. Still puzzling why the "simpler" iterating Tailspin sort takes more than twice the time.
+|Benchmark                                   |Mode  |Cnt  |  Score |  Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |170,915 |± 4,614  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  | 76,618 |± 0,702  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |483,675 |± 6,186  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 54,440 |± 0,471  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,842 |± 0,540  |us/op|

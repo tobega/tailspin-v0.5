@@ -5,7 +5,7 @@ import static tailspin.language.runtime.Templates.CV_SLOT;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.LongStream;
@@ -15,18 +15,18 @@ import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.array.ArrayReadNode;
 import tailspin.language.nodes.array.ArrayWriteNode;
+import tailspin.language.nodes.iterate.ChainNode;
+import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
-import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.state.FreezeNode;
 import tailspin.language.nodes.state.GetStateNode;
 import tailspin.language.nodes.state.SetStateNode;
 import tailspin.language.nodes.transform.BlockNode;
-import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
@@ -66,22 +66,23 @@ public class BubblesortBenchmark extends TruffleBenchmark {
 
   @Benchmark
   public void sort_java() {
-    long[] input = LongStream.iterate(100L, i -> i > 0L, i -> i - 1L).flatMap(i -> LongStream.of(i, 100L - i)).toArray();
-    long[] output = sortedCopy(input);
-    if (output.length != 200) throw new AssertionError("Too short array " + output.length);
-    for (int i = 1; i < output.length; i++)
-      if (output[i - 1] > output[i])
-        throw new AssertionError("Not sorted " + Arrays.toString(output));
+    List<Long> input = LongStream.iterate(100L, i -> i > 0L, i -> i - 1L).flatMap(i -> LongStream.of(i, 100L - i)).boxed()
+        .toList();
+    List<Long> output = sortedCopy(input);
+    if (output.size() != 200) throw new AssertionError("Too short array " + output.size());
+    for (int i = 1; i < output.size(); i++)
+      if (output.get(i - 1) > output.get(i))
+        throw new AssertionError("Not sorted " + output);
   }
 
-  public static long[] sortedCopy(long[] in) {
-    long[] out = Arrays.copyOf(in, in.length);
-    for (int i = out.length; i > 1; i--) {
+  public static List<Long> sortedCopy(List<Long> in) {
+    List<Long> out = new ArrayList<>(in);
+    for (int i = out.size(); i > 1; i--) {
       for (int j = 1; j < i; j++) {
-        if (out[j - 1] > out[j]) {
-          long temp = out[j - 1];
-          out[j - 1] = out[j];
-          out[j] = temp;
+        if (out.get(j - 1) > out.get(j)) {
+          long temp = out.get(j - 1);
+          out.set(j - 1, out.get(j));
+          out.set(j, temp);
         }
       }
     }
