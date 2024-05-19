@@ -7,12 +7,12 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import tailspin.language.nodes.TailspinTypesGen;
 
-@GenerateInline(false)
+@GenerateInline
 public abstract class ReadLocalValueNode extends Node {
-  public long executeLong(VirtualFrame frame, int slot) throws UnexpectedResultException {
-    return TailspinTypesGen.expectLong(executeGeneric(frame, slot));
+  public long executeLong(VirtualFrame frame, Node node, int slot) throws UnexpectedResultException {
+    return TailspinTypesGen.expectLong(executeGeneric(frame, node, slot));
   }
-  public abstract Object executeGeneric(VirtualFrame frame, int slot);
+  public abstract Object executeGeneric(VirtualFrame frame, Node node, int slot);
 
   @Specialization(guards = "frame.isLong(slot)")
   protected long readLong(VirtualFrame frame, int slot) {

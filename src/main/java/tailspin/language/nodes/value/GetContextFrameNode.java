@@ -8,9 +8,9 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.Node;
 
-@GenerateInline(false)
+@GenerateInline
 public abstract class GetContextFrameNode extends Node {
-  public abstract VirtualFrame execute(VirtualFrame frame, int level);
+  public abstract VirtualFrame execute(VirtualFrame frame, Node node, int level);
 
   @Specialization(guards = "level == 0")
   VirtualFrame doLocal(VirtualFrame frame, @SuppressWarnings("unused") int level) {
