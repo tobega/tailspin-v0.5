@@ -146,3 +146,13 @@ of the sort2. Still puzzling why the "simpler" iterating Tailspin sort takes mor
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |483,675 |± 6,186  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 54,440 |± 0,471  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,842 |± 0,540  |us/op|
+
+Scaled down the bubblesort benchmark and added a Pascal's triangle benchmark
+|Benchmark                                   |Mode  |Cnt  |   Score |   Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |  46,089 |±  0,550  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  |  20,453 |±  0,343  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  | 125,255 |±  1,416  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |  54,108 |±  0,546  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |  36,871 |±  0,396  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  |  12,293 |±  0,113  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  |1536,142 |± 16,376  |us/op|

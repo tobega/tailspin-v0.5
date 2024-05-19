@@ -49,7 +49,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
   @Benchmark
   public void sort_tailspin() {
     TailspinArray sorted = tailspinSort.get();
-    if (sorted.getArraySize() != 200) throw new AssertionError("Too short array " + sorted.getArraySize());
+    if (sorted.getArraySize() != 100) throw new AssertionError("Too short array " + sorted.getArraySize());
     for (int i = 1; i < sorted.getArraySize(); i++)
       if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i))
         throw new AssertionError("Out of order " + sorted.getArraySize());
@@ -58,7 +58,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
   @Benchmark
   public void sort2_tailspin() {
     TailspinArray sorted = tailspinSort2.get();
-    if (sorted.getArraySize() != 200) throw new AssertionError("Too short array " + sorted.getArraySize());
+    if (sorted.getArraySize() != 100) throw new AssertionError("Too short array " + sorted.getArraySize());
     for (int i = 1; i < sorted.getArraySize(); i++)
       if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i))
         throw new AssertionError("Out of order " + sorted.getArraySize());
@@ -66,10 +66,10 @@ public class BubblesortBenchmark extends TruffleBenchmark {
 
   @Benchmark
   public void sort_java() {
-    List<Long> input = LongStream.iterate(100L, i -> i > 0L, i -> i - 1L).flatMap(i -> LongStream.of(i, 100L - i)).boxed()
+    List<Long> input = LongStream.iterate(50L, i -> i > 0L, i -> i - 1L).flatMap(i -> LongStream.of(i, 50L - i)).boxed()
         .toList();
     List<Long> output = sortedCopy(input);
-    if (output.size() != 200) throw new AssertionError("Too short array " + output.size());
+    if (output.size() != 100) throw new AssertionError("Too short array " + output.size());
     for (int i = 1; i < output.size(); i++)
       if (output.get(i - 1) > output.get(i))
         throw new AssertionError("Not sorted " + output);
@@ -99,8 +99,8 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int nestedChainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     Templates flatMap = new Templates();
-    // [100..1:-1
-    RangeIteration backwards = RangeIteration.create(nestedChainCvSlot, SendToTemplatesNode.create(nestedChainCvSlot, flatMap, 0), nestedChainResultSlot, IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
+    // [50..1:-1
+    RangeIteration backwards = RangeIteration.create(nestedChainCvSlot, SendToTemplatesNode.create(nestedChainCvSlot, flatMap, 0), nestedChainResultSlot, IntegerLiteral.create(50L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
 
     // -> \($! 100 - $!\)
     BlockNode flatMapBlock = BlockNode.create(List.of(
