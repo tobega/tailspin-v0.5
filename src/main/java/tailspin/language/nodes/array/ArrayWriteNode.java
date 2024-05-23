@@ -1,6 +1,5 @@
 package tailspin.language.nodes.array;
 
-import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import java.math.BigInteger;
@@ -31,7 +30,7 @@ public abstract class ArrayWriteNode extends ValueNode {
     return result;
   }
 
-  @Fallback
+  @Specialization
   @SuppressWarnings("unused")
   protected Object doIllegal(Object receiver, Object lens, Object value) {
     throw new TypeError(String.format("Cannot read %s by %s", receiver.getClass(), lens.getClass()));

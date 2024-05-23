@@ -1,7 +1,6 @@
 package tailspin.language.nodes.matchers;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import java.math.BigInteger;
@@ -30,7 +29,7 @@ public abstract class GreaterThanMatcherNode extends MatcherNode {
     return toMatch.compareTo(value) >= (inclusive ? 0 : 1);
   }
 
-  @Fallback
+  @Specialization
   @SuppressWarnings("unused")
   protected boolean objectMore(Object toMatch, Object value) {
     throw new TypeError("Cannot order " + value.getClass());

@@ -1,6 +1,5 @@
 package tailspin.language.nodes.state;
 
-import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import tailspin.language.nodes.ValueNode;
@@ -19,7 +18,7 @@ public abstract class FreezeNode extends ValueNode {
     return ta;
   }
 
-  @Fallback
+  @Specialization
   Object doObject(Object result) {
     return result;
   }

@@ -1,7 +1,6 @@
 package tailspin.language.nodes.transform;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.interop.StopIterationException;
@@ -29,7 +28,7 @@ public abstract class SinkNode extends StatementNode {
     }
   }
 
-  @Fallback
+  @Specialization
   void unexpectedValues(Object result) {
     throw new TypeError("Got unexpected value from sink " + result);
   }

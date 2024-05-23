@@ -1,7 +1,6 @@
 package tailspin.language.nodes.iterate;
 
 import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -46,7 +45,7 @@ public abstract class RangeIteration extends ValueNode {
     return results;
   }
 
-  @Fallback
+  @Specialization
   public Object doObject(Object start, Object end, Object increment) {
     throw new UnsupportedOperationException(String.format("No range iterator for %s %s %s", start.getClass().getName(), end.getClass().getName(), increment.getClass().getName()));
   }

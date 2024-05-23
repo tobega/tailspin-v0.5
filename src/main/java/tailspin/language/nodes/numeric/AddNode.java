@@ -1,7 +1,6 @@
 package tailspin.language.nodes.numeric;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import java.math.BigInteger;
@@ -21,7 +20,7 @@ public abstract class AddNode extends ValueNode {
     return left.add(right);
   }
 
-  @Fallback
+  @Specialization
   protected Object typeError(Object left, Object right) {
     throw TypeError.at(this, left, right);
   }

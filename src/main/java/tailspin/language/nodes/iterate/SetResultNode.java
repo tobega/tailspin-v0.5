@@ -2,6 +2,7 @@ package tailspin.language.nodes.iterate;
 
 import static com.oracle.truffle.api.CompilerDirectives.castExact;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import tailspin.language.runtime.ResultIterator;
@@ -35,6 +36,11 @@ public abstract class SetResultNode extends Node {
 
     void execute(VirtualFrame frame, Object result) {
       ResultIterator previous = castExact(frame.getObjectStatic(resultSlot), ResultIterator.class);
+      addToPrevious(previous, result);
+    }
+
+    @TruffleBoundary
+    private void addToPrevious(ResultIterator previous, Object result) {
       previous.addObject(result);
     }
   }

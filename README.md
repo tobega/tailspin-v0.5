@@ -156,3 +156,13 @@ Scaled down the bubblesort benchmark and added a Pascal's triangle benchmark
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |  36,871 |±  0,396  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  |  12,293 |±  0,113  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  |1536,142 |± 16,376  |us/op|
+
+Minor tweaks
+|Benchmark                                   |Mode  |Cnt  |   Score |   Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |  45,488 |±  0,504  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  |  20,100 |±  0,287  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  | 124,575 |±  1,170  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |  53,218 |±  2,803  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |  36,560 |±  0,136  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  |  12,035 |±  0,077  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  |1515,745 |± 24,911  |us/op|
