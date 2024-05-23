@@ -43,11 +43,12 @@ public class ChainTest {
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int isFirstSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode expr = AddNode.create(
             IntegerLiteral.create(12),
             LocalReferenceNode.create(cvSlot));
     ValueNode source = IntegerLiteral.create(1L);
-    ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(source, expr));
+    ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(source, expr), isFirstSlot);
     assertEquals(13L, TestUtil.evaluate(chain, fdb.build(),
         List.of()));
   }
@@ -58,9 +59,10 @@ public class ChainTest {
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int isFirstSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode source = ArrayLiteral.create(List.of(IntegerLiteral.create(12)));
     ValueNode expr = ArrayReadNode.create(LocalReferenceNode.create(cvSlot), IntegerLiteral.create(1));
-    ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(source, expr));
+    ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(source, expr), isFirstSlot);
     assertEquals(12L, TestUtil.evaluate(chain, fdb.build(),
         List.of()));
   }

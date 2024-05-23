@@ -93,6 +93,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int chainIsFirstSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     Templates nextRow = defineNextRow();
 
     Templates matchers = new Templates();
@@ -102,7 +103,7 @@ public class PascalBenchmark extends TruffleBenchmark {
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
             ArrayLiteral.create(List.of(IntegerLiteral.create(1))),
             SendToTemplatesNode.create(chainCvSlot, matchers, 0)
-        ))
+        ), chainIsFirstSlot)
     )));
     CallTarget triangleCallTarget = TemplatesRootNode.create(fdb.build(), emitTriangle);
 
@@ -110,6 +111,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     int matchChainValuesSlot = fdbMatch.addSlot(FrameSlotKind.Static, null, null);
     int matchChainCvSlot = fdbMatch.addSlot(FrameSlotKind.Illegal, null, null);
     int matchChainResultSlot = fdbMatch.addSlot(FrameSlotKind.Static, null, null);
+    int matchChainIsFirstSlot = fdbMatch.addSlot(FrameSlotKind.Static, null, null);
     //    when <[](..50)> do
     MatcherNode whenLengthLe50 = LessThanMatcherNode.create(true,
         MessageNode.create("length", LocalReferenceNode.create(CV_SLOT)),
@@ -120,8 +122,8 @@ public class PascalBenchmark extends TruffleBenchmark {
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(
         LocalReferenceNode.create(CV_SLOT),
         SendToTemplatesNode.create(matchChainCvSlot, nextRow, 2),
-        SendToTemplatesNode.create(chainCvSlot, matchers, 1)
-    ));
+        SendToTemplatesNode.create(matchChainCvSlot, matchers, 1)
+    ), matchChainIsFirstSlot);
     //    otherwise
     MatcherNode otherwise = AlwaysTrueMatcherNode.create();
     //      $!
@@ -145,6 +147,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int chainIsFirstSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     Templates matchers = new Templates();
     //  templates next-row
@@ -157,7 +160,7 @@ public class PascalBenchmark extends TruffleBenchmark {
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
             IntegerLiteral.create(1),
             SendToTemplatesNode.create(chainCvSlot, matchers, 0)
-            )),
+            ), chainIsFirstSlot),
         GetStateNode.create(0, stateSlot)
         )));
     Templates nextRow = new Templates();
@@ -171,6 +174,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     int matchChainValuesSlot = fdbMatch.addSlot(FrameSlotKind.Static, null, null);
     int matchChainCvSlot = fdbMatch.addSlot(FrameSlotKind.Illegal, null, null);
     int matchChainResultSlot = fdbMatch.addSlot(FrameSlotKind.Static, null, null);
+    int matchChainIsFirstSlot = fdbMatch.addSlot(FrameSlotKind.Static, null, null);
     //    when <..$in::length> do
     MatcherNode whenLeLength = LessThanMatcherNode.create(true,
         LocalReferenceNode.create(CV_SLOT),
@@ -187,7 +191,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(
         AddNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1)),
         SendToTemplatesNode.create(matchChainCvSlot, matchers, 1)
-    ));
+    ), matchChainIsFirstSlot);
     //  end next-row
     matchers.setCallTarget(TemplatesRootNode.create(fdbMatch.build(), MatchStatementNode.create(List.of(
         MatchTemplateNode.create(

@@ -59,6 +59,7 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int chainIsFirstSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     // templates fibonacci
     Templates templates = new Templates();
@@ -79,8 +80,8 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     SubtractNode prevPrevInd = SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(2));
     SendToTemplatesNode sendPrevPrev = SendToTemplatesNode.create(chainCvSlot, templates, -1);
     ValueNode sum = AddNode.create(
-        AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevInd, sendPrev))),
-        AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevPrevInd, sendPrevPrev))));
+        AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevInd, sendPrev), chainIsFirstSlot)),
+        AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevPrevInd, sendPrevPrev), chainIsFirstSlot)));
     StatementNode otherwise = EmitNode.create(sum);
 
     MatchStatementNode matchStatement = MatchStatementNode.create(List.of(

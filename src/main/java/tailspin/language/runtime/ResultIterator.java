@@ -66,7 +66,7 @@ public class ResultIterator implements TruffleObject {
     return result;
   }
 
-  private void addObject(Object result) {
+  public void addObject(Object result) {
     if (end == elements.length) {
       elements = Arrays.copyOf(elements, end + EXTRA);
     }

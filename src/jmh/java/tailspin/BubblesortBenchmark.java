@@ -94,13 +94,13 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    int nestedChainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    int nestedChainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int nestedChainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int chainIsFirstSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int rangeCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int rangeResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     Templates flatMap = new Templates();
     // [50..1:-1
-    RangeIteration backwards = RangeIteration.create(nestedChainCvSlot, SendToTemplatesNode.create(nestedChainCvSlot, flatMap, 0), nestedChainResultSlot, IntegerLiteral.create(50L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
+    RangeIteration backwards = RangeIteration.create(rangeCvSlot, SendToTemplatesNode.create(rangeCvSlot, flatMap, 0), rangeResultSlot, IntegerLiteral.create(50L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
 
     // -> \($! 100 - $!\)
     BlockNode flatMapBlock = BlockNode.create(List.of(
@@ -116,7 +116,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     ChainNode task = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
         input,
         SendToTemplatesNode.create(chainCvSlot, sortedCopy, 0)
-    ));
+    ), chainIsFirstSlot);
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), EmitNode.create(task));
     return () -> (TailspinArray) callTarget.call(null, null);
@@ -213,6 +213,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int chainIsFirstSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     //    templates bubblesort
     Templates bubblesort = new Templates();
     Templates bubble = new Templates();
@@ -225,7 +226,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     ChainNode lengthToMatchers = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot,List.of(
         MessageNode.create("length", LocalReferenceNode.create(CV_SLOT)),
         SendToTemplatesNode.create(chainCvSlot, matchers, 0)
-    ));
+    ), chainIsFirstSlot);
     //    $@ !
     EmitNode emit = EmitNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot)));
     defineBubblesortMatchers(matchers, bubble);
@@ -245,6 +246,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int chainIsFirstSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     //        when <2..> do
     MatcherNode isGteq2 = GreaterThanMatcherNode.create(true, LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(2));
     //      $ -> bubble -> !#
@@ -252,7 +254,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         LocalReferenceNode.create(CV_SLOT),
         SendToTemplatesNode.create(chainCvSlot, bubble, 1),
         SendToTemplatesNode.create(chainCvSlot, matchers, 1)
-    )));
+    ), chainIsFirstSlot));
     MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
         MatchTemplateNode.create(isGteq2, whenGteq2)));
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), matchStatement);
