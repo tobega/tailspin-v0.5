@@ -1,5 +1,6 @@
 package tailspin.language.runtime;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.StopIterationException;
 import com.oracle.truffle.api.interop.TruffleObject;
@@ -86,6 +87,7 @@ public class ResultIterator implements TruffleObject {
     return count;
   }
 
+  @TruffleBoundary
   public Object[] getValueArray() {
     Object[] result = new Object[getValueCount()];
     for (int i = 0; hasIteratorNextElement(); i++) {

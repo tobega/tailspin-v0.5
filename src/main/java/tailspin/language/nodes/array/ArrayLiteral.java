@@ -24,7 +24,7 @@ public class ArrayLiteral extends ValueNode {
   public Object executeGeneric(VirtualFrame frame) {
     ResultIterator collector = ResultIterator.empty();
     for (ValueNode content : this.contents) {
-      collector = (ResultIterator) ResultIterator.merge(collector, content.executeGeneric(frame));
+      collector.addObject(content.executeGeneric(frame));
     }
     return TailspinArray.value(collector.getValueArray());
   }

@@ -166,3 +166,13 @@ Minor tweaks
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |  36,560 |±  0,136  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  |  12,035 |±  0,077  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  |1515,745 |± 24,911  |us/op|
+
+A TruffleBoundary shaves a little more, but what is the fundamental problem here?
+|Benchmark                                   |Mode  |Cnt     |Score    |Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt    |5  |  43,688 |±  0,757  |us/op|
+|BubblesortBenchmark.sort_java               |avgt    |5  |  20,069 |±  0,178  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt    |5  | 124,479 |±  0,769  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt    |5  |  53,445 |±  0,960  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt    |5  |  36,614 |±  0,218  |us/op|
+|PascalBenchmark.triangle_java               |avgt    |5  |  12,255 |±  0,165  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt    |5  |1505,070 |± 29,806  |us/op|
