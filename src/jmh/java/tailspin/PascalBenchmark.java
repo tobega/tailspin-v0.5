@@ -40,12 +40,16 @@ import tailspin.language.runtime.Templates;
 public class PascalBenchmark extends TruffleBenchmark {
   private static final Supplier<TailspinArray> tailspinPascal = createTailspinCall();
 
+  public static void main(String[] args) {
+    System.out.println(tailspinPascal.get());
+  }
+
   @Benchmark
   public void triangle_tailspin() {
     TailspinArray triangle = tailspinPascal.get();
     for (int i = 1; i < triangle.getArraySize(); i++) {
       if (((TailspinArray) triangle.getNative(i)).getArraySize() != i + 1) {
-        throw new AssertionError("wrong length " + i);
+        throw new AssertionError("wrong length for row " + i + ". Triangle is " + triangle);
       }
       if ((Long) ((TailspinArray) triangle.getNative(i)).getNative(1) != i) {
         throw new AssertionError("Wrong value " + i);
@@ -58,7 +62,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     List<List<Long>> triangle = triangle();
     for (int i = 1; i < triangle.size(); i++) {
       if (triangle.get(i).size() != i + 1) {
-        throw new AssertionError("wrong length " + i);
+        throw new AssertionError("wrong length for row " + i);
       }
       if (triangle.get(i).get(1) != i) {
         throw new AssertionError("Wrong value " + i);

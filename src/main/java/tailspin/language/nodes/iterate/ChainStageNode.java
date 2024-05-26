@@ -11,10 +11,10 @@ import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.interop.StopIterationException;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
+import java.util.ArrayList;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNodeGen.GetNextStreamValueNodeGen;
 import tailspin.language.nodes.iterate.ChainStageNodeGen.SetChainCvNodeGen;
@@ -23,7 +23,6 @@ import tailspin.language.nodes.iterate.InitResultNode.InitStreamResultNode;
 import tailspin.language.nodes.iterate.SetResultNode.SetSingleResultNode;
 import tailspin.language.nodes.iterate.SetResultNode.SetStreamResultNode;
 import tailspin.language.nodes.transform.EndOfStreamException;
-import tailspin.language.runtime.ResultIterator;
 
 public abstract class ChainStageNode extends ValueNode {
 
@@ -64,7 +63,7 @@ public abstract class ChainStageNode extends ValueNode {
 
   @Specialization(guards = "stream != null")
   @SuppressWarnings("unused")
-  public Object doValueStream(VirtualFrame frame, ResultIterator stream) {
+  public Object doValueStream(VirtualFrame frame, ArrayList<?> stream) {
     loop.execute(frame);
     Object results = frame.getObjectStatic(resultSlot);
     frame.setObjectStatic(resultSlot, null);
@@ -183,15 +182,11 @@ public abstract class ChainStageNode extends ValueNode {
     public abstract Object executeStream(VirtualFrame frame);
 
     @Specialization(guards = {"stream != null"})
-    public Object doStream(ResultIterator stream) {
-      try {
-        if (!stream.hasIteratorNextElement()) {
-          throw new EndOfStreamException();
-        }
-        return stream.getIteratorNextElement();
-      } catch (StopIterationException e) {
-        throw new RuntimeException(e);
+    public Object doStream(ArrayList<?> stream) {
+      if (stream.isEmpty()) {
+        throw new EndOfStreamException();
       }
+      return stream.removeFirst();
     }
 
     public static GetNextStreamValueNode create(int valuesSlot) {

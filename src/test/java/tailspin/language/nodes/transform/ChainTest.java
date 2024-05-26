@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.api.interop.StopIterationException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
@@ -13,15 +14,14 @@ import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.array.ArrayReadNode;
 import tailspin.language.nodes.iterate.ChainNode;
+import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
-import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.value.LocalReferenceNode;
-import tailspin.language.runtime.ResultIterator;
 
 public class ChainTest {
   @Test
-  void expression_chain_stage() throws StopIterationException {
+  void expression_chain_stage() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
@@ -29,12 +29,13 @@ public class ChainTest {
             IntegerLiteral.create(12),
             LocalReferenceNode.create(rangeSlot));
     RangeIteration source = RangeIteration.create(rangeSlot, expr, resultSlot, IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L));
-    ResultIterator result = (ResultIterator) TestUtil.evaluate(source, fdb.build(),
-        List.of());
-    assertEquals(13L, result.getIteratorNextElement());
-    assertEquals(14L, result.getIteratorNextElement());
-    assertEquals(15L, result.getIteratorNextElement());
-    assertFalse(result.hasIteratorNextElement());
+    @SuppressWarnings("unchecked")
+    Iterator<Object> result = ((ArrayList<Object>) TestUtil.evaluate(source, fdb.build(),
+        List.of())).iterator();
+    assertEquals(13L, result.next());
+    assertEquals(14L, result.next());
+    assertEquals(15L, result.next());
+    assertFalse(result.hasNext());
   }
 
   @Test

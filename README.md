@@ -176,3 +176,13 @@ A TruffleBoundary shaves a little more, but what is the fundamental problem here
 |FibonacciBenchmark.recursive_java           |avgt    |5  |  36,614 |±  0,218  |us/op|
 |PascalBenchmark.triangle_java               |avgt    |5  |  12,255 |±  0,165  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt    |5  |1505,070 |± 29,806  |us/op|
+
+Using ArrayList instead of ResultIterator is miraculous
+|Benchmark                                   |Mode  |Cnt  |  Score |  Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  | 42,483 |± 1,317  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  | 20,389 |± 0,917  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |123,362 |± 1,176  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 53,446 |± 3,029  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,578 |± 0,256  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  | 12,095 |± 0,129  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  | 36,387 |± 0,538  |us/op|

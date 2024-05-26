@@ -2,9 +2,9 @@ package tailspin.language.nodes.array;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import java.util.ArrayList;
 import java.util.List;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.runtime.ResultIterator;
 import tailspin.language.runtime.TailspinArray;
 
 public class ArrayLiteral extends ValueNode {
@@ -22,10 +22,15 @@ public class ArrayLiteral extends ValueNode {
   @Override
   @ExplodeLoop
   public Object executeGeneric(VirtualFrame frame) {
-    ResultIterator collector = ResultIterator.empty();
+    ArrayList<Object> collector = new ArrayList<>();
     for (ValueNode content : this.contents) {
-      collector.addObject(content.executeGeneric(frame));
+      Object value = content.executeGeneric(frame);
+      if (value instanceof ArrayList<?> values) {
+        collector.addAll(values);
+      } else {
+        collector.add(value);
+      }
     }
-    return TailspinArray.value(collector.getValueArray());
+    return TailspinArray.value(collector.toArray());
   }
 }

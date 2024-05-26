@@ -3,11 +3,10 @@ package tailspin.language.nodes.transform;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.interop.StopIterationException;
+import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.runtime.ResultIterator;
 
 @SuppressWarnings("unused")
 @NodeChild(value = "result", type = ValueNode.class)
@@ -19,13 +18,9 @@ public abstract class SinkNode extends StatementNode {
 
   @Specialization(guards = {"stream != null"})
   @TruffleBoundary
-  void doEmpty(ResultIterator stream) {
-    try {
-      if (stream.hasIteratorNextElement())
-        throw new TypeError("Got unexpected value from sink " + stream.getIteratorNextElement());
-    } catch (StopIterationException e) {
-      throw new RuntimeException(e);
-    }
+  void doEmpty(ArrayList<?> stream) {
+    if (!stream.isEmpty())
+      throw new TypeError("Got unexpected values from sink " + stream);
   }
 
   @Specialization

@@ -5,7 +5,7 @@ import static com.oracle.truffle.api.CompilerDirectives.castExact;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
-import tailspin.language.runtime.ResultIterator;
+import java.util.ArrayList;
 
 public abstract class SetResultNode extends Node {
 
@@ -35,13 +35,20 @@ public abstract class SetResultNode extends Node {
     }
 
     void execute(VirtualFrame frame, Object result) {
-      ResultIterator previous = castExact(frame.getObjectStatic(resultSlot), ResultIterator.class);
+      @SuppressWarnings("unchecked")
+      ArrayList<Object> previous = castExact(frame.getObjectStatic(resultSlot), ArrayList.class);
       addToPrevious(previous, result);
     }
 
     @TruffleBoundary
-    private void addToPrevious(ResultIterator previous, Object result) {
-      previous.addObject(result);
+    private void addToPrevious(ArrayList<Object> previous, Object result) {
+      if (result != null) {
+        if (result instanceof ArrayList<?> results) {
+          previous.addAll(results);
+        } else {
+          previous.add(result);
+        }
+      }
     }
   }
 }

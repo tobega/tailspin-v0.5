@@ -2,7 +2,7 @@ package tailspin.language.nodes.iterate;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
-import tailspin.language.runtime.ResultIterator;
+import java.util.ArrayList;
 
 public abstract class InitResultNode extends Node {
 
@@ -30,7 +30,7 @@ public abstract class InitResultNode extends Node {
     }
 
     void execute(VirtualFrame frame) {
-      frame.setObjectStatic(resultSlot, ResultIterator.empty());
+      frame.setObjectStatic(resultSlot, new ArrayList<>());
     }
   }
 }

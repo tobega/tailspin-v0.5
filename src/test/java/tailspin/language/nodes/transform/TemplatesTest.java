@@ -7,27 +7,27 @@ import static tailspin.language.runtime.Templates.CV_SLOT;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.api.interop.StopIterationException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.array.ArrayLiteral;
+import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
-import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.value.LocalReferenceNode;
-import tailspin.language.runtime.ResultIterator;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.Templates;
 
 public class TemplatesTest {
   @Test
-  void simple_function() throws StopIterationException {
+  void simple_function() {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
 
     ValueNode expr1 = AddNode.create(
@@ -41,10 +41,11 @@ public class TemplatesTest {
     StatementNode second = EmitNode.create(expr2);
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(first, second)));
-    ResultIterator result = (ResultIterator) callTarget.call(3L);
-    assertEquals(8L, result.getIteratorNextElement());
-    assertEquals(10L, result.getIteratorNextElement());
-    assertFalse(result.hasIteratorNextElement());
+    @SuppressWarnings("unchecked")
+    Iterator<Object> result = ((ArrayList<Object>) callTarget.call(3L)).iterator();
+    assertEquals(8L, result.next());
+    assertEquals(10L, result.next());
+    assertFalse(result.hasNext());
   }
 
   @Test

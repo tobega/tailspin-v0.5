@@ -7,11 +7,11 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
+import java.util.ArrayList;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNode.SetChainCvNode;
 import tailspin.language.nodes.iterate.RangeIterationNodeGen.RangeIteratorNodeGen;
 import tailspin.language.nodes.transform.EndOfStreamException;
-import tailspin.language.runtime.ResultIterator;
 
 @NodeChild(value = "start", type = ValueNode.class)
 @NodeChild(value = "end", type = ValueNode.class)
@@ -38,6 +38,7 @@ public abstract class RangeIteration extends ValueNode {
 
   @Specialization
   public Object doLong(VirtualFrame frame, long start, long end, long increment) {
+    frame.setObjectStatic(resultSlot, new ArrayList<>());
     repeatingNode.initialize(start, end, increment);
     loop.execute(frame);
     Object results = frame.getObjectStatic(resultSlot);
@@ -85,8 +86,13 @@ public abstract class RangeIteration extends ValueNode {
       }
       Object result = stage.executeGeneric(frame);
       if (result != null) {
-        Object previous = frame.getObjectStatic(resultSlot);
-        frame.setObjectStatic(resultSlot, ResultIterator.merge(previous, result));
+        @SuppressWarnings("unchecked")
+        ArrayList<Object> previous = (ArrayList<Object>) frame.getObjectStatic(resultSlot);
+        if (result instanceof ArrayList<?> values) {
+          previous.addAll(values);
+        } else {
+          previous.add(result);
+        }
       }
       return true;
     }

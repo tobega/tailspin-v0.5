@@ -109,4 +109,9 @@ public class TailspinArray implements TruffleObject {
   public Object getMembers(@SuppressWarnings("unused") boolean includeInternal) {
     return TailspinArray.value(new String[]{"length"});
   }
+
+  @Override
+  public String toString() {
+    return Arrays.deepToString(arrayElements);
+  }
 }
