@@ -22,7 +22,6 @@ import tailspin.language.nodes.transform.MatchStatementNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
-import tailspin.language.nodes.value.AssertSingleValueNodeGen;
 import tailspin.language.nodes.value.LocalReferenceNode;
 import tailspin.language.runtime.Templates;
 
@@ -80,8 +79,8 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     SubtractNode prevPrevInd = SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(2));
     SendToTemplatesNode sendPrevPrev = SendToTemplatesNode.create(chainCvSlot, templates, -1);
     ValueNode sum = AddNode.create(
-        AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevInd, sendPrev), chainIsFirstSlot)),
-        AssertSingleValueNodeGen.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevPrevInd, sendPrevPrev), chainIsFirstSlot)));
+        ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevInd, sendPrev), chainIsFirstSlot),
+        ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(prevPrevInd, sendPrevPrev), chainIsFirstSlot));
     StatementNode otherwise = EmitNode.create(sum);
 
     MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
