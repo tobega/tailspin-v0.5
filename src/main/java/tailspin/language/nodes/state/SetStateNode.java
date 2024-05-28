@@ -1,6 +1,6 @@
 package tailspin.language.nodes.state;
 
-import static tailspin.language.nodes.transform.SendToTemplatesNode.DEFINING_SCOPE_ARG;
+import static tailspin.language.nodes.value.GetContextFrameNode.DEFINING_SCOPE_ARG;
 
 import com.oracle.truffle.api.dsl.Idempotent;
 import com.oracle.truffle.api.dsl.NodeChild;

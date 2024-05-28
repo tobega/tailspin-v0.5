@@ -3,6 +3,7 @@ package tailspin;
 import static tailspin.language.runtime.Templates.CV_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import java.util.ArrayList;
@@ -141,7 +142,7 @@ public class PascalBenchmark extends TruffleBenchmark {
         MatchTemplateNode.create(otherwise, emitValue2)
     ))));
 
-    return () -> (TailspinArray) triangleCallTarget.call(null, null);
+    return () -> (TailspinArray) triangleCallTarget.call(null, Truffle.getRuntime().createMaterializedFrame(new Object[0]));
   }
 
   private static Templates defineNextRow() {

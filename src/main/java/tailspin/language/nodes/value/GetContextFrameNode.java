@@ -1,7 +1,6 @@
 package tailspin.language.nodes.value;
 
-import static tailspin.language.nodes.transform.SendToTemplatesNode.DEFINING_SCOPE_ARG;
-
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -10,6 +9,9 @@ import com.oracle.truffle.api.nodes.Node;
 
 @GenerateInline
 public abstract class GetContextFrameNode extends Node {
+
+  public static final int DEFINING_SCOPE_ARG = 1;
+
   public abstract VirtualFrame execute(VirtualFrame frame, Node node, int level);
 
   @Specialization(guards = "level == 0")
@@ -17,13 +19,19 @@ public abstract class GetContextFrameNode extends Node {
     return frame;
   }
 
-  @Specialization
+  @Specialization(guards = "level > 0")
   @ExplodeLoop
   VirtualFrame doUplevel(VirtualFrame frame, int level) {
     VirtualFrame definingScope = frame;
     for (int i = 0; i < level; i++)
       definingScope = (VirtualFrame) definingScope.getArguments()[DEFINING_SCOPE_ARG];
     return definingScope;
+  }
+
+  @Fallback
+  @SuppressWarnings("unused")
+  VirtualFrame doNone(VirtualFrame frame, int level) {
+    return null;
   }
 
   public static GetContextFrameNode create() {
