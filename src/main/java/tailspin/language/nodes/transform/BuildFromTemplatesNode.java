@@ -14,7 +14,7 @@ import tailspin.language.nodes.value.GetContextFrameNode;
 import tailspin.language.nodes.value.LocalReferenceNode;
 import tailspin.language.runtime.Templates;
 
-public abstract class SendToTemplatesNode extends ValueNode {
+public abstract class BuildFromTemplatesNode extends ValueNode {
 
   @Child @Executed
   @SuppressWarnings("FieldMayBeFinal")
@@ -22,15 +22,18 @@ public abstract class SendToTemplatesNode extends ValueNode {
 
   private final Templates templates;
   protected final int definitionLevel;
+  protected final int resultSlot;
 
-  protected SendToTemplatesNode(int chainCvSlot, Templates templates, int definitionLevel) {
+  protected BuildFromTemplatesNode(int chainCvSlot, Templates templates, int definitionLevel,
+      int resultSlot) {
     this.valueNode = LocalReferenceNode.create(chainCvSlot);
     this.definitionLevel = definitionLevel;
     this.templates = templates;
+    this.resultSlot = resultSlot;
   }
 
-  public static SendToTemplatesNode create(int chainCvSlot, Templates templates, int definitionLevel) {
-    return SendToTemplatesNodeGen.create(chainCvSlot, templates, definitionLevel);
+  public static BuildFromTemplatesNode create(int chainCvSlot, Templates templates, int definitionLevel, int resultSlot) {
+    return BuildFromTemplatesNodeGen.create(chainCvSlot, templates, definitionLevel, resultSlot);
   }
 
   @Specialization(guards = "definitionLevel >= 0")
@@ -38,25 +41,31 @@ public abstract class SendToTemplatesNode extends ValueNode {
       @Cached(inline = true) GetContextFrameNode getContextFrameNode,
       @Cached @Shared DispatchNode dispatchNode) {
     VirtualFrame contextFrame = getContextFrameNode.execute(frame, this, definitionLevel);
-    return dispatchNode.executeDispatch(templates, value, contextFrame.materialize());
+    Object resultBuilder = frame.getObjectStatic(resultSlot);
+    Object result = dispatchNode.executeDispatch(templates, value, contextFrame.materialize(),
+        resultBuilder);
+    frame.setObjectStatic(resultSlot, result);
+    return null;
   }
 
   @Specialization(guards = "definitionLevel < 0")
   public Object doFree(@SuppressWarnings("unused") VirtualFrame frame, Object value,
       @Cached @Shared DispatchNode dispatchNode) {
-    return dispatchNode.executeDispatch(templates, value, null);
+    Object resultBuilder = frame.getObjectStatic(resultSlot);
+    return dispatchNode.executeDispatch(templates, value, null, resultBuilder);
   }
 
   @GenerateInline(value = false)
   public static abstract class DispatchNode extends Node {
-    public abstract Object executeDispatch(Templates templates, Object currentValue, Frame definingScope);
+    public abstract Object executeDispatch(Templates templates, Object currentValue, Frame definingScope, Object resultBuilder);
     @Specialization
     protected static Object dispatchDirectly(
         @SuppressWarnings("unused") Templates templates,
         Object currentValue,
         Frame definingScope,
+        Object resultBuilder,
         @Cached("create(templates.getCallTarget())") DirectCallNode directCallNode) {
-      return directCallNode.call(currentValue, definingScope, null);
+      return directCallNode.call(currentValue, definingScope, resultBuilder);
     }
   }
 }

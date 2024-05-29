@@ -52,7 +52,12 @@ public abstract class ChainStageNode extends ValueNode {
   public Object doLong(VirtualFrame frame, long value, @Shared("cvSetters") @Cached(parameters = "cvSlot") SetChainCvNode setCv) {
     setCv.setLong(frame, value);
     frame.setObjectStatic(valuesSlot, null);
-    return stage.executeGeneric(frame);
+    Object result = stage.executeGeneric(frame);
+    if (result == null) {
+      result = frame.getObjectStatic(resultSlot);
+      frame.setObjectStatic(resultSlot, null);
+    }
+    return result;
   }
 
   @Specialization(guards = "value == null")
@@ -75,7 +80,12 @@ public abstract class ChainStageNode extends ValueNode {
   public Object doSingle(VirtualFrame frame, Object value, @Shared("cvSetters") @Cached(parameters = "cvSlot") SetChainCvNode setCv) {
     setCv.execute(frame, value);
     frame.setObjectStatic(valuesSlot, null);
-    return stage.executeGeneric(frame);
+    Object result =  stage.executeGeneric(frame);
+    if (result == null) {
+      result = frame.getObjectStatic(resultSlot);
+      frame.setObjectStatic(resultSlot, null);
+    }
+    return result;
   }
 
   static ChainStageNode create(int chainValuesSlot, int chainCvSlot, ValueNode stage, int chainResultSlot, int isFirstSlot) {

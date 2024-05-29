@@ -9,9 +9,13 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import tailspin.language.nodes.StatementNode;
-import tailspin.language.nodes.value.LocalDefinitionNodeGen;
+import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.value.LocalDefinitionNode;
 
 public class TemplatesRootNode extends RootNode {
+  private static final int CV_ARG = 0;
+  private static final int RESULT_BUILDER_ARG = 2;
+
   @SuppressWarnings("FieldMayBeFinal")
   @Child
   private StatementNode setCurrentValue;
@@ -19,15 +23,16 @@ public class TemplatesRootNode extends RootNode {
   @Child
   private StatementNode statement;
   private TemplatesRootNode(TruffleLanguage<?> language,
-      FrameDescriptor frameDescriptor, StatementNode setCurrentValue, StatementNode statement) {
+      FrameDescriptor frameDescriptor, StatementNode statement) {
     super(language, frameDescriptor);
-    this.setCurrentValue = setCurrentValue;
+    this.setCurrentValue = LocalDefinitionNode.create(new ReadArgumentNode(CV_ARG), CV_SLOT);
     this.statement = statement;
   }
 
   @Override
   public Object execute(VirtualFrame frame) {
     setCurrentValue.executeVoid(frame);
+    frame.setObjectStatic(EMIT_SLOT, frame.getArguments()[RESULT_BUILDER_ARG]);
     statement.executeVoid(frame);
     Object results = frame.getObjectStatic(EMIT_SLOT);
     frame.setObjectStatic(EMIT_SLOT, null);
@@ -36,6 +41,19 @@ public class TemplatesRootNode extends RootNode {
 
   public static CallTarget create(FrameDescriptor fd, StatementNode body) {
     return new TemplatesRootNode(null, fd,
-        LocalDefinitionNodeGen.create(new ReadCvArgumentNode(), CV_SLOT), body).getCallTarget();
+        body).getCallTarget();
+  }
+
+  public static class ReadArgumentNode extends ValueNode {
+    final int argIndex;
+
+    public ReadArgumentNode(int argIndex) {
+      this.argIndex = argIndex;
+    }
+
+    @Override
+    public Object executeGeneric(VirtualFrame frame) {
+      return frame.getArguments()[argIndex];
+    }
   }
 }

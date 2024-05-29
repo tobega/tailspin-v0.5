@@ -31,7 +31,8 @@ public abstract class ChainNode extends ValueNode {
   public Object doChain(VirtualFrame frame, @Cached(inline = true) SetFirstNode setFirstNode) {
     for (int i = 0; i < stages.length - 1; i++) {
       setFirstNode.execute(frame, this, isFirstSlot, true);
-      frame.setObjectStatic(valuesSlot, stages[i].executeGeneric(frame));
+      Object result = stages[i].executeGeneric(frame);
+      frame.setObjectStatic(valuesSlot, result);
     }
     setFirstNode.execute(frame, this, isFirstSlot, true);
     Object result = stages[stages.length - 1].executeGeneric(frame);

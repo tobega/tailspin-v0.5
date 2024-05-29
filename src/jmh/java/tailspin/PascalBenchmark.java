@@ -1,6 +1,7 @@
 package tailspin;
 
 import static tailspin.language.runtime.Templates.CV_SLOT;
+import static tailspin.language.runtime.Templates.EMIT_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.Truffle;
@@ -22,10 +23,10 @@ import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.state.GetStateNode;
 import tailspin.language.nodes.state.SetStateNode;
 import tailspin.language.nodes.transform.BlockNode;
+import tailspin.language.nodes.transform.BuildFromTemplatesNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
-import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.nodes.value.LocalDefinitionNode;
 import tailspin.language.nodes.value.LocalReferenceNode;
@@ -48,6 +49,7 @@ public class PascalBenchmark extends TruffleBenchmark {
   @Benchmark
   public void triangle_tailspin() {
     TailspinArray triangle = tailspinPascal.get();
+    if (triangle.getArraySize() != 51) throw new AssertionError("Wrong number of rows " + triangle.getArraySize());
     for (int i = 1; i < triangle.getArraySize(); i++) {
       if (((TailspinArray) triangle.getNative(i)).getArraySize() != i + 1) {
         throw new AssertionError("wrong length for row " + i + ". Triangle is " + triangle);
@@ -59,8 +61,9 @@ public class PascalBenchmark extends TruffleBenchmark {
   }
 
   @Benchmark
-  public void triangle_java() {
+  public static void triangle_java() {
     List<List<Long>> triangle = triangle();
+    if (triangle.size() != 51) throw new AssertionError("Wrong number of rows " + triangle.size());
     for (int i = 1; i < triangle.size(); i++) {
       if (triangle.get(i).size() != i + 1) {
         throw new AssertionError("wrong length for row " + i);
@@ -107,7 +110,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     EmitNode emitTriangle = EmitNode.create(ArrayLiteral.create(List.of(
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
             ArrayLiteral.create(List.of(IntegerLiteral.create(1))),
-            SendToTemplatesNode.create(chainCvSlot, matchers, 0)
+            BuildFromTemplatesNode.create(chainCvSlot, matchers, 0, chainResultSlot)
         ), chainIsFirstSlot)
     )));
     CallTarget triangleCallTarget = TemplatesRootNode.create(fdb.build(), emitTriangle);
@@ -126,8 +129,8 @@ public class PascalBenchmark extends TruffleBenchmark {
     //      $ -> next-row -> #
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(
         LocalReferenceNode.create(CV_SLOT),
-        SendToTemplatesNode.create(matchChainCvSlot, nextRow, 2),
-        SendToTemplatesNode.create(matchChainCvSlot, matchers, 1)
+        BuildFromTemplatesNode.create(matchChainCvSlot, nextRow, 2, matchChainResultSlot),
+        BuildFromTemplatesNode.create(matchChainCvSlot, matchers, 1, EMIT_SLOT)
     ), matchChainIsFirstSlot);
     //    otherwise
     MatcherNode otherwise = AlwaysTrueMatcherNode.create();
@@ -142,7 +145,7 @@ public class PascalBenchmark extends TruffleBenchmark {
         MatchTemplateNode.create(otherwise, emitValue2)
     ))));
 
-    return () -> (TailspinArray) triangleCallTarget.call(null, Truffle.getRuntime().createMaterializedFrame(new Object[0]));
+    return () -> (TailspinArray) triangleCallTarget.call(null, Truffle.getRuntime().createMaterializedFrame(new Object[0]), null);
   }
 
   private static Templates defineNextRow() {
@@ -164,7 +167,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     EmitNode emitRow = EmitNode.create(ArrayLiteral.create(List.of(
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
             IntegerLiteral.create(1),
-            SendToTemplatesNode.create(chainCvSlot, matchers, 0)
+            BuildFromTemplatesNode.create(chainCvSlot, matchers, 0, chainResultSlot)
             ), chainIsFirstSlot),
         GetStateNode.create(0, stateSlot)
         )));
@@ -195,7 +198,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     //      $ + 1 -> #
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(
         AddNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1)),
-        SendToTemplatesNode.create(matchChainCvSlot, matchers, 1)
+        BuildFromTemplatesNode.create(matchChainCvSlot, matchers, 1, EMIT_SLOT)
     ), matchChainIsFirstSlot);
     //  end next-row
     matchers.setCallTarget(TemplatesRootNode.create(fdbMatch.build(), MatchStatementNode.create(List.of(

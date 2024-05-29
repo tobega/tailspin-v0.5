@@ -186,3 +186,14 @@ Using ArrayList instead of ResultIterator is miraculous
 |FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,578 |± 0,256  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  | 12,095 |± 0,129  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  | 36,387 |± 0,538  |us/op|
+
+Sending in a result builder into templates introduces a little overhead but has a good effect
+on the Pascal benchmark.
+|Benchmark                                   |Mode  |Cnt  |  Score |  Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  | 43,741 |± 1,528  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  | 20,439 |± 1,197  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |128,674 |± 1,709  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 61,445 |± 0,758  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  | 41,898 |± 0,103  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  | 12,283 |± 0,200  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  | 25,659 |± 0,379  |us/op|

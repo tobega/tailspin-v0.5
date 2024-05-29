@@ -119,7 +119,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     ), chainIsFirstSlot);
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), EmitNode.create(task));
-    return () -> (TailspinArray) callTarget.call(null, null);
+    return () -> (TailspinArray) callTarget.call(null, null, null);
   }
 
   private static Templates defineSortedCopy() {

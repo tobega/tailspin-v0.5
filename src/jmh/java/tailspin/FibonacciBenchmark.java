@@ -93,7 +93,7 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), matchStatement);
     templates.setCallTarget(callTarget);
     return () -> {
-      Long results = (Long) callTarget.call(20L, null);
+      Long results = (Long) callTarget.call(20L, null, null);
       return results.intValue();
     };
   }
