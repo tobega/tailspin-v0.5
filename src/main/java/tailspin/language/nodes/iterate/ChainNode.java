@@ -1,42 +1,43 @@
 package tailspin.language.nodes.iterate;
 
-import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import java.util.List;
-import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.TransformNode;
 
-public abstract class ChainNode extends ValueNode {
-  private final int valuesSlot;
+public abstract class ChainNode extends TransformNode {
   @Children
-  private final ValueNode[] stages;
-  private final int isFirstSlot;
+  private final TransformNode[] stages;
 
-  ChainNode(int valuesSlot, int cvSlot, int resultSlot, List<ValueNode> stages, int isFirstSlot) {
-    this.valuesSlot = valuesSlot;
-    this.stages = stages.toArray(new ValueNode[0]);
-    this.isFirstSlot = isFirstSlot;
+  ChainNode(int valuesSlot, int cvSlot, int resultSlot, List<TransformNode> stages) {
+    this.stages = stages.toArray(new TransformNode[0]);
+    this.stages[0].setResultSlot(valuesSlot);
     for (int i = 1; i < this.stages.length; i++) {
-      this.stages[i] = ChainStageNode.create(valuesSlot, cvSlot, this.stages[i], resultSlot, isFirstSlot);
+      this.stages[i] = ChainStageNode.create(valuesSlot, cvSlot, this.stages[i]);
+      this.stages[i].setResultSlot(resultSlot);
+      int temp = valuesSlot;
+      valuesSlot = resultSlot;
+      resultSlot = temp;
     }
+    super.setResultSlot(valuesSlot);
   }
 
-  public static ChainNode create(int chainValuesSlot, int chainCvSlot, int chainResultSlot, List<ValueNode> stages, int isFirstSlot) {
-    return ChainNodeGen.create(chainValuesSlot, chainCvSlot, chainResultSlot, stages, isFirstSlot);
+  @Override
+  public void setResultSlot(int resultSlot) {
+    super.setResultSlot(resultSlot);
+    stages[stages.length - 1].setResultSlot(resultSlot);
+  }
+
+  public static ChainNode create(int chainValuesSlot, int chainCvSlot, int chainResultSlot, List<TransformNode> stages) {
+    return ChainNodeGen.create(chainValuesSlot, chainCvSlot, chainResultSlot, stages);
   }
 
   @Specialization
   @ExplodeLoop
-  public Object doChain(VirtualFrame frame, @Cached(inline = true) SetFirstNode setFirstNode) {
-    for (int i = 0; i < stages.length - 1; i++) {
-      setFirstNode.execute(frame, this, isFirstSlot, true);
-      Object result = stages[i].executeGeneric(frame);
-      frame.setObjectStatic(valuesSlot, result);
+  public void doChain(VirtualFrame frame) {
+    for (int i = 0; i < stages.length; i++) {
+      stages[i].executeTransform(frame);
     }
-    setFirstNode.execute(frame, this, isFirstSlot, true);
-    Object result = stages[stages.length - 1].executeGeneric(frame);
-    frame.setObjectStatic(valuesSlot, null);
-    return result;
   }
 }

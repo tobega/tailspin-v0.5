@@ -7,7 +7,9 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.TestUtil;
+import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.processor.MessageNode;
@@ -20,11 +22,12 @@ public class ArrayTest {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    ValueNode array = ArrayLiteral.create(
+    int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    ValueNode array = ArrayLiteral.create(buildSlot,
         List.of(
-            RangeIteration.create(rangeSlot, LocalReferenceNode.create(rangeSlot), resultSlot, IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L)),
-            IntegerLiteral.create(6),
-            RangeIteration.create(rangeSlot, LocalReferenceNode.create(rangeSlot), resultSlot, IntegerLiteral.create(10L), IntegerLiteral.create(15L), IntegerLiteral.create(5L))));
+            RangeIteration.create(rangeSlot, ResultAggregatingNode.create(LocalReferenceNode.create(rangeSlot)), resultSlot, IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L)),
+            ResultAggregatingNode.create(IntegerLiteral.create(6)),
+            RangeIteration.create(rangeSlot, ResultAggregatingNode.create(LocalReferenceNode.create(rangeSlot)), resultSlot, IntegerLiteral.create(10L), IntegerLiteral.create(15L), IntegerLiteral.create(5L))));
     ValueNode readNode = ArrayReadNode.create(array, IntegerLiteral.create(4));
     assertEquals(6L, TestUtil.evaluate(readNode, fdb.build(), List.of()));
   }
@@ -34,11 +37,12 @@ public class ArrayTest {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    ValueNode array = ArrayLiteral.create(
+    int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    ValueNode array = ArrayLiteral.create(buildSlot,
         List.of(
-            RangeIteration.create(rangeSlot, LocalReferenceNode.create(rangeSlot), resultSlot, IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L)),
-            IntegerLiteral.create(6),
-            RangeIteration.create(rangeSlot, LocalReferenceNode.create(rangeSlot), resultSlot, IntegerLiteral.create(10L), IntegerLiteral.create(15L), IntegerLiteral.create(5L))));
+            RangeIteration.create(rangeSlot, ResultAggregatingNode.create(LocalReferenceNode.create(rangeSlot)), resultSlot, IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L)),
+            ResultAggregatingNode.create(IntegerLiteral.create(6)),
+            RangeIteration.create(rangeSlot, ResultAggregatingNode.create(LocalReferenceNode.create(rangeSlot)), resultSlot, IntegerLiteral.create(10L), IntegerLiteral.create(15L), IntegerLiteral.create(5L))));
     ValueNode writeNode = ArrayWriteNode.create(array, IntegerLiteral.create(4), IntegerLiteral.create(35));
     ValueNode readNode = ArrayReadNode.create(writeNode, IntegerLiteral.create(4));
     assertEquals(35L, TestUtil.evaluate(readNode, fdb.build(), List.of()));
@@ -49,11 +53,12 @@ public class ArrayTest {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    ValueNode array = ArrayLiteral.create(
+    int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    ValueNode array = ArrayLiteral.create(buildSlot,
         List.of(
-            RangeIteration.create(rangeSlot, LocalReferenceNode.create(rangeSlot), resultSlot, IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L)),
-            IntegerLiteral.create(6),
-            RangeIteration.create(rangeSlot, LocalReferenceNode.create(rangeSlot), resultSlot, IntegerLiteral.create(10L), IntegerLiteral.create(15L), IntegerLiteral.create(5L))));
+            RangeIteration.create(rangeSlot, ResultAggregatingNode.create(LocalReferenceNode.create(rangeSlot)), resultSlot, IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L)),
+            ResultAggregatingNode.create(IntegerLiteral.create(6)),
+            RangeIteration.create(rangeSlot, ResultAggregatingNode.create(LocalReferenceNode.create(rangeSlot)), resultSlot, IntegerLiteral.create(10L), IntegerLiteral.create(15L), IntegerLiteral.create(5L))));
     ValueNode lengthNode = MessageNode.create("length", array);
     assertEquals(6L, TestUtil.evaluate(lengthNode, fdb.build(), List.of()));
   }
@@ -63,8 +68,9 @@ public class ArrayTest {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    ValueNode contents = RangeIteration.create(rangeSlot, IntegerLiteral.create(0), resultSlot, IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L));
-    ValueNode arrayNode = ArrayLiteral.create(List.of(contents));
+    int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    TransformNode contents = RangeIteration.create(rangeSlot, ResultAggregatingNode.create(IntegerLiteral.create(0)), resultSlot, IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L));
+    ValueNode arrayNode = ArrayLiteral.create(buildSlot, List.of(contents));
     TailspinArray array = (TailspinArray) TestUtil.evaluate(arrayNode, fdb.build(), List.of());
     assertEquals(3, array.getArraySize());
     for (int i = 0; i < array.getArraySize(); i++) assertEquals(0L, array.getNative(i));

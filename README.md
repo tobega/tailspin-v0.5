@@ -197,3 +197,13 @@ on the Pascal benchmark.
 |FibonacciBenchmark.recursive_java           |avgt  |  5  | 41,898 |± 0,103  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  | 12,283 |± 0,200  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  | 25,659 |± 0,379  |us/op|
+
+Better separation between streams (from transforms) and simple values
+|Benchmark                                   |Mode  |Cnt  |  Score |  Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  | 41,064 |± 0,474  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  | 20,252 |± 0,232  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |136,688 |± 2,323  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  | 63,402 |± 0,679  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,651 |± 0,173  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  | 12,352 |± 0,195  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  | 20,969 |± 0,348  |us/op|

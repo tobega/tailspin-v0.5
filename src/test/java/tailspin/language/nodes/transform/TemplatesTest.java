@@ -16,6 +16,7 @@ import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.iterate.RangeIteration;
+import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
 import tailspin.language.nodes.numeric.AddNode;
@@ -33,16 +34,16 @@ public class TemplatesTest {
     ValueNode expr1 = AddNode.create(
         IntegerLiteral.create(5),
         LocalReferenceNode.create(CV_SLOT));
-    StatementNode first = EmitNode.create(expr1);
+    StatementNode first = EmitNode.create(ResultAggregatingNode.create(expr1));
 
     ValueNode expr2 = AddNode.create(
         IntegerLiteral.create(7),
         LocalReferenceNode.create(CV_SLOT));
-    StatementNode second = EmitNode.create(expr2);
+    StatementNode second = EmitNode.create(ResultAggregatingNode.create(expr2));
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(first, second)));
     @SuppressWarnings("unchecked")
-    Iterator<Object> result = ((ArrayList<Object>) callTarget.call(3L)).iterator();
+    Iterator<Object> result = ((ArrayList<Object>) callTarget.call(3L, null, null)).iterator();
     assertEquals(8L, result.next());
     assertEquals(10L, result.next());
     assertFalse(result.hasNext());
@@ -54,10 +55,10 @@ public class TemplatesTest {
 
     MatcherNode eq3 = EqualityMatcherNodeGen.create(
         LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(3));
-    StatementNode whenEq3 = EmitNode.create(IntegerLiteral.create(0));
+    StatementNode whenEq3 = EmitNode.create(ResultAggregatingNode.create(IntegerLiteral.create(0)));
 
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
-    StatementNode otherwise = EmitNode.create(LocalReferenceNode.create(CV_SLOT));
+    StatementNode otherwise = EmitNode.create(ResultAggregatingNode.create(LocalReferenceNode.create(CV_SLOT)));
 
     MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
         MatchTemplateNode.create(eq3, whenEq3),
@@ -65,9 +66,9 @@ public class TemplatesTest {
     ));
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), matchStatement);
-    assertEquals(0L, callTarget.call(3L));
+    assertEquals(0L, callTarget.call(3L, null, null));
 
-    assertEquals(5L, callTarget.call(5L));
+    assertEquals(5L, callTarget.call(5L, null, null));
   }
 
   @Test
@@ -75,6 +76,7 @@ public class TemplatesTest {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     Templates flatMap = new Templates();
     // [100..1:-1
@@ -82,17 +84,17 @@ public class TemplatesTest {
 
     // -> \($! 100 - $!\)
     BlockNode flatMapBlock = BlockNode.create(List.of(
-        EmitNode.create(LocalReferenceNode.create(CV_SLOT)),
-        EmitNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(CV_SLOT))
+        EmitNode.create(ResultAggregatingNode.create(LocalReferenceNode.create(CV_SLOT))),
+        EmitNode.create(ResultAggregatingNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(CV_SLOT)))
         )
     ));
     flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), flatMapBlock));
 
     // ]
-    ArrayLiteral input = ArrayLiteral.create(List.of(backwards));
+    ArrayLiteral input = ArrayLiteral.create(buildSlot, List.of(backwards));
 
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), EmitNode.create(input));
-    TailspinArray result = (TailspinArray) callTarget.call((Object) null);
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), EmitNode.create(ResultAggregatingNode.create(input)));
+    TailspinArray result = (TailspinArray) callTarget.call(null, null, null);
     assertEquals(200, result.getArraySize());
     assertEquals(100L, result.getNative(0));
     assertEquals(0L, result.getNative(1));

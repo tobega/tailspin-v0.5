@@ -6,7 +6,9 @@ import com.oracle.truffle.api.dsl.Specialization;
 import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.StatementNode;
+import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.value.TransformResultNode;
 
 @SuppressWarnings("unused")
 @NodeChild(value = "result", type = ValueNode.class)
@@ -28,7 +30,7 @@ public abstract class SinkNode extends StatementNode {
     throw new TypeError("Got unexpected value from sink " + result);
   }
 
-  public static SinkNode create(ValueNode result) {
-    return SinkNodeGen.create(result);
+  public static SinkNode create(TransformNode result) {
+    return SinkNodeGen.create(new TransformResultNode(result));
   }
 }

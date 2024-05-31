@@ -7,7 +7,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
-import java.util.ArrayList;
+import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNode.SetChainCvNode;
 import tailspin.language.nodes.iterate.RangeIterationNodeGen.RangeIteratorNodeGen;
@@ -16,9 +16,7 @@ import tailspin.language.nodes.transform.EndOfStreamException;
 @NodeChild(value = "start", type = ValueNode.class)
 @NodeChild(value = "end", type = ValueNode.class)
 @NodeChild(value = "increment", type = ValueNode.class)
-public abstract class RangeIteration extends ValueNode {
-  final int resultSlot;
-
+public abstract class RangeIteration extends TransformNode {
   @SuppressWarnings("FieldMayBeFinal")
   @Child
   private RangeRepeatingNode repeatingNode;
@@ -26,34 +24,35 @@ public abstract class RangeIteration extends ValueNode {
   @Child
   private LoopNode loop;
 
-  protected RangeIteration(int rangeCvSlot, ValueNode stage, int resultSlot) {
-    this.resultSlot = resultSlot;
-    repeatingNode = new RangeRepeatingNode(rangeCvSlot, stage, resultSlot);
+  protected RangeIteration(int rangeCvSlot, TransformNode stage, int resultSlot) {
+    super.setResultSlot(resultSlot);
+    stage.setResultSlot(resultSlot);
+    repeatingNode = new RangeRepeatingNode(rangeCvSlot, stage);
     loop = Truffle.getRuntime().createLoopNode(repeatingNode);
   }
 
-  public static RangeIteration create(int rangeCvSlot, ValueNode stage, int resultSlot, ValueNode start, ValueNode end, ValueNode increment) {
+  @Override
+  public void setResultSlot(int resultSlot) {
+    super.setResultSlot(resultSlot);
+    repeatingNode.setResultSlot(resultSlot);
+  }
+
+  public static RangeIteration create(int rangeCvSlot, TransformNode stage, int resultSlot, ValueNode start, ValueNode end, ValueNode increment) {
     return RangeIterationNodeGen.create(rangeCvSlot, stage, resultSlot, start, end, increment);
   }
 
   @Specialization
-  public Object doLong(VirtualFrame frame, long start, long end, long increment) {
-    frame.setObjectStatic(resultSlot, new ArrayList<>());
+  public void doLong(VirtualFrame frame, long start, long end, long increment) {
     repeatingNode.initialize(start, end, increment);
     loop.execute(frame);
-    Object results = frame.getObjectStatic(resultSlot);
-    frame.setObjectStatic(resultSlot, null);
-    return results;
   }
 
   @Specialization
-  public Object doObject(Object start, Object end, Object increment) {
+  public void doObject(Object start, Object end, Object increment) {
     throw new UnsupportedOperationException(String.format("No range iterator for %s %s %s", start.getClass().getName(), end.getClass().getName(), increment.getClass().getName()));
   }
 
   public static class RangeRepeatingNode extends Node implements RepeatingNode {
-    final int resultSlot;
-
     @SuppressWarnings("FieldMayBeFinal")
     @Child
     private RangeIteratorNode iterator;
@@ -64,10 +63,9 @@ public abstract class RangeIteration extends ValueNode {
 
     @SuppressWarnings("FieldMayBeFinal")
     @Child
-    ValueNode stage;
+    TransformNode stage;
 
-    public RangeRepeatingNode(int rangeCvSlot, ValueNode stage, int resultSlot) {
-      this.resultSlot = resultSlot;
+    public RangeRepeatingNode(int rangeCvSlot, TransformNode stage) {
       iterator = RangeIteratorNode.create();
       setCurrentValue = SetChainCvNode.create(rangeCvSlot);
       this.stage = stage;
@@ -84,17 +82,12 @@ public abstract class RangeIteration extends ValueNode {
       } catch (EndOfStreamException e) {
         return false;
       }
-      Object result = stage.executeGeneric(frame);
-      if (result != null) {
-        @SuppressWarnings("unchecked")
-        ArrayList<Object> previous = (ArrayList<Object>) frame.getObjectStatic(resultSlot);
-        if (result instanceof ArrayList<?> values) {
-          previous.addAll(values);
-        } else {
-          previous.add(result);
-        }
-      }
+      stage.executeTransform(frame);
       return true;
+    }
+
+    public void setResultSlot(int resultSlot) {
+      stage.setResultSlot(resultSlot);
     }
   }
 

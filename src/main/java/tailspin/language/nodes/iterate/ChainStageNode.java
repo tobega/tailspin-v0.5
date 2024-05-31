@@ -1,6 +1,5 @@
 package tailspin.language.nodes.iterate;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
@@ -15,95 +14,72 @@ import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import java.util.ArrayList;
+import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNodeGen.GetNextStreamValueNodeGen;
 import tailspin.language.nodes.iterate.ChainStageNodeGen.SetChainCvNodeGen;
-import tailspin.language.nodes.iterate.InitResultNode.InitSingleResultNode;
-import tailspin.language.nodes.iterate.InitResultNode.InitStreamResultNode;
-import tailspin.language.nodes.iterate.SetResultNode.SetSingleResultNode;
-import tailspin.language.nodes.iterate.SetResultNode.SetStreamResultNode;
 import tailspin.language.nodes.transform.EndOfStreamException;
 
-public abstract class ChainStageNode extends ValueNode {
+public abstract class ChainStageNode extends TransformNode {
 
   private final int valuesSlot;
   protected final int cvSlot;
-  private final int resultSlot;
   @SuppressWarnings("FieldMayBeFinal")
   @Child @Executed
   protected StaticReferenceNode values;
   @SuppressWarnings("FieldMayBeFinal")
   @Child
-  private ValueNode stage;
+  private TransformNode stage;
   @SuppressWarnings("FieldMayBeFinal")
   @Child
   private LoopNode loop;
 
-  protected ChainStageNode(int valuesSlot, int cvSlot, ValueNode stage, int resultSlot, int isFirstSlot) {
+  protected ChainStageNode(int valuesSlot, int cvSlot, TransformNode stage) {
     this.valuesSlot = valuesSlot;
     this.cvSlot = cvSlot;
     this.stage = stage;
-    this.resultSlot = resultSlot;
     values = StaticReferenceNode.create(valuesSlot);
-    loop = Truffle.getRuntime().createLoopNode(new ChainStageRepeatingNode(valuesSlot, cvSlot, stage, resultSlot, isFirstSlot));
+    loop = Truffle.getRuntime().createLoopNode(new ChainStageRepeatingNode(valuesSlot, cvSlot, stage));
+  }
+
+  @Override
+  public void setResultSlot(int resultSlot) {
+    stage.setResultSlot(resultSlot);
   }
 
   @Specialization
-  public Object doLong(VirtualFrame frame, long value, @Shared("cvSetters") @Cached(parameters = "cvSlot") SetChainCvNode setCv) {
+  public void doLong(VirtualFrame frame, long value, @Shared("cvSetters") @Cached(parameters = "cvSlot") SetChainCvNode setCv) {
     setCv.setLong(frame, value);
     frame.setObjectStatic(valuesSlot, null);
-    Object result = stage.executeGeneric(frame);
-    if (result == null) {
-      result = frame.getObjectStatic(resultSlot);
-      frame.setObjectStatic(resultSlot, null);
-    }
-    return result;
+    stage.executeTransform(frame);
   }
 
   @Specialization(guards = "value == null")
   @SuppressWarnings("unused")
-  public Object doNull(VirtualFrame frame, Object value) {
-    return null;
+  public void doNull(VirtualFrame frame, Object value) {
+    // Do nothing
   }
 
   @Specialization(guards = "stream != null")
   @SuppressWarnings("unused")
-  public Object doValueStream(VirtualFrame frame, ArrayList<?> stream) {
+  public void doValueStream(VirtualFrame frame, ArrayList<?> stream) {
     loop.execute(frame);
-    Object results = frame.getObjectStatic(resultSlot);
-    frame.setObjectStatic(resultSlot, null);
-    return results;
+    frame.setObjectStatic(valuesSlot, null);
   }
 
   @Specialization
   @SuppressWarnings("unused")
-  public Object doSingle(VirtualFrame frame, Object value, @Shared("cvSetters") @Cached(parameters = "cvSlot") SetChainCvNode setCv) {
+  public void doSingle(VirtualFrame frame, Object value, @Shared("cvSetters") @Cached(parameters = "cvSlot") SetChainCvNode setCv) {
     setCv.execute(frame, value);
     frame.setObjectStatic(valuesSlot, null);
-    Object result =  stage.executeGeneric(frame);
-    if (result == null) {
-      result = frame.getObjectStatic(resultSlot);
-      frame.setObjectStatic(resultSlot, null);
-    }
-    return result;
+    stage.executeTransform(frame);
   }
 
-  static ChainStageNode create(int chainValuesSlot, int chainCvSlot, ValueNode stage, int chainResultSlot, int isFirstSlot) {
-    return ChainStageNodeGen.create(chainValuesSlot, chainCvSlot,
-        stage, chainResultSlot, isFirstSlot);
+  static ChainStageNode create(int chainValuesSlot, int chainCvSlot, TransformNode stage) {
+    return ChainStageNodeGen.create(chainValuesSlot, chainCvSlot, stage);
   }
 
   private static class ChainStageRepeatingNode extends Node implements RepeatingNode {
-    final int resultSlot;
-    final int isFirstSlot;
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
-    private GetFirstNode getFirstNode;
-
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
-    private SetFirstNode setFirstNode;
-
     @SuppressWarnings("FieldMayBeFinal")
     @Child
     private SetChainCvNode setCurrentValue;
@@ -114,50 +90,22 @@ public abstract class ChainStageNode extends ValueNode {
 
     @SuppressWarnings("FieldMayBeFinal")
     @Child
-    ValueNode stage;
+    TransformNode stage;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
-    InitResultNode initResult;
-
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
-    SetResultNode setResult;
-
-    ChainStageRepeatingNode(int chainValuesSlot, int chainCvSlot, ValueNode stage, int resultSlot, int isFirstSlot) {
-      this.getFirstNode = GetFirstNode.create();
-      this.setFirstNode = SetFirstNode.create();
+    ChainStageRepeatingNode(int chainValuesSlot, int chainCvSlot, TransformNode stage) {
       this.setCurrentValue = SetChainCvNode.create(chainCvSlot);
       this.getNextStreamValueNode = GetNextStreamValueNode.create(chainValuesSlot);
       this.stage = stage;
-      this.resultSlot = resultSlot;
-      this.isFirstSlot = isFirstSlot;
-      this.initResult = new InitSingleResultNode(resultSlot);
-      this.setResult = new SetSingleResultNode(resultSlot);
     }
 
     @Override
     public boolean executeRepeating(VirtualFrame frame) {
-      if (getFirstNode.execute(frame, this, isFirstSlot)) {
-        setFirstNode.execute(frame, this, isFirstSlot, false);
-        initResult.execute(frame);
-      }
       try {
         setCurrentValue.execute(frame, getNextStreamValueNode.executeStream(frame));
       } catch (EndOfStreamException e) {
         return false;
       }
-      Object result = stage.executeGeneric(frame);
-      try {
-        setResult.execute(frame, result);
-      } catch (NotSingleResultException e) {
-        CompilerDirectives.transferToInterpreterAndInvalidate();
-        initResult = initResult.replace(new InitStreamResultNode(resultSlot));
-        setResult = setResult.replace(new SetStreamResultNode(resultSlot));
-        initResult.execute(frame);
-        setResult.execute(frame, e.getPreviousResult());
-        setResult.execute(frame, result);
-      }
+      stage.executeTransform(frame);
       return true;
     }
   }
