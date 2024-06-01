@@ -45,36 +45,52 @@ import tailspin.language.runtime.Templates;
  */
 @SuppressWarnings("unused")
 public class BubblesortBenchmark extends TruffleBenchmark {
-  private static final Supplier<TailspinArray> tailspinSort = createTailspinCall(defineSortedCopy());
-  private static final Supplier<TailspinArray> tailspinSort2 = createTailspinCall(defineBubblesort());
+
+  private static final Supplier<TailspinArray> tailspinSort = createTailspinCall(
+      defineSortedCopy());
+  private static final Supplier<TailspinArray> tailspinSort2 = createTailspinCall(
+      defineBubblesort());
 
   @Benchmark
   public void sort_tailspin() {
     TailspinArray sorted = tailspinSort.get();
-    if (sorted.getArraySize() != 100) throw new AssertionError("Too short array " + sorted.getArraySize());
-    for (int i = 1; i < sorted.getArraySize(); i++)
-      if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i))
+    if (sorted.getArraySize() != 100) {
+      throw new AssertionError("Too short array " + sorted.getArraySize());
+    }
+    for (int i = 1; i < sorted.getArraySize(); i++) {
+      if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i)) {
         throw new AssertionError("Out of order " + sorted.getArraySize());
+      }
+    }
   }
 
   @Benchmark
   public void sort2_tailspin() {
     TailspinArray sorted = tailspinSort2.get();
-    if (sorted.getArraySize() != 100) throw new AssertionError("Too short array " + sorted.getArraySize());
-    for (int i = 1; i < sorted.getArraySize(); i++)
-      if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i))
+    if (sorted.getArraySize() != 100) {
+      throw new AssertionError("Too short array " + sorted.getArraySize());
+    }
+    for (int i = 1; i < sorted.getArraySize(); i++) {
+      if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i)) {
         throw new AssertionError("Out of order " + sorted.getArraySize());
+      }
+    }
   }
 
   @Benchmark
   public void sort_java() {
-    List<Long> input = LongStream.iterate(50L, i -> i > 0L, i -> i - 1L).flatMap(i -> LongStream.of(i, 50L - i)).boxed()
+    List<Long> input = LongStream.iterate(50L, i -> i > 0L, i -> i - 1L)
+        .flatMap(i -> LongStream.of(i, 50L - i)).boxed()
         .toList();
     List<Long> output = sortedCopy(input);
-    if (output.size() != 100) throw new AssertionError("Too short array " + output.size());
-    for (int i = 1; i < output.size(); i++)
-      if (output.get(i - 1) > output.get(i))
+    if (output.size() != 100) {
+      throw new AssertionError("Too short array " + output.size());
+    }
+    for (int i = 1; i < output.size(); i++) {
+      if (output.get(i - 1) > output.get(i)) {
         throw new AssertionError("Not sorted " + output);
+      }
+    }
   }
 
   public static List<Long> sortedCopy(List<Long> in) {
@@ -98,17 +114,19 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainIsFirstSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int rangeCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int rangeResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildArraySlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     Templates flatMap = new Templates();
     // [50..1:-1
-    RangeIteration backwards = RangeIteration.create(rangeCvSlot, SendToTemplatesNode.create(rangeCvSlot, flatMap, 0), rangeResultSlot, IntegerLiteral.create(50L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
+    RangeIteration backwards = RangeIteration.create(rangeCvSlot,
+        SendToTemplatesNode.create(rangeCvSlot, flatMap, 0), IntegerLiteral.create(50L),
+        IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
 
     // -> \($! 100 - $!\)
     BlockNode flatMapBlock = BlockNode.create(List.of(
         EmitNode.create(ResultAggregatingNode.create(LocalReferenceNode.create(CV_SLOT))),
-        EmitNode.create(ResultAggregatingNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(CV_SLOT))))
+        EmitNode.create(ResultAggregatingNode.create(
+            SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(CV_SLOT))))
     ));
     flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), flatMapBlock));
 
@@ -132,10 +150,9 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int rangeISlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int resultISlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int rangeJSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int resultJSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int stateSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int sinkSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     Templates sortedCopyMatchers = new Templates();
     defineSortedCopyMatchers(sortedCopyMatchers, stateSlot);
@@ -148,7 +165,6 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     RangeIteration allJ = RangeIteration.create(
         rangeJSlot,
         toMatchers,
-        resultJSlot,
         IntegerLiteral.create(2),
         LocalReferenceNode.create(rangeISlot),
         IntegerLiteral.create(1)
@@ -156,10 +172,10 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     RangeIteration allI = RangeIteration.create(
         rangeISlot,
         allJ,
-        resultISlot,
         MessageNode.create("length", LocalReferenceNode.create(CV_SLOT)),
         IntegerLiteral.create(2),
         IntegerLiteral.create(-1));
+    allI.setResultSlot(sinkSlot);
     // $@ !
     EmitNode emitState = EmitNode.create(
         ResultAggregatingNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot))));
@@ -228,10 +244,12 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     //    @: $;
     SetStateNode setState = SetStateNode.create(LocalReferenceNode.create(CV_SLOT), 0, stateSlot);
     //    $::length -> !#
-    ChainNode lengthToMatchers = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot,List.of(
-        ResultAggregatingNode.create(MessageNode.create("length", LocalReferenceNode.create(CV_SLOT))),
-        SendToTemplatesNode.create(chainCvSlot, matchers, 0)
-    ));
+    ChainNode lengthToMatchers = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot,
+        List.of(
+            ResultAggregatingNode.create(
+                MessageNode.create("length", LocalReferenceNode.create(CV_SLOT))),
+            SendToTemplatesNode.create(chainCvSlot, matchers, 0)
+        ));
     //    $@ !
     EmitNode emit = EmitNode.create(
         ResultAggregatingNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot))));
@@ -254,13 +272,15 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainIsFirstSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     //        when <2..> do
-    MatcherNode isGteq2 = GreaterThanMatcherNode.create(true, LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(2));
+    MatcherNode isGteq2 = GreaterThanMatcherNode.create(true, LocalReferenceNode.create(CV_SLOT),
+        IntegerLiteral.create(2));
     //      $ -> bubble -> !#
-    StatementNode whenGteq2 = SinkNode.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
-        ResultAggregatingNode.create(LocalReferenceNode.create(CV_SLOT)),
-        SendToTemplatesNode.create(chainCvSlot, bubble, 1),
-        SendToTemplatesNode.create(chainCvSlot, matchers, 1)
-    )));
+    StatementNode whenGteq2 = SinkNode.create(
+        ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
+            ResultAggregatingNode.create(LocalReferenceNode.create(CV_SLOT)),
+            SendToTemplatesNode.create(chainCvSlot, bubble, 1),
+            SendToTemplatesNode.create(chainCvSlot, matchers, 1)
+        )));
     MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
         MatchTemplateNode.create(isGteq2, whenGteq2)));
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), matchStatement);
@@ -279,13 +299,12 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     SetStateNode setState = SetStateNode.create(IntegerLiteral.create(1), 0, stateSlot);
     //    1..$-1 -> !#
     SinkNode doTemplates = SinkNode.create(RangeIteration.create(
-                chainCvSlot,
-            SendToTemplatesNode.create(chainCvSlot, matchers, 0),
-                chainResultSlot,
-                IntegerLiteral.create(1),
-                SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1)),
-                IntegerLiteral.create(1))
-        );
+        chainCvSlot,
+        SendToTemplatesNode.create(chainCvSlot, matchers, 0),
+        IntegerLiteral.create(1),
+        SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1)),
+        IntegerLiteral.create(1))
+    );
     //    $@ !
     EmitNode emit = EmitNode.create(
         ResultAggregatingNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot))));
@@ -299,14 +318,16 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     bubble.setCallTarget(callTarget);
   }
 
-  private static void defineBubbleMatchers(Templates matchers, int stateSlot, int bubblesortStateSlot) {
+  private static void defineBubbleMatchers(Templates matchers, int stateSlot,
+      int bubblesortStateSlot) {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int tempSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     //        when <?($@bubblesort($+1) <..~$@bubblesort($)>)> do
     MatcherNode isDisordered = LessThanMatcherNode.create(false,
         ArrayReadNode.create(GetStateNode.create(2, bubblesortStateSlot),
             AddNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1))),
-        ArrayReadNode.create(GetStateNode.create(2, bubblesortStateSlot), LocalReferenceNode.create(CV_SLOT))
+        ArrayReadNode.create(GetStateNode.create(2, bubblesortStateSlot),
+            LocalReferenceNode.create(CV_SLOT))
     );
     //      @: $;
     SetStateNode markSwap = SetStateNode.create(LocalReferenceNode.create(CV_SLOT), 1, stateSlot);

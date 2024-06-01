@@ -75,12 +75,11 @@ public class TemplatesTest {
   void array_chain() {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     Templates flatMap = new Templates();
     // [100..1:-1
-    RangeIteration backwards = RangeIteration.create(rangeSlot, SendToTemplatesNode.create(rangeSlot, flatMap, 0), resultSlot, IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
+    RangeIteration backwards = RangeIteration.create(rangeSlot, SendToTemplatesNode.create(rangeSlot, flatMap, 0), IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
 
     // -> \($! 100 - $!\)
     BlockNode flatMapBlock = BlockNode.create(List.of(

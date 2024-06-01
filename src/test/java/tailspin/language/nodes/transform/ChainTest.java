@@ -31,7 +31,8 @@ public class ChainTest {
     ValueNode expr = AddNode.create(
             IntegerLiteral.create(12),
             LocalReferenceNode.create(rangeSlot));
-    RangeIteration source = RangeIteration.create(rangeSlot, ResultAggregatingNode.create(expr), resultSlot, IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L));
+    RangeIteration source = RangeIteration.create(rangeSlot, ResultAggregatingNode.create(expr), IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L));
+    source.setResultSlot(resultSlot);
     @SuppressWarnings("unchecked")
     Iterator<Object> result = ((ArrayList<Object>) TestUtil.evaluate(new TransformResultNode(source), fdb.build(),
         List.of())).iterator();

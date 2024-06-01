@@ -11,7 +11,6 @@ import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNode.SetChainCvNode;
 import tailspin.language.nodes.iterate.RangeIterationNodeGen.RangeIteratorNodeGen;
-import tailspin.language.nodes.transform.EndOfStreamException;
 
 @NodeChild(value = "start", type = ValueNode.class)
 @NodeChild(value = "end", type = ValueNode.class)
@@ -24,9 +23,7 @@ public abstract class RangeIteration extends TransformNode {
   @Child
   private LoopNode loop;
 
-  protected RangeIteration(int rangeCvSlot, TransformNode stage, int resultSlot) {
-    super.setResultSlot(resultSlot);
-    stage.setResultSlot(resultSlot);
+  protected RangeIteration(int rangeCvSlot, TransformNode stage) {
     repeatingNode = new RangeRepeatingNode(rangeCvSlot, stage);
     loop = Truffle.getRuntime().createLoopNode(repeatingNode);
   }
@@ -37,8 +34,8 @@ public abstract class RangeIteration extends TransformNode {
     repeatingNode.setResultSlot(resultSlot);
   }
 
-  public static RangeIteration create(int rangeCvSlot, TransformNode stage, int resultSlot, ValueNode start, ValueNode end, ValueNode increment) {
-    return RangeIterationNodeGen.create(rangeCvSlot, stage, resultSlot, start, end, increment);
+  public static RangeIteration create(int rangeCvSlot, TransformNode stage, ValueNode start, ValueNode end, ValueNode increment) {
+    return RangeIterationNodeGen.create(rangeCvSlot, stage, start, end, increment);
   }
 
   @Specialization

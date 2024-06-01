@@ -18,7 +18,6 @@ import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNodeGen.GetNextStreamValueNodeGen;
 import tailspin.language.nodes.iterate.ChainStageNodeGen.SetChainCvNodeGen;
-import tailspin.language.nodes.transform.EndOfStreamException;
 
 public abstract class ChainStageNode extends TransformNode {
 
