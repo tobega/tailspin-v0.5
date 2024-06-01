@@ -150,7 +150,6 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int rangeISlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int rangeJSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int stateSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int sinkSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
@@ -161,17 +160,22 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     // $::length..2:-1
     // -> 2..$
     // -> !#
-    SendToTemplatesNode toMatchers = SendToTemplatesNode.create(rangeJSlot, sortedCopyMatchers, 0);
+    Templates allJTemplates = new Templates();
+    FrameDescriptor.Builder jfdb = Templates.createBasicFdb();
+    int rangeJSlot = jfdb.addSlot(FrameSlotKind.Illegal, null, null);
+    SendToTemplatesNode toMatchers = SendToTemplatesNode.create(rangeJSlot, sortedCopyMatchers, 1);
     RangeIteration allJ = RangeIteration.create(
         rangeJSlot,
         toMatchers,
         IntegerLiteral.create(2),
-        LocalReferenceNode.create(rangeISlot),
+        LocalReferenceNode.create(CV_SLOT),
         IntegerLiteral.create(1)
     );
+    SendToTemplatesNode doAllJ = SendToTemplatesNode.create(rangeISlot, allJTemplates, 0);
+    allJTemplates.setCallTarget(TemplatesRootNode.create(jfdb.build(), EmitNode.create(allJ)));
     RangeIteration allI = RangeIteration.create(
         rangeISlot,
-        allJ,
+        doAllJ,
         MessageNode.create("length", LocalReferenceNode.create(CV_SLOT)),
         IntegerLiteral.create(2),
         IntegerLiteral.create(-1));

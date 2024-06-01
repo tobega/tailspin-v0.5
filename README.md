@@ -207,3 +207,13 @@ Better separation between streams (from transforms) and simple values
 |FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,651 |± 0,173  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  | 12,352 |± 0,195  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  | 20,969 |± 0,348  |us/op|
+
+Decoupling the double iteration with a template call solves the knot!
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |41,271 |± 0,182  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  |20,325 |± 0,198  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |41,073 |± 1,304  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |63,627 |± 0,465  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |36,632 |± 0,237  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  |12,169 |± 0,243  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  |20,877 |± 0,390  |us/op|
