@@ -217,3 +217,13 @@ Decoupling the double iteration with a template call solves the knot!
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |36,632 |± 0,237  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  |12,169 |± 0,243  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  |20,877 |± 0,390  |us/op|
+
+Shaving a little by relentless profiling
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |37,947 |± 1,147  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  |20,389 |± 0,389  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |42,403 |± 1,160  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |58,968 |± 0,663  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |36,817 |± 0,185  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  |14,845 |± 0,245  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  |21,177 |± 0,324  |us/op|

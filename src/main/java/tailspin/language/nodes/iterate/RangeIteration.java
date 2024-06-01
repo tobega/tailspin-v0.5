@@ -7,6 +7,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
+import com.oracle.truffle.api.profiles.CountingConditionProfile;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNode.SetChainCvNode;
@@ -95,6 +96,8 @@ public abstract class RangeIteration extends TransformNode {
 
     public abstract Object execute(VirtualFrame frame);
 
+    final CountingConditionProfile doneProfile = CountingConditionProfile.create();
+
     public void initialize(long start, long end, long increment) {
       current = start;
       this.end = end;
@@ -103,7 +106,7 @@ public abstract class RangeIteration extends TransformNode {
 
     @Specialization(guards = "increment > 0")
     long doIncreasingLong() {
-      if (current > end) {
+      if (doneProfile.profile(current > end)) {
         throw new EndOfStreamException();
       }
       long result = current;
@@ -113,7 +116,7 @@ public abstract class RangeIteration extends TransformNode {
 
     @Specialization(guards = "increment < 0")
     long doDecreasingLong() {
-      if (current < end) {
+      if (doneProfile.profile(current < end)) {
         throw new EndOfStreamException();
       }
       long result = current;
