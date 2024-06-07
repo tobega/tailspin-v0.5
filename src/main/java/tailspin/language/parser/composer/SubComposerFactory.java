@@ -6,8 +6,18 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import tailspin.language.parser.composer.CompositionSpec.CaptureComposition;
+import tailspin.language.parser.composer.CompositionSpec.ChoiceComposition;
+import tailspin.language.parser.composer.CompositionSpec.Constant;
+import tailspin.language.parser.composer.CompositionSpec.DereferenceComposition;
+import tailspin.language.parser.composer.CompositionSpec.InverseComposition;
+import tailspin.language.parser.composer.CompositionSpec.LiteralComposition;
+import tailspin.language.parser.composer.CompositionSpec.MultiplierComposition;
+import tailspin.language.parser.composer.CompositionSpec.NamedComposition;
+import tailspin.language.parser.composer.CompositionSpec.RegexComposition;
+import tailspin.language.parser.composer.CompositionSpec.SkipComposition;
 
-public class SubComposerFactory {
+public class SubComposerFactory implements CompositionSpec.Resolver {
 
   static final HashMap<String, Pattern> namedPatterns = new HashMap<>();
   static final HashMap<String, Function<? super String, Object>> namedValueCreators = new HashMap<>();
@@ -37,149 +47,39 @@ public class SubComposerFactory {
   }
 
   public SubComposer resolveSpec(CompositionSpec spec, Scope scope, CompositionSpec.Resolver resolver) {
-    if (spec instanceof NamedComposition namedSpec) {
-      String name = namedSpec.namedPattern;
-      if (definedSequences.containsKey(name)) {
-        return new RuleSubComposer(name, definedSequences.get(name), scope, resolver);
+    return switch (spec) {
+      case NamedComposition namedSpec -> {
+        String name = namedSpec.namedPattern();
+        if (definedSequences.containsKey(name)) {
+          yield new RuleSubComposer(name, definedSequences.get(name), scope, resolver);
+        }
+        if (!namedPatterns.containsKey(name)) {
+          throw new IllegalArgumentException("Unknown composition rule " + name);
+        }
+        yield new RegexpSubComposer(namedPatterns.get(name), namedValueCreators.get(name));
       }
-      if (!namedPatterns.containsKey(name)) {
-        throw new IllegalArgumentException("Unknown composition rule " + name);
-      }
-      return new RegexpSubComposer(namedPatterns.get(name), namedValueCreators.get(name));
-    }
-    if (spec instanceof RegexComposition regexSpec) {
-      // Note that we do not allow regex interpolations to reference $. What would that even mean?
-      return new RegexpSubComposer(
-          Pattern.compile(regexSpec.pattern), Function.identity());
-    }
-    if (spec instanceof SkipComposition) {
-      return new SkipSubComposer(new SequenceSubComposer(((SkipComposition) spec).skipSpecs, scope, resolver));
-    }
-    if (spec instanceof ChoiceComposition choiceSpec) {
-      return new ChoiceSubComposer(resolveSpecs(choiceSpec.choices, scope, resolver));
-    }
-    if (spec instanceof MultiplierComposition) {
-      return new MultiplierSubComposer(
-          ((MultiplierComposition) spec).compositionSpec,
-          ((MultiplierComposition) spec).multiplier, scope, resolver);
-    }
-    if (spec instanceof DereferenceComposition) {
-      return new DereferenceSubComposer(((DereferenceComposition) spec).identifier, scope);
-    }
-    if (spec instanceof CaptureComposition captureComposition) {
-      return new CaptureSubComposer(captureComposition.identifier, scope,
-          resolveSpec(captureComposition.compositionSpec, scope, resolver));
-    }
-    if (spec instanceof Constant) {
-      return new ConstantSubComposer(((Constant) spec).value);
-    }
-    if (spec instanceof InverseComposition) {
-      return new InvertSubComposer(
-          resolveSpec(((InverseComposition) spec).compositionSpec, scope, resolver));
-    }
-    if (spec instanceof LiteralComposition lc) {
-      return new LiteralSubComposer(lc.literal);
-    }
-    throw new UnsupportedOperationException(
-        "Unknown composition spec " + spec.getClass().getSimpleName());
+      case RegexComposition regexSpec -> new RegexpSubComposer(
+          Pattern.compile(regexSpec.pattern()), Function.identity());
+      case SkipComposition skip ->
+          new SkipSubComposer(new SequenceSubComposer(skip.skipSpecs(), scope, resolver));
+      case ChoiceComposition choiceSpec ->
+          new ChoiceSubComposer(resolveSpecs(choiceSpec.choices(), scope, resolver));
+      case MultiplierComposition multiplier -> new MultiplierSubComposer(
+          multiplier.compositionSpec(),
+          multiplier.multiplier(), scope, resolver);
+      case DereferenceComposition deref -> new DereferenceSubComposer(deref.identifier(), scope);
+      case CaptureComposition captureComposition ->
+          new CaptureSubComposer(captureComposition.identifier(), scope,
+              resolver.resolveSpec(captureComposition.compositionSpec(), scope, resolver));
+      case Constant constant -> new ConstantSubComposer(constant.value());
+      case InverseComposition inverse -> new InvertSubComposer(
+          resolver.resolveSpec(inverse.compositionSpec(), scope, resolver));
+      case LiteralComposition lc -> new LiteralSubComposer(lc.literal().resolve(scope));
+    };
   }
 
   List<SubComposer> resolveSpecs(List<CompositionSpec> specs, Scope scope, CompositionSpec.Resolver resolver) {
     return specs.stream().map(spec -> resolver.resolveSpec(spec, scope, resolver)).collect(
         Collectors.toList());
-  }
-
-  public static class NamedComposition implements CompositionSpec {
-
-    private final String namedPattern;
-
-    public NamedComposition(String namedPattern) {
-      this.namedPattern = namedPattern;
-    }
-  }
-
-  public static class RegexComposition implements CompositionSpec {
-
-    private final String pattern;
-
-    public RegexComposition(String pattern) {
-      this.pattern = pattern;
-    }
-  }
-
-  public static class SkipComposition implements CompositionSpec {
-
-    private final List<CompositionSpec> skipSpecs;
-
-    public SkipComposition(List<CompositionSpec> skipSpecs) {
-      this.skipSpecs = skipSpecs;
-    }
-  }
-
-  public static class Constant implements CompositionSpec {
-
-    private final String value;
-
-    public Constant(String value) {
-      this.value = value;
-    }
-  }
-
-  public static class DereferenceComposition implements CompositionSpec {
-
-    private final String identifier;
-
-    public DereferenceComposition(String identifier) {
-      this.identifier = identifier;
-    }
-  }
-
-  public static class CaptureComposition implements CompositionSpec {
-
-    private final String identifier;
-    private final CompositionSpec compositionSpec;
-
-    public CaptureComposition(String identifier, CompositionSpec compositionSpec) {
-      this.identifier = identifier;
-      this.compositionSpec = compositionSpec;
-    }
-  }
-
-  public static class MultiplierComposition implements CompositionSpec {
-
-    private final CompositionSpec compositionSpec;
-    private final RangeMatch multiplier;
-
-    public MultiplierComposition(CompositionSpec compositionSpec, RangeMatch multiplier) {
-      this.compositionSpec = compositionSpec;
-      this.multiplier = multiplier;
-    }
-  }
-
-  public static class ChoiceComposition implements CompositionSpec {
-
-    private final List<CompositionSpec> choices;
-
-    public ChoiceComposition(List<CompositionSpec> choices) {
-      this.choices = choices;
-    }
-  }
-
-  public static class InverseComposition implements CompositionSpec {
-
-    private final CompositionSpec compositionSpec;
-
-    public InverseComposition(CompositionSpec compositionSpec) {
-      this.compositionSpec = compositionSpec;
-    }
-  }
-
-  public static class LiteralComposition implements CompositionSpec {
-
-    private final String literal;
-
-    public LiteralComposition(String literal) {
-      this.literal = literal;
-    }
   }
 }

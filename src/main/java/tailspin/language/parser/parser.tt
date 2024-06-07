@@ -1,0 +1,9 @@
+rule arithmeticExpression: <addition|multiplication|term>
+
+rule addition: <addition|multiplication|term> (<WS>?) <'[+-]'> (<WS>?) <multiplication|term>
+
+rule multiplication: <multiplication|term> (<WS>?) <'[*/]'> (<WS>?) <term>
+
+rule term: <INT|parentheses>
+
+rule parentheses: (<'\('> <WS>?) <addition|multiplication|term> (<WS>? <'\)'>)
