@@ -28,8 +28,8 @@ public class MultiplierSubComposer implements SubComposer {
 
   private Memo addRepetitions(String s, Memo memo) {
     while (memo.pos < s.length() &&
-        (!multiplier.matches((long) values.size(), null, scope)
-            || multiplier.matches((long) values.size()+1, null, scope))) {
+        (!multiplier.matches((long) values.size(), scope)
+            || multiplier.matches((long) values.size()+1, scope))) {
       SubComposer subComposer = resolver.resolveSpec(compositionSpec, scope, resolver);
       memo = subComposer.nibble(s, memo);
       if (subComposer.isSatisfied()) {
@@ -90,6 +90,6 @@ public class MultiplierSubComposer implements SubComposer {
 
   @Override
   public boolean isSatisfied() {
-    return values != null && multiplier.matches((long) values.size(), null, scope);
+    return values != null && multiplier.matches((long) values.size(), scope);
   }
 }

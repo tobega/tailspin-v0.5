@@ -43,6 +43,15 @@ public class ParserParserTest {
         ParserParser.createSyntaxRules(parserDefinition));
   }
 
+  @Test
+  void sequence() {
+    String parserDefinition = """
+    rule a: <b> <c>
+    """;
+    assertEquals(Map.of("a", List.of(new NamedComposition("b"), new NamedComposition("c"))),
+        ParserParser.createSyntaxRules(parserDefinition));
+  }
+
   @ParameterizedTest
   @MethodSource
   void multiplier(String multiplier, RangeMatch matcher) {
