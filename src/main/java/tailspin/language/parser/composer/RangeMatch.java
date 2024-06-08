@@ -2,16 +2,23 @@ package tailspin.language.parser.composer;
 
 public class RangeMatch {
 
-  public record Bound(int value, boolean inclusive){}
+  public record Bound(Value<Long> value, boolean inclusive){}
   public static final RangeMatch AT_MOST_ONE = new RangeMatch(
-      new Bound(0, true),
-      new Bound(1, true));
+      new Bound(s -> 0L, true),
+      new Bound(s -> 1L, true));
   public static final RangeMatch AT_LEAST_ONE = new RangeMatch(
-          new Bound(1, true),
+          new Bound(s -> 1L, true),
           null);
   public static final RangeMatch ANY_AMOUNT = new RangeMatch(
-              new Bound(0, true),
+              new Bound(s -> 0L, true),
               null);
+
+  public static RangeMatch exactly(Value<Long> target) {
+    return new RangeMatch(
+        new Bound(target, true),
+        new Bound(target, true)
+    );
+  }
 
   private final Bound lowerBound;
   private final Bound upperBound;
@@ -21,15 +28,15 @@ public class RangeMatch {
     this.upperBound = upperBound;
   }
 
-  public boolean matches(Object toMatch, Object it, Scope scope) {
+  public boolean matches(Object toMatch, Scope scope) {
     boolean result = false;
     if (lowerBound != null) {
-      Object low = lowerBound.value;
+      Object low = lowerBound.value.resolve(scope);
       result = compare(toMatch, lowerBound.inclusive ? Comparison.GREATER_OR_EQUAL : Comparison.GREATER, low);
       if (!result) return false;
     }
     if (upperBound != null) {
-      Object high = upperBound.value;
+      Object high = upperBound.value.resolve(scope);
       result = compare(toMatch, upperBound.inclusive ? Comparison.LESS_OR_EQUAL : Comparison.LESS, high);
     }
     return result;

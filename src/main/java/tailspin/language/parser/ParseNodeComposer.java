@@ -1,7 +1,5 @@
 package tailspin.language.parser;
 
-import java.util.List;
-import java.util.Objects;
 import tailspin.language.parser.composer.CompositionSpec;
 import tailspin.language.parser.composer.CompositionSpec.NamedComposition;
 import tailspin.language.parser.composer.Memo;
@@ -29,16 +27,9 @@ public class ParseNodeComposer implements SubComposer {
   @Override
   public Object getValues() {
     Object values = wrapped.getValues();
+    values = ParseNode.normalizeValues(values);
     if (values == null) {
       return null;
-    } else if (values instanceof List<?> list) {
-      list = list.stream().filter(Objects::nonNull).toList();
-      if (list.isEmpty()) return null;
-      if (list.size() == 1) {
-        values = list.getFirst();
-      } else {
-        values = list;
-      }
     }
     if (spec instanceof NamedComposition nc) {
       return new ParseNode(nc.namedPattern(), values);

@@ -1,13 +1,17 @@
 package tailspin.language.parser;
 
+import static tailspin.language.parser.ParseNode.normalizeValues;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.stream.Stream;
 import tailspin.language.parser.composer.CompositionSpec;
 import tailspin.language.parser.composer.CompositionSpec.ChoiceComposition;
 import tailspin.language.parser.composer.CompositionSpec.DereferenceComposition;
+import tailspin.language.parser.composer.CompositionSpec.InverseComposition;
 import tailspin.language.parser.composer.CompositionSpec.LiteralComposition;
 import tailspin.language.parser.composer.CompositionSpec.MultiplierComposition;
 import tailspin.language.parser.composer.CompositionSpec.NamedComposition;
@@ -77,7 +81,7 @@ public class ParserParser {
             new NamedComposition("optionalWhitespace")
         ),
         "alternativeCompositionToken", List.of(
-            new LiteralComposition((s) -> "|"),
+            new SkipComposition(List.of(new LiteralComposition((s) -> "|"))),
             new NamedComposition("optionalWhitespace"),
             new NamedComposition("compositionToken"),
             new NamedComposition("optionalWhitespace")
@@ -106,7 +110,7 @@ public class ParserParser {
             new NamedComposition("customMultiplier")
         )), new NamedComposition("optionalWhitespace")),
         "customMultiplier", List.of(
-            new LiteralComposition((s) -> "="),
+            new SkipComposition(List.of(new LiteralComposition((s) -> "="))),
             new ChoiceComposition(List.of(
                 new NamedComposition("INT"),
                 new NamedComposition("sourceReference")
@@ -175,13 +179,41 @@ public class ParserParser {
       case ParseNode(String name, ParseNode(String type, Object tm)) when name.equals("compositionMatcher") && type.equals("tokenMatcher") -> visitTokenMatcher(tm);
       case ParseNode(String name, ParseNode(String type, ParseNode localIdentifier)) when name.equals("compositionMatcher") && type.equals("sourceReference") -> new DereferenceComposition(localIdentifier.content().toString());
       case ParseNode(String name, Object c) when name.equals("compositionSkipRule") -> null;
-      default -> throw new IllegalStateException("Unexpected value: " + (ParseNode) compositionComponent.content());
+      default -> throw new IllegalStateException("Unexpected value: " + compositionComponent.content());
     };
   }
 
   private static CompositionSpec visitTokenMatcher(Object tm) {
     if (tm instanceof ParseNode(String name, ParseNode c) && name.equals("compositionToken")) {
       return visitCompositionToken(c);
+    }
+    if (tm instanceof List<?> l) {
+      if (l.getLast() instanceof ParseNode(String name, String c) && name.equals("multiplier")) {
+        RangeMatch multiplier = switch (c) {
+          case "?" -> RangeMatch.AT_MOST_ONE;
+          case "+" -> RangeMatch.AT_LEAST_ONE;
+          case "*" -> RangeMatch.ANY_AMOUNT;
+          default -> throw new IllegalStateException("Unexpected value: " + c);
+        };
+        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(0, l.size() - 1))), multiplier);
+      }
+      if (l.getLast() instanceof ParseNode(String name, ParseNode(String cm, ParseNode(
+          String type, Long value))) && name.equals("multiplier") && cm.equals("customMultiplier") && type.equals("INT")) {
+        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(0, l.size() - 1))), RangeMatch.exactly(s -> value));
+      }
+      if (l.getLast() instanceof ParseNode(String name, ParseNode(String cm, ParseNode(
+          String type, ParseNode(String li, String ref)))) && name.equals("multiplier") && cm.equals("customMultiplier")
+              && type.equals("sourceReference") && li.equals("localIdentifier")) {
+        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(0, l.size() - 1))), RangeMatch.exactly(s -> (Long) s.getValue(ref)));
+      }
+      if (l.getFirst() instanceof String c && c.equals("~")) {
+        return new InverseComposition(visitTokenMatcher(normalizeValues(l.subList(1, l.size()))));
+      }
+      return new ChoiceComposition(
+          Stream.concat(
+            Stream.of(visitTokenMatcher(l.getFirst())),
+            l.stream().skip(1).map((alt) -> visitTokenMatcher(((ParseNode) alt).content()))
+          ).toList());
     }
     return null;
   }
