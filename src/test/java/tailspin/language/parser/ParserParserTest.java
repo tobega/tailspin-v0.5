@@ -14,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import tailspin.language.parser.composer.CompositionSpec;
+import tailspin.language.parser.composer.CompositionSpec.CaptureComposition;
 import tailspin.language.parser.composer.CompositionSpec.ChoiceComposition;
 import tailspin.language.parser.composer.CompositionSpec.InverseComposition;
 import tailspin.language.parser.composer.CompositionSpec.MultiplierComposition;
@@ -155,6 +156,15 @@ public class ParserParserTest {
     rule a: (<b>)
     """;
     assertEquals(Map.of("a", List.of(new SkipComposition(List.of(new NamedComposition("b"))))),
+        ParserParser.createSyntaxRules(parserDefinition));
+  }
+
+  @Test
+  void token_capture() {
+    String parserDefinition = """
+    rule a: (def c: <b>;)
+    """;
+    assertEquals(Map.of("a", List.of(new SkipComposition(List.of(new CaptureComposition("c", new NamedComposition("b")))))),
         ParserParser.createSyntaxRules(parserDefinition));
   }
 

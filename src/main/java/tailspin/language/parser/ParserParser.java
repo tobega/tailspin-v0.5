@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Stream;
 import tailspin.language.parser.composer.CompositionSpec;
+import tailspin.language.parser.composer.CompositionSpec.CaptureComposition;
 import tailspin.language.parser.composer.CompositionSpec.ChoiceComposition;
 import tailspin.language.parser.composer.CompositionSpec.DereferenceComposition;
 import tailspin.language.parser.composer.CompositionSpec.InverseComposition;
@@ -133,15 +134,15 @@ public class ParserParser {
         ))),
         // rule tokenCapture: (<=def> <WS>?) localIdentifier (<WS>? <=':'> <WS>?) <compositionMatcher> (<WS>? <=';'> <WS>?)
         "tokenCapture", List.of(
-            new LiteralComposition((s) -> "def"),
+            new SkipComposition(List.of(new LiteralComposition((s) -> "def"))),
             new SkipComposition(List.of(new NamedComposition("WS"))),
             new NamedComposition("localIdentifier"),
             new NamedComposition("optionalWhitespace"),
-            new LiteralComposition((s) -> ":"),
+            new SkipComposition(List.of(new LiteralComposition((s) -> ":"))),
             new NamedComposition("optionalWhitespace"),
             new NamedComposition("compositionMatcher"),
             new NamedComposition("optionalWhitespace"),
-            new LiteralComposition((s) -> ";"),
+            new SkipComposition(List.of(new LiteralComposition((s) -> ";"))),
             new NamedComposition("optionalWhitespace")
         )
     ));
@@ -176,10 +177,17 @@ public class ParserParser {
   private static CompositionSpec visitCompositionComponent(ParseNode compositionComponent) {
     if (!compositionComponent.name().equals("compositionComponent")) throw new AssertionError("Got unexpected " + compositionComponent);
     return switch ((ParseNode) compositionComponent.content()) {
-      case ParseNode(String name, ParseNode(String type, Object tm)) when name.equals("compositionMatcher") && type.equals("tokenMatcher") -> visitTokenMatcher(tm);
-      case ParseNode(String name, ParseNode(String type, ParseNode localIdentifier)) when name.equals("compositionMatcher") && type.equals("sourceReference") -> new DereferenceComposition(localIdentifier.content().toString());
+      case ParseNode(String name, ParseNode cm) when name.equals("compositionMatcher") -> visitCompositionMatcher(cm);
       case ParseNode(String name, Object skipped) when name.equals("compositionSkipRule") -> new SkipComposition(visitSkipped(skipped));
       default -> throw new IllegalStateException("Unexpected value: " + compositionComponent.content());
+    };
+  }
+
+  private static CompositionSpec visitCompositionMatcher(ParseNode compositionMatcher) {
+    return switch (compositionMatcher) {
+      case ParseNode(String type, Object tm) when type.equals("tokenMatcher") -> visitTokenMatcher(tm);
+      case ParseNode(String type, ParseNode localIdentifier) when type.equals("sourceReference") -> new DereferenceComposition(localIdentifier.content().toString());
+      default -> throw new IllegalStateException("Unexpected value: " + compositionMatcher);
     };
   }
 
@@ -196,7 +204,8 @@ public class ParserParser {
   private static CompositionSpec visitSkipComposition(ParseNode p) {
     return switch (p) {
       case ParseNode(String name, Object c) when name.equals("tokenMatcher") -> visitTokenMatcher(c);
-      case ParseNode(String name, Object c) when name.equals("tokenCapture") -> null;
+      case ParseNode(String name, Object c) when name.equals("tokenCapture")
+          -> visitTokenCapture((List<?>) c);
       default -> throw new IllegalStateException("Unexpected value: " + p);
     };
   }
@@ -243,6 +252,13 @@ public class ParserParser {
       case "stringLiteral" -> new RegexComposition(c.content().toString());
       default -> throw new IllegalStateException("Unexpected value: " + c.name());
     };
+  }
+
+  private static CompositionSpec visitTokenCapture(List<?> capture) {
+    return new CaptureComposition(
+        ((ParseNode) capture.getFirst()).content().toString(),
+        visitCompositionMatcher((ParseNode) ((ParseNode) capture.getLast()).content())
+    );
   }
 
   public static void main(String[] args) {
