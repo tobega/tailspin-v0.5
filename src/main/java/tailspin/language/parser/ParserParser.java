@@ -24,6 +24,7 @@ import tailspin.language.parser.composer.RangeMatch;
 import tailspin.language.parser.composer.Scope;
 import tailspin.language.parser.composer.SequenceSubComposer;
 import tailspin.language.parser.composer.SubComposerFactory;
+import tailspin.language.parser.composer.Value;
 
 public class ParserParser {
   static Map<String, List<CompositionSpec>> syntaxRules;
@@ -97,7 +98,7 @@ public class ParserParser {
             new NamedComposition("optionalWhitespace")
         ),
         "literalComposition", List.of(
-            new LiteralComposition((s) -> "="),
+            new SkipComposition(List.of(new LiteralComposition((s) -> "="))),
             new ChoiceComposition(List.of(
                 new NamedComposition("sourceReference"),
                 new NamedComposition("stringLiteral")
@@ -242,15 +243,24 @@ public class ParserParser {
             l.stream().skip(1).map((alt) -> visitTokenMatcher(((ParseNode) alt).content()))
           ).toList());
     }
-    return null;
+    throw new IllegalStateException("Unexpected value " + tm);
   }
 
   private static CompositionSpec visitCompositionToken(ParseNode c) {
     return switch (c.name()) {
-      case "literalComposition" -> new LiteralComposition(null);
+      case "literalComposition" -> new LiteralComposition(visitLiteralValue(c.content()));
       case "localIdentifier" -> new NamedComposition(c.content().toString());
       case "stringLiteral" -> new RegexComposition(c.content().toString());
       default -> throw new IllegalStateException("Unexpected value: " + c.name());
+    };
+  }
+
+  private static Value<String> visitLiteralValue(Object v) {
+    return switch (v) {
+      case ParseNode(String type, String value) when type.equals("stringLiteral") -> (s) -> value;
+      case ParseNode(String type, ParseNode(String li, String identifier)) when type.equals("sourceReference")
+          -> (s) -> s.getValue(identifier).toString();
+      default -> throw new IllegalStateException("Unexpected value: " + v);
     };
   }
 

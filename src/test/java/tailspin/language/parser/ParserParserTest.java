@@ -2,6 +2,7 @@ package tailspin.language.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -17,8 +18,10 @@ import tailspin.language.parser.composer.CompositionSpec;
 import tailspin.language.parser.composer.CompositionSpec.CaptureComposition;
 import tailspin.language.parser.composer.CompositionSpec.ChoiceComposition;
 import tailspin.language.parser.composer.CompositionSpec.InverseComposition;
+import tailspin.language.parser.composer.CompositionSpec.LiteralComposition;
 import tailspin.language.parser.composer.CompositionSpec.MultiplierComposition;
 import tailspin.language.parser.composer.CompositionSpec.NamedComposition;
+import tailspin.language.parser.composer.CompositionSpec.RegexComposition;
 import tailspin.language.parser.composer.CompositionSpec.SkipComposition;
 import tailspin.language.parser.composer.RangeMatch;
 import tailspin.language.parser.composer.Scope;
@@ -32,6 +35,43 @@ public class ParserParserTest {
     """;
     assertEquals(Map.of("a", List.of(new NamedComposition("b"))),
         ParserParser.createSyntaxRules(parserDefinition));
+  }
+
+  @Test
+  void regex() {
+    String parserDefinition = """
+    rule a: <'.*'>
+    """;
+    assertEquals(Map.of("a", List.of(new RegexComposition(".*"))),
+        ParserParser.createSyntaxRules(parserDefinition));
+  }
+
+  @Test
+  void literal_constant() {
+    String parserDefinition = """
+    rule a: <='foobar'>
+    """;
+    Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(
+        parserDefinition);
+    List<CompositionSpec> rule = syntaxRules.get("a");
+    assertEquals(1, rule.size());
+    assertInstanceOf(LiteralComposition.class, rule.getFirst());
+    assertEquals("foobar", ((LiteralComposition) rule.getFirst()).literal().resolve(null));
+  }
+
+  @Test
+  void literal_reference() {
+    String parserDefinition = """
+    rule a: <=$foo>
+    """;
+    Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(
+        parserDefinition);
+    List<CompositionSpec> rule = syntaxRules.get("a");
+    assertEquals(1, rule.size());
+    assertInstanceOf(LiteralComposition.class, rule.getFirst());
+    Scope scope = new Scope(null);
+    scope.defineValue("foo", "foobar");
+    assertEquals("foobar", ((LiteralComposition) rule.getFirst()).literal().resolve(scope));
   }
 
   @Test
@@ -156,6 +196,15 @@ public class ParserParserTest {
     rule a: (<b>)
     """;
     assertEquals(Map.of("a", List.of(new SkipComposition(List.of(new NamedComposition("b"))))),
+        ParserParser.createSyntaxRules(parserDefinition));
+  }
+
+  @Test
+  void skipped_sequence() {
+    String parserDefinition = """
+    rule a: (<b> <c>)
+    """;
+    assertEquals(Map.of("a", List.of(new SkipComposition(List.of(new NamedComposition("b"), new NamedComposition("c"))))),
         ParserParser.createSyntaxRules(parserDefinition));
   }
 
