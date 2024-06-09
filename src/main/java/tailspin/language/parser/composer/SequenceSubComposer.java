@@ -54,10 +54,12 @@ public class SequenceSubComposer implements SubComposer {
     List<Object> result =  new ArrayList<>();
     value.forEach((subComposer) -> {
       Object subValue = subComposer.getValues();
-      if (subValue instanceof List<?> l) {
-        result.addAll(l);
-      } else {
-        result.add(subValue);
+      if (subValue != null) {
+        if (subValue instanceof List<?> l) {
+          result.addAll(l);
+        } else {
+          result.add(subValue);
+        }
       }
     });
     return result;

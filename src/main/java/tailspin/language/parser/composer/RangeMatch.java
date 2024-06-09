@@ -1,16 +1,18 @@
 package tailspin.language.parser.composer;
 
+import tailspin.language.parser.composer.Value.Constant;
+
 public class RangeMatch {
 
   public record Bound(Value<Long> value, boolean inclusive){}
   public static final RangeMatch AT_MOST_ONE = new RangeMatch(
-      new Bound(s -> 0L, true),
-      new Bound(s -> 1L, true));
+      new Bound(new Constant<>(0L), true),
+      new Bound(new Constant<>(1L), true));
   public static final RangeMatch AT_LEAST_ONE = new RangeMatch(
-          new Bound(s -> 1L, true),
+          new Bound(new Constant<>(1L), true),
           null);
   public static final RangeMatch ANY_AMOUNT = new RangeMatch(
-              new Bound(s -> 0L, true),
+              new Bound(new Constant<>(0L), true),
               null);
 
   public static RangeMatch exactly(Value<Long> target) {

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.stream.Stream;
 import tailspin.language.parser.composer.CompositionSpec;
 import tailspin.language.parser.composer.CompositionSpec.CaptureComposition;
@@ -25,6 +24,8 @@ import tailspin.language.parser.composer.Scope;
 import tailspin.language.parser.composer.SequenceSubComposer;
 import tailspin.language.parser.composer.SubComposerFactory;
 import tailspin.language.parser.composer.Value;
+import tailspin.language.parser.composer.Value.Constant;
+import tailspin.language.parser.composer.Value.Reference;
 
 public class ParserParser {
   static Map<String, List<CompositionSpec>> syntaxRules;
@@ -159,7 +160,7 @@ public class ParserParser {
     @SuppressWarnings("unchecked")
     List<ParseNode> parseNodes = (List<ParseNode>) composer.getValues();
     @SuppressWarnings("unchecked")
-    Entry<String, List<CompositionSpec>>[] rules = parseNodes.stream().filter(Objects::nonNull).map(ParserParser::toRule).toList().toArray(new Entry[0]);
+    Entry<String, List<CompositionSpec>>[] rules = parseNodes.stream().map(ParserParser::toRule).toList().toArray(new Entry[0]);
     return Map.ofEntries(
         rules
     );
@@ -227,12 +228,12 @@ public class ParserParser {
       }
       if (l.getLast() instanceof ParseNode(String name, ParseNode(String cm, ParseNode(
           String type, Long value))) && name.equals("multiplier") && cm.equals("customMultiplier") && type.equals("INT")) {
-        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(0, l.size() - 1))), RangeMatch.exactly(s -> value));
+        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(0, l.size() - 1))), RangeMatch.exactly(new Constant<>(value)));
       }
       if (l.getLast() instanceof ParseNode(String name, ParseNode(String cm, ParseNode(
           String type, ParseNode(String li, String ref)))) && name.equals("multiplier") && cm.equals("customMultiplier")
               && type.equals("sourceReference") && li.equals("localIdentifier")) {
-        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(0, l.size() - 1))), RangeMatch.exactly(s -> (Long) s.getValue(ref)));
+        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(0, l.size() - 1))), RangeMatch.exactly(new Reference<>(ref)));
       }
       if (l.getFirst() instanceof String c && c.equals("~")) {
         return new InverseComposition(visitTokenMatcher(normalizeValues(l.subList(1, l.size()))));
@@ -257,9 +258,9 @@ public class ParserParser {
 
   private static Value<String> visitLiteralValue(Object v) {
     return switch (v) {
-      case ParseNode(String type, String value) when type.equals("stringLiteral") -> (s) -> value;
+      case ParseNode(String type, String value) when type.equals("stringLiteral") -> new Constant<>(value);
       case ParseNode(String type, ParseNode(String li, String identifier)) when type.equals("sourceReference")
-          -> (s) -> s.getValue(identifier).toString();
+          -> new Reference<>(identifier);
       default -> throw new IllegalStateException("Unexpected value: " + v);
     };
   }
@@ -269,16 +270,6 @@ public class ParserParser {
         ((ParseNode) capture.getFirst()).content().toString(),
         visitCompositionMatcher((ParseNode) ((ParseNode) capture.getLast()).content())
     );
-  }
-
-  public static void main(String[] args) {
-    System.out.println(createSyntaxRules("""
-        rule arithmeticExpression: <addition|multiplication|term>
-        rule addition: <arithmeticExpression> (<WS>?) <'[+-]'> (<WS>?) <multiplication|term>
-        rule multiplication: <multiplication|term> (<WS>?) <'\\*|~/|mod'> (<WS>?) <term>
-        rule term: <INT|parentheses>
-        rule parentheses: (<='('> <WS>?) <addition|multiplication|term> (<WS>? <=')'>)
-     """));
   }
 
 }
