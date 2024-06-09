@@ -18,6 +18,7 @@ import tailspin.language.parser.composer.CompositionSpec.ChoiceComposition;
 import tailspin.language.parser.composer.CompositionSpec.InverseComposition;
 import tailspin.language.parser.composer.CompositionSpec.MultiplierComposition;
 import tailspin.language.parser.composer.CompositionSpec.NamedComposition;
+import tailspin.language.parser.composer.CompositionSpec.SkipComposition;
 import tailspin.language.parser.composer.RangeMatch;
 import tailspin.language.parser.composer.Scope;
 
@@ -145,6 +146,15 @@ public class ParserParserTest {
             new NamedComposition("a"),
             new NamedComposition("b"),
             new NamedComposition("c"))))),
+        ParserParser.createSyntaxRules(parserDefinition));
+  }
+
+  @Test
+  void single_skipped_rule() {
+    String parserDefinition = """
+    rule a: (<b>)
+    """;
+    assertEquals(Map.of("a", List.of(new SkipComposition(List.of(new NamedComposition("b"))))),
         ParserParser.createSyntaxRules(parserDefinition));
   }
 

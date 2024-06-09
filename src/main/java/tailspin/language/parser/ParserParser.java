@@ -118,7 +118,7 @@ public class ParserParser {
         )
     ));
     syntaxRules.putAll(Map.of(
-        // rule compositionSkipRule: (<='('> <WS>?) <compositionCapture>+ (<WS>? <=')'> <WS>?);
+        // rule compositionSkipRule: (<='('> <WS>?) <skipComposition>+ (<WS>? <=')'> <WS>?);
         "compositionSkipRule", List.of(
             new SkipComposition(List.of(new LiteralComposition((s) -> "("),
               new NamedComposition("optionalWhitespace"))),
@@ -128,11 +128,11 @@ public class ParserParser {
               new NamedComposition("optionalWhitespace")))
         ),
         "skipComposition", List.of(new ChoiceComposition(List.of(
-            new NamedComposition("compositionCapture"),
-            new NamedComposition("compositionMatcher")
+            new NamedComposition("tokenCapture"),
+            new NamedComposition("tokenMatcher")
         ))),
-        // compositionCapture: (Def localIdentifier Colon compositionMatcher transform? SemiColon)|(compositionMatcher (transform? To stateSink)?)|stateAssignment;
-        "compositionCapture", List.of(
+        // rule tokenCapture: (<=def> <WS>?) localIdentifier (<WS>? <=':'> <WS>?) <compositionMatcher> (<WS>? <=';'> <WS>?)
+        "tokenCapture", List.of(
             new LiteralComposition((s) -> "def"),
             new SkipComposition(List.of(new NamedComposition("WS"))),
             new NamedComposition("localIdentifier"),
@@ -178,8 +178,26 @@ public class ParserParser {
     return switch ((ParseNode) compositionComponent.content()) {
       case ParseNode(String name, ParseNode(String type, Object tm)) when name.equals("compositionMatcher") && type.equals("tokenMatcher") -> visitTokenMatcher(tm);
       case ParseNode(String name, ParseNode(String type, ParseNode localIdentifier)) when name.equals("compositionMatcher") && type.equals("sourceReference") -> new DereferenceComposition(localIdentifier.content().toString());
-      case ParseNode(String name, Object c) when name.equals("compositionSkipRule") -> null;
+      case ParseNode(String name, Object skipped) when name.equals("compositionSkipRule") -> new SkipComposition(visitSkipped(skipped));
       default -> throw new IllegalStateException("Unexpected value: " + compositionComponent.content());
+    };
+  }
+
+  private static List<CompositionSpec> visitSkipped(Object skipped) {
+    if (skipped instanceof ParseNode(String name, ParseNode p) && name.equals("skipComposition")) {
+      return List.of(visitSkipComposition(p));
+    }
+    if (skipped instanceof List<?> list) {
+      return list.stream().map(p -> visitSkipComposition((ParseNode) ((ParseNode) p).content())).toList();
+    }
+    throw new IllegalStateException("Unexpected value " + skipped);
+  }
+
+  private static CompositionSpec visitSkipComposition(ParseNode p) {
+    return switch (p) {
+      case ParseNode(String name, Object c) when name.equals("tokenMatcher") -> visitTokenMatcher(c);
+      case ParseNode(String name, Object c) when name.equals("tokenCapture") -> null;
+      default -> throw new IllegalStateException("Unexpected value: " + p);
     };
   }
 
