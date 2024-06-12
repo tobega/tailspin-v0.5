@@ -1,4 +1,4 @@
-package tailspin.language;
+package tailspin.language.nodes;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -6,8 +6,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
 import java.util.List;
-import tailspin.language.nodes.StatementNode;
-import tailspin.language.nodes.ValueNode;
 
 public class TestUtil {
   public static Object evaluate(ValueNode node) {

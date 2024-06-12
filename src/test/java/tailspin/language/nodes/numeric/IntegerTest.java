@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.math.BigInteger;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
-import tailspin.language.TestUtil;
+import tailspin.language.nodes.TestUtil;
 import tailspin.language.nodes.ValueNode;
 
 public class IntegerTest {

@@ -7,7 +7,7 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import tailspin.language.TestUtil;
+import tailspin.language.nodes.TestUtil;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.numeric.AddNode;
