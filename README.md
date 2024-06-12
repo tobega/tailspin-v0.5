@@ -18,6 +18,7 @@ Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.c
 Implemented jmh tests as in Adam Ruka's tutorial. Frustrating debug to find I needed to add a truffle-runtime dependency
 
 |Benchmark                                      |Mode  |Cnt     |Score    |Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |FibonacciBenchmark.recursive_eval_js           |avgt    |5    |62,309 |±  2,355  |us/op|
 |FibonacciBenchmark.recursive_eval_sl           |avgt    |5    |63,485 |±  0,783  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin     |avgt    |5  |1168,769 |± 21,090  |us/op|
@@ -26,6 +27,7 @@ Implemented jmh tests as in Adam Ruka's tutorial. Frustrating debug to find I ne
 
 Going to just returning value instead of mucking with iterators:
 |Benchmark                                         |Mode  |Cnt  |   Score    |Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |FibonacciBenchmark.recursive_eval_tailspin        |avgt  |  5  |1194,630 |± 46,617  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin_value  |avgt  |  5  |  53,368 |±  0,559  |us/op|
 |FibonacciBenchmark.recursive_java                 |avgt  |  5  |  36,893 |±  0,252  |us/op|
@@ -34,33 +36,39 @@ Tried to replace iterators with MaterializedFrame, but that was worse (1573,9 us
 
 Creating an array-based ResultIterator instead of using java Collectons really did the trick
 |Benchmark                                         |Mode  |Cnt  | Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |FibonacciBenchmark.recursive_eval_tailspin        |avgt  |  5  |88,607 |± 1,519  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin_value  |avgt  |  5  |53,632 |± 1,517  |us/op|
 |FibonacciBenchmark.recursive_java                 |avgt  |  5  |36,708 |± 0,115  |us/op|
 
 Shaving a bit more by allowing single results from a transform
 |Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |53,055 |± 0,592  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |36,966 |± 1,233  |us/op|
 
 More realistic code with a chain on the recursion. Can we optimize when parsing?
 |Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |376,848 |± 8,904 |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  | 36,806 |± 0,459 |us/op|
 
 Order restored by specialization on ChainNode
 |Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |51,804 |± 0,650  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |36,582 |± 0,495  |us/op|
 
 Introduced a way to pass the defining scope. There is a slight cost for accessing the parent scope (BTW, @ExplodeLoop was 100x faster)
 If no parent scope needs to be accessed, it can be optimized away
 |Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |59,101 |± 1,034  |us/op|
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |36,857 |± 0,384  |us/op|
 
 Got Bubblesort working, but obviously doing something stupid
 |Benchmark                                   |Mode  |Cnt  |   Score |   Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort_java               |avgt  |  5  |  25,625 |±  0,466  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |1533,427 |± 35,622  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |  54,172 |±  2,411  |us/op|
@@ -68,6 +76,7 @@ Got Bubblesort working, but obviously doing something stupid
 
 A little less stupid
 |Benchmark                                   |Mode  |Cnt  |   Score |    Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort_java               |avgt  |  5  |  25,862 |±   0,894  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |1003,520 |± 122,934  |us/op|
 |FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |  54,288 |±   2,761  |us/op|
@@ -79,6 +88,7 @@ Allocating bigger chunks to ResultIterator didn't matter
 
 Added a differently coded bubblesort with more templates calls and more state access
 |Benchmark                                   |Mode  |Cnt  |  Score |   Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |935,129 |± 12,307  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  | 25,562 |±  0,402  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |979,289 |± 78,278  |us/op|
@@ -87,6 +97,7 @@ Added a differently coded bubblesort with more templates calls and more state ac
 
 Removing cached interop libraries in favour of TruffleBoundary and java code did something good
 |Benchmark                                   |Mode  |Cnt  |  Score |   Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |368,516 |±  2,784  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  | 25,897 |±  0,574  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |932,141 |± 12,395  |us/op|
@@ -95,6 +106,7 @@ Removing cached interop libraries in favour of TruffleBoundary and java code did
 
 A SinkNode is a little faster than an EmitNode
 |Benchmark                                   |Mode  |Cnt  |  Score |   Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |366,792 |±  3,908  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  | 25,608 |±  0,471  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |886,675 |± 19,197  |us/op|
@@ -103,6 +115,7 @@ A SinkNode is a little faster than an EmitNode
 
 Simplifying a little
 |Benchmark                                   |Mode  |Cnt  |  Score |   Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |367,527 |± 11,028  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  | 25,649 |±  0,307  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |815,799 |± 63,238  |us/op|
@@ -115,6 +128,7 @@ Remaining difference between the two sorts is probably because nodes are better 
 Need to find a more nodesy way to express iterators.
 Do I need to make my own VM to better handle data streaming?
 |Benchmark                                   |Mode  |Cnt  |  Score |  Error|  Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |342,798 |± 2,389|  us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  | 26,082 |± 0,791|  us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |557,185 |± 7,374|  us/op|
@@ -124,6 +138,7 @@ Do I need to make my own VM to better handle data streaming?
 Oddly enough, making iterators nodesy had a great effect on the less iterator-heavy version, but
 not so much on the iterator-heavy version, which is the opposite of what I expected.
 |Benchmark                                   |Mode  |Cnt  |  Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |171,817 |± 1,499  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  | 26,035 |± 0,428  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |508,323 |± 6,977  |us/op|
@@ -132,6 +147,7 @@ not so much on the iterator-heavy version, which is the opposite of what I expec
 
 Minor improvement
 |Benchmark                                   |Mode  |Cnt  |  Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |173,146 |± 4,575  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  | 26,174 |± 0,633  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |481,628 |± 6,990  |us/op|
@@ -141,6 +157,7 @@ Minor improvement
 Making the java code more similar to the Tailspin code makes me feel happy about the performance
 of the sort2. Still puzzling why the "simpler" iterating Tailspin sort takes more than twice the time.
 |Benchmark                                   |Mode  |Cnt  |  Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |170,915 |± 4,614  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  | 76,618 |± 0,702  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |483,675 |± 6,186  |us/op|
@@ -149,6 +166,7 @@ of the sort2. Still puzzling why the "simpler" iterating Tailspin sort takes mor
 
 Scaled down the bubblesort benchmark and added a Pascal's triangle benchmark
 |Benchmark                                   |Mode  |Cnt  |   Score |   Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |  46,089 |±  0,550  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  |  20,453 |±  0,343  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  | 125,255 |±  1,416  |us/op|
@@ -159,6 +177,7 @@ Scaled down the bubblesort benchmark and added a Pascal's triangle benchmark
 
 Minor tweaks
 |Benchmark                                   |Mode  |Cnt  |   Score |   Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |  45,488 |±  0,504  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  |  20,100 |±  0,287  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  | 124,575 |±  1,170  |us/op|
@@ -169,6 +188,7 @@ Minor tweaks
 
 A TruffleBoundary shaves a little more, but what is the fundamental problem here?
 |Benchmark                                   |Mode  |Cnt     |Score    |Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt    |5  |  43,688 |±  0,757  |us/op|
 |BubblesortBenchmark.sort_java               |avgt    |5  |  20,069 |±  0,178  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt    |5  | 124,479 |±  0,769  |us/op|
@@ -179,6 +199,7 @@ A TruffleBoundary shaves a little more, but what is the fundamental problem here
 
 Using ArrayList instead of ResultIterator is miraculous
 |Benchmark                                   |Mode  |Cnt  |  Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  | 42,483 |± 1,317  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  | 20,389 |± 0,917  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |123,362 |± 1,176  |us/op|
@@ -190,6 +211,7 @@ Using ArrayList instead of ResultIterator is miraculous
 Sending in a result builder into templates introduces a little overhead but has a good effect
 on the Pascal benchmark.
 |Benchmark                                   |Mode  |Cnt  |  Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  | 43,741 |± 1,528  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  | 20,439 |± 1,197  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |128,674 |± 1,709  |us/op|
@@ -200,6 +222,7 @@ on the Pascal benchmark.
 
 Better separation between streams (from transforms) and simple values
 |Benchmark                                   |Mode  |Cnt  |  Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  | 41,064 |± 0,474  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  | 20,252 |± 0,232  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |136,688 |± 2,323  |us/op|
@@ -210,6 +233,7 @@ Better separation between streams (from transforms) and simple values
 
 Decoupling the double iteration with a template call solves the knot!
 |Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |41,271 |± 0,182  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  |20,325 |± 0,198  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |41,073 |± 1,304  |us/op|
@@ -220,6 +244,7 @@ Decoupling the double iteration with a template call solves the knot!
 
 Shaving a little by relentless profiling
 |Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
 |BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |37,947 |± 1,147  |us/op|
 |BubblesortBenchmark.sort_java               |avgt  |  5  |20,389 |± 0,389  |us/op|
 |BubblesortBenchmark.sort_tailspin           |avgt  |  5  |42,403 |± 1,160  |us/op|
