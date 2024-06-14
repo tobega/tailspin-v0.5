@@ -14,6 +14,7 @@ import tailspin.language.nodes.value.LocalDefinitionNode;
 
 public class TemplatesRootNode extends RootNode {
   private static final int CV_ARG = 0;
+  private static final int SCOPE_ARG = 1;
   private static final int RESULT_BUILDER_ARG = 2;
 
   @SuppressWarnings("FieldMayBeFinal")

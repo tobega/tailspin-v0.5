@@ -34,11 +34,11 @@ public class TailspinParser {
 
   static final Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(tailspinSyntax);
 
-  public static List<ParseNode> parse(String s) {
+  public static ParseNode parse(String s) {
     return parseRule("program", s);
   }
 
-  public static List<ParseNode> parse(Reader reader) {
+  public static ParseNode parse(Reader reader) {
     try (BufferedReader br = new BufferedReader(reader)) {
       return parse(br.lines().collect(Collectors.joining("\n")));
     } catch (IOException e) {
@@ -46,14 +46,12 @@ public class TailspinParser {
     }
   }
 
-  public static List<ParseNode> parseRule(String rule, String s) {
+  public static ParseNode parseRule(String rule, String s) {
     Resolver resolver = new ParseComposerFactory(new SubComposerFactory(syntaxRules));
     SequenceSubComposer composer = new SequenceSubComposer(List.of(
         new NamedComposition(rule)), new Scope(null), resolver);
     Memo end = composer.nibble(s, Memo.root(0));
     if (end.pos != s.length()) throw new AssertionError("Parse failed at \n" + s.substring(end.pos));
-    @SuppressWarnings("unchecked")
-    List<ParseNode> parseNodes = (List<ParseNode>) composer.getValues();
-    return parseNodes;
+    return  (ParseNode) ParseNode.normalizeValues(composer.getValues());
   }
 }

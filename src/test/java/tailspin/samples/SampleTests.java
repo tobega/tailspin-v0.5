@@ -25,12 +25,14 @@ public class SampleTests {
           try (InputStreamReader testStreamReader = new InputStreamReader(testStream);
               BufferedReader testReader = new BufferedReader(testStreamReader)) {
             String line;
+            String testName = "";
             StringBuilder testProgram = new StringBuilder();
             while ((line = testReader.readLine()) != null) {
               if (line.startsWith("=")) {
                 Value result = context.eval("tt", testProgram);
-                assertEquals(line.substring(1), result.asString());
+                assertEquals(line.substring(1), result.toString(), "Failed: " + testName);
               } else if (line.startsWith("---")) {
+                testName = line;
                 testProgram = new StringBuilder();
               } else {
                 testProgram.append(line).append('\n');
