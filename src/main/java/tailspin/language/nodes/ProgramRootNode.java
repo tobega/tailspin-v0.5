@@ -25,7 +25,7 @@ public class ProgramRootNode extends RootNode {
     statement.executeVoid(frame);
     Object results = frame.getObjectStatic(EMIT_SLOT);
     frame.setObjectStatic(EMIT_SLOT, null);
-    return 3L;
+    return results;
   }
 
   public static CallTarget create(TailspinLanguage language, FrameDescriptor fd, StatementNode body) {
