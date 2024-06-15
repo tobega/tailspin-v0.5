@@ -1,5 +1,6 @@
 package tailspin.language.parser.composer;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,13 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
 
   static {
     namedPatterns.put("INT", Pattern.compile("[+-]?(0|[1-9][0-9]*)"));
-    namedValueCreators.put("INT", Long::valueOf);
+    namedValueCreators.put("INT", s -> {
+      try {
+        return Long.valueOf(s);
+      } catch (NumberFormatException e) {
+        return new BigInteger(s);
+      }
+    });
     namedPatterns.put("WS", Pattern.compile("\\s+"));
     namedValueCreators.put("WS", Function.identity());
     namedPatterns.put("HEX", Pattern.compile(("[0-9a-fA-F]+")));

@@ -2,6 +2,7 @@ package tailspin.language.factory;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor.Builder;
+import java.math.BigInteger;
 import java.util.List;
 import tailspin.language.TailspinLanguage;
 import tailspin.language.nodes.ProgramRootNode;
@@ -10,6 +11,7 @@ import tailspin.language.nodes.TailspinNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
+import tailspin.language.nodes.numeric.BigIntegerLiteral;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.EmitNode;
@@ -73,6 +75,7 @@ public class NodeFactory {
   private ValueNode visitTerm(ParseNode term) {
     return switch (term) {
       case ParseNode(String name, Long value) when name.equals("INT") -> IntegerLiteral.create(value);
+      case ParseNode(String name, BigInteger value) when name.equals("INT") -> BigIntegerLiteral.create(value);
       default -> throw new IllegalStateException("Unexpected value: " + term);
     };
   }

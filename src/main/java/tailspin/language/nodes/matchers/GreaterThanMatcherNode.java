@@ -3,10 +3,10 @@ package tailspin.language.nodes.matchers;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
-import java.math.BigInteger;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.BigNumber;
 
 @NodeChild(value = "toMatchNode", type = ValueNode.class)
 @NodeChild(value = "valueNode", type = ValueNode.class)
@@ -25,7 +25,7 @@ public abstract class GreaterThanMatcherNode extends MatcherNode {
 
   @Specialization(replaces = "longMore")
   @TruffleBoundary
-  protected boolean bigIntegerMore(BigInteger toMatch, BigInteger value) {
+  protected boolean bigNumberMore(BigNumber toMatch, BigNumber value) {
     return toMatch.compareTo(value) >= (inclusive ? 0 : 1);
   }
 

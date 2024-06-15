@@ -4,12 +4,17 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import java.math.BigInteger;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.BigNumber;
 
 public class BigIntegerLiteral extends ValueNode {
   private final BigInteger value;
 
   public BigIntegerLiteral(BigInteger value) {
     this.value = value;
+  }
+
+  public static BigIntegerLiteral create(BigInteger value) {
+    return new BigIntegerLiteral(value);
   }
 
   @Override
@@ -19,6 +24,6 @@ public class BigIntegerLiteral extends ValueNode {
 
   @Override
   public Object executeGeneric(VirtualFrame frame) {
-    return value;
+    return new BigNumber(value);
   }
 }

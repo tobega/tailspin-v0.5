@@ -7,6 +7,7 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 import tailspin.language.nodes.TestUtil;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.BigNumber;
 
 public class IntegerTest {
   @Test
@@ -22,7 +23,7 @@ public class IntegerTest {
     ValueNode exprNode = AddNode.create(
         IntegerLiteral.create(Long.MAX_VALUE),
         IntegerLiteral.create(1));
-    assertEquals(BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE), TestUtil.evaluate(exprNode));
+    assertEquals(new BigNumber(BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE)), TestUtil.evaluate(exprNode));
   }
 
   @Test
@@ -32,6 +33,6 @@ public class IntegerTest {
         new BigIntegerLiteral(rndBig),
         IntegerLiteral.create(5)
     );
-    assertEquals(rndBig.add(BigInteger.valueOf(5)), TestUtil.evaluate(exprNode));
+    assertEquals(new BigNumber(rndBig.add(BigInteger.valueOf(5))), TestUtil.evaluate(exprNode));
   }
 }

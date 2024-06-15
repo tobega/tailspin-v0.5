@@ -3,10 +3,10 @@ package tailspin.language.nodes.value;
 import com.oracle.truffle.api.dsl.Executed;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.BigNumber;
 
 public abstract class SingleValueNode extends ValueNode {
   @SuppressWarnings("FieldMayBeFinal")
@@ -27,7 +27,7 @@ public abstract class SingleValueNode extends ValueNode {
   }
 
   @Specialization
-  BigInteger doBigInteger(BigInteger value) {
+  BigNumber doBigNumber(BigNumber value) {
     return value;
   }
 

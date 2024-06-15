@@ -4,9 +4,9 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
-import java.math.BigInteger;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.BigNumber;
 
 @NodeChild("leftNode") @NodeChild("rightNode")
 public abstract class SubtractNode extends ValueNode {
@@ -17,7 +17,7 @@ public abstract class SubtractNode extends ValueNode {
 
   @Specialization
   @TruffleBoundary
-  protected BigInteger doBigInteger(BigInteger left, BigInteger right) {
+  protected BigNumber doBigNumber(BigNumber left, BigNumber right) {
     return left.subtract(right);
   }
 

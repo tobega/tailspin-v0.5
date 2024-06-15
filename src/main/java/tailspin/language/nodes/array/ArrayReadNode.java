@@ -2,9 +2,9 @@ package tailspin.language.nodes.array;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
-import java.math.BigInteger;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.TailspinArray;
 
 @NodeChild(value = "array", type = ValueNode.class)
@@ -16,7 +16,7 @@ public abstract class ArrayReadNode extends ValueNode {
   }
 
   @Specialization
-  protected Object doBigInteger(TailspinArray array, BigInteger index) {
+  protected Object doBigNumber(TailspinArray array, BigNumber index) {
     return array.getNative(index.intValueExact() - 1);
   }
 
