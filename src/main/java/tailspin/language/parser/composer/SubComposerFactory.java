@@ -25,8 +25,9 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
   final Map<String, List<CompositionSpec>> definedSequences;
 
   static {
-    namedPatterns.put("INT", Pattern.compile("[+-]?(0|[1-9][0-9]*)"));
+    namedPatterns.put("INT", Pattern.compile("[+-]?(0|[1-9][0-9_]*)"));
     namedValueCreators.put("INT", s -> {
+      s = s.replace("_", "");
       try {
         return Long.valueOf(s);
       } catch (NumberFormatException e) {

@@ -4,3 +4,6 @@
 ---big integer constant
 10000000000000000000!
 =10000000000000000000
+---numeric literal separator
+1_337!
+=1337
