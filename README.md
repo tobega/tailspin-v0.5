@@ -263,3 +263,14 @@ ReadContextValue replaces LocalReferenceNode
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |35,963 |± 0,745  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  |11,833 |± 0,182  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  |20,541 |± 1,972  |us/op|
+
+Using truffle block node helps a little
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|--------------------------------------------|------|-----|-------|---------|-----|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |36,066 |± 0,098  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  |19,516 |± 0,253  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |38,665 |± 0,920  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |54,981 |± 1,778  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |35,896 |± 0,646  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  |11,518 |± 0,314  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  |20,326 |± 0,462  |us/op|
