@@ -10,7 +10,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.value.LocalDefinitionNode;
+import tailspin.language.nodes.value.WriteContextValueNode;
 
 public class TemplatesRootNode extends RootNode {
 
@@ -27,7 +27,7 @@ public class TemplatesRootNode extends RootNode {
   private TemplatesRootNode(TruffleLanguage<?> language,
       FrameDescriptor frameDescriptor, StatementNode statement) {
     super(language, frameDescriptor);
-    this.setCurrentValue = LocalDefinitionNode.create(new ReadArgumentNode(CV_ARG), CV_SLOT);
+    this.setCurrentValue = WriteContextValueNode.create(0, CV_SLOT, new ReadArgumentNode(CV_ARG));
     this.statement = statement;
   }
 

@@ -12,8 +12,8 @@ import tailspin.language.nodes.TestUtil;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
-import tailspin.language.nodes.value.LocalDefinitionNodeGen;
 import tailspin.language.nodes.value.ReadContextValueNode;
+import tailspin.language.nodes.value.WriteContextValueNode;
 
 public class TransformTest {
 
@@ -27,7 +27,7 @@ public class TransformTest {
     assertEquals(46L,
         TestUtil.evaluate(valueNode,
             fdb.build(),
-            List.of(LocalDefinitionNodeGen.create(IntegerLiteral.create(34L), cvSlot))));
+            List.of(WriteContextValueNode.create(0, cvSlot, IntegerLiteral.create(34L)))));
   }
 
   @Test

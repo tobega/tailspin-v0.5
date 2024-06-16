@@ -20,16 +20,14 @@ import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.processor.MessageNode;
-import tailspin.language.nodes.state.GetStateNode;
-import tailspin.language.nodes.state.SetStateNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
-import tailspin.language.nodes.value.LocalDefinitionNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
+import tailspin.language.nodes.value.WriteContextValueNode;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.Templates;
 
@@ -150,7 +148,7 @@ public class PascalBenchmark extends TruffleBenchmark {
   private static Templates defineNextRow() {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int inSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int stateSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int stateSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
@@ -159,16 +157,16 @@ public class PascalBenchmark extends TruffleBenchmark {
     Templates matchers = new Templates();
     //  templates next-row
     //    def in: $;
-    LocalDefinitionNode defIn = LocalDefinitionNode.create(ReadContextValueNode.create(0, CV_SLOT), inSlot);
+    WriteContextValueNode defIn = WriteContextValueNode.create(0, inSlot, ReadContextValueNode.create(0, CV_SLOT));
     //    @: 0;
-    SetStateNode initState = SetStateNode.create(IntegerLiteral.create(0), 0, stateSlot);
+    WriteContextValueNode initState = WriteContextValueNode.create(0, stateSlot, IntegerLiteral.create(0));
     //    [1 -> #, $@] !
     EmitNode emitRow = EmitNode.create(ResultAggregatingNode.create(ArrayLiteral.create(buildSlot, List.of(
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
             ResultAggregatingNode.create(IntegerLiteral.create(1)),
             SendToTemplatesNode.create(chainCvSlot, matchers, 0)
             )),
-        ResultAggregatingNode.create(GetStateNode.create(0, stateSlot))
+        ResultAggregatingNode.create(ReadContextValueNode.create(0, stateSlot))
         ))));
     Templates nextRow = new Templates();
     nextRow.setCallTarget(TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(
@@ -186,12 +184,11 @@ public class PascalBenchmark extends TruffleBenchmark {
         ReadContextValueNode.create(0, CV_SLOT),
         MessageNode.create("length", ReadContextValueNode.create(1, inSlot)));
     //      $@ + $in($) !
-    EmitNode emitValue = EmitNode.create(ResultAggregatingNode.create(AddNode.create(GetStateNode.create(1, stateSlot),
+    EmitNode emitValue = EmitNode.create(ResultAggregatingNode.create(AddNode.create(ReadContextValueNode.create(1, stateSlot),
         ArrayReadNode.create(ReadContextValueNode.create(1, inSlot), ReadContextValueNode.create(0, CV_SLOT)))));
     //      @: $in($);
-    SetStateNode updateState = SetStateNode.create(
-        ArrayReadNode.create(ReadContextValueNode.create(1, inSlot), ReadContextValueNode.create(0, CV_SLOT)),
-        1, stateSlot
+    WriteContextValueNode updateState = WriteContextValueNode.create(1, stateSlot,
+        ArrayReadNode.create(ReadContextValueNode.create(1, inSlot), ReadContextValueNode.create(0, CV_SLOT))
     );
     //      $ + 1 -> #
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(

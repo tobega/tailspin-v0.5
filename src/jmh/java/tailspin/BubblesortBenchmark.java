@@ -26,8 +26,6 @@ import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.state.FreezeNode;
-import tailspin.language.nodes.state.GetStateNode;
-import tailspin.language.nodes.state.SetStateNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
@@ -35,8 +33,8 @@ import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.SinkNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
-import tailspin.language.nodes.value.LocalDefinitionNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
+import tailspin.language.nodes.value.WriteContextValueNode;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.Templates;
 
@@ -150,13 +148,13 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int rangeISlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int stateSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int stateSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int sinkSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     Templates sortedCopyMatchers = new Templates();
     defineSortedCopyMatchers(sortedCopyMatchers, stateSlot);
     // @: $;
-    SetStateNode setState = SetStateNode.create(ReadContextValueNode.create(0, CV_SLOT), 0, stateSlot);
+    WriteContextValueNode setState = WriteContextValueNode.create(0, stateSlot, ReadContextValueNode.create(0, CV_SLOT));
     // $::length..2:-1
     // -> 2..$
     // -> !#
@@ -182,7 +180,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     allI.setResultSlot(sinkSlot);
     // $@ !
     EmitNode emitState = EmitNode.create(
-        ResultAggregatingNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot))));
+        ResultAggregatingNode.create(FreezeNode.create(ReadContextValueNode.create(0, stateSlot))));
 
     BlockNode sortedCopyBlock = BlockNode.create(List.of(
         setState,
@@ -200,27 +198,27 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int tempSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     // when <?($@($) <..~$@($ - 1)>)> do
     MatcherNode isDisordered = LessThanMatcherNode.create(false,
-        ArrayReadNode.create(GetStateNode.create(1, stateSlot), ReadContextValueNode.create(0, CV_SLOT)),
-        ArrayReadNode.create(GetStateNode.create(1, stateSlot),
+        ArrayReadNode.create(ReadContextValueNode.create(1, stateSlot), ReadContextValueNode.create(0, CV_SLOT)),
+        ArrayReadNode.create(ReadContextValueNode.create(1, stateSlot),
             SubtractNode.create(ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(1)))
     );
     //   def temp: $@($);
-    LocalDefinitionNode defTemp = LocalDefinitionNode.create(ArrayReadNode.create(
-        GetStateNode.create(1, stateSlot), ReadContextValueNode.create(0, CV_SLOT)), tempSlot);
+    WriteContextValueNode defTemp = WriteContextValueNode.create(0, tempSlot, ArrayReadNode.create(
+        ReadContextValueNode.create(1, stateSlot), ReadContextValueNode.create(0, CV_SLOT)));
     //   @($): $@($ - 1);
-    SetStateNode setStateCurrent = SetStateNode.create(ArrayWriteNode.create(
-        GetStateNode.create(1, stateSlot),
+    WriteContextValueNode setStateCurrent = WriteContextValueNode.create(1, stateSlot, ArrayWriteNode.create(
+        ReadContextValueNode.create(1, stateSlot),
         ReadContextValueNode.create(0, CV_SLOT),
-        ArrayReadNode.create(GetStateNode.create(1, stateSlot),
+        ArrayReadNode.create(ReadContextValueNode.create(1, stateSlot),
             SubtractNode.create(ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(1))
         )
-    ), 1, stateSlot);
+    ));
     //   @($ - 1): $temp;
-    SetStateNode setStatePrev = SetStateNode.create(ArrayWriteNode.create(
-        GetStateNode.create(1, stateSlot),
+    WriteContextValueNode setStatePrev = WriteContextValueNode.create(1, stateSlot, ArrayWriteNode.create(
+        ReadContextValueNode.create(1, stateSlot),
         SubtractNode.create(ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(1)),
         ReadContextValueNode.create(0, tempSlot)
-    ), 1, stateSlot);
+    ));
     BlockNode whenDisordered = BlockNode.create(List.of(
         defTemp,
         setStateCurrent,
@@ -246,7 +244,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     Templates matchers = new Templates();
     //
     //    @: $;
-    SetStateNode setState = SetStateNode.create(ReadContextValueNode.create(0, CV_SLOT), 0, stateSlot);
+    WriteContextValueNode setState = WriteContextValueNode.create(0, stateSlot, ReadContextValueNode.create(0, CV_SLOT));
     //    $::length -> !#
     ChainNode lengthToMatchers = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot,
         List.of(
@@ -256,7 +254,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         ));
     //    $@ !
     EmitNode emit = EmitNode.create(
-        ResultAggregatingNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot))));
+        ResultAggregatingNode.create(FreezeNode.create(ReadContextValueNode.create(0, stateSlot))));
     defineBubblesortMatchers(matchers, bubble);
     //    end bubblesort
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(
@@ -300,7 +298,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     Templates matchers = new Templates();
     //    templates bubble
     //    @: 1;
-    SetStateNode setState = SetStateNode.create(IntegerLiteral.create(1), 0, stateSlot);
+    WriteContextValueNode setState = WriteContextValueNode.create(0, stateSlot, IntegerLiteral.create(1));
     //    1..$-1 -> !#
     SinkNode doTemplates = SinkNode.create(RangeIteration.create(
         chainCvSlot,
@@ -311,7 +309,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     );
     //    $@ !
     EmitNode emit = EmitNode.create(
-        ResultAggregatingNode.create(FreezeNode.create(GetStateNode.create(0, stateSlot))));
+        ResultAggregatingNode.create(FreezeNode.create(ReadContextValueNode.create(0, stateSlot))));
     defineBubbleMatchers(matchers, stateSlot, bubblesortStateSlot);
     //    end bubble
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(
@@ -328,30 +326,30 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int tempSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     //        when <?($@bubblesort($+1) <..~$@bubblesort($)>)> do
     MatcherNode isDisordered = LessThanMatcherNode.create(false,
-        ArrayReadNode.create(GetStateNode.create(2, bubblesortStateSlot),
+        ArrayReadNode.create(ReadContextValueNode.create(2, bubblesortStateSlot),
             AddNode.create(ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(1))),
-        ArrayReadNode.create(GetStateNode.create(2, bubblesortStateSlot),
+        ArrayReadNode.create(ReadContextValueNode.create(2, bubblesortStateSlot),
             ReadContextValueNode.create(0, CV_SLOT))
     );
     //      @: $;
-    SetStateNode markSwap = SetStateNode.create(ReadContextValueNode.create(0, CV_SLOT), 1, stateSlot);
+    WriteContextValueNode markSwap = WriteContextValueNode.create(1, stateSlot, ReadContextValueNode.create(0, CV_SLOT));
     //    def temp: $@bubblesort($@);
-    LocalDefinitionNode defTemp = LocalDefinitionNode.create(ArrayReadNode.create(
-        GetStateNode.create(2, bubblesortStateSlot), GetStateNode.create(1, stateSlot)), tempSlot);
+    WriteContextValueNode defTemp = WriteContextValueNode.create(0, tempSlot, ArrayReadNode.create(
+        ReadContextValueNode.create(2, bubblesortStateSlot), ReadContextValueNode.create(1, stateSlot)));
     //    @bubblesort($@): $@bubblesort($@+1);
-    SetStateNode setStateCurrent = SetStateNode.create(ArrayWriteNode.create(
-        GetStateNode.create(2, bubblesortStateSlot),
-        GetStateNode.create(1, stateSlot),
-        ArrayReadNode.create(GetStateNode.create(2, bubblesortStateSlot),
-            AddNode.create(GetStateNode.create(1, stateSlot), IntegerLiteral.create(1))
+    WriteContextValueNode setStateCurrent = WriteContextValueNode.create(2, bubblesortStateSlot, ArrayWriteNode.create(
+        ReadContextValueNode.create(2, bubblesortStateSlot),
+        ReadContextValueNode.create(1, stateSlot),
+        ArrayReadNode.create(ReadContextValueNode.create(2, bubblesortStateSlot),
+            AddNode.create(ReadContextValueNode.create(1, stateSlot), IntegerLiteral.create(1))
         )
-    ), 2, bubblesortStateSlot);
+    ));
     //    @bubblesort($@+1): $temp;
-    SetStateNode setStateNext = SetStateNode.create(ArrayWriteNode.create(
-        GetStateNode.create(2, bubblesortStateSlot),
-        AddNode.create(GetStateNode.create(1, stateSlot), IntegerLiteral.create(1)),
+    WriteContextValueNode setStateNext = WriteContextValueNode.create(2, bubblesortStateSlot, ArrayWriteNode.create(
+        ReadContextValueNode.create(2, bubblesortStateSlot),
+        AddNode.create(ReadContextValueNode.create(1, stateSlot), IntegerLiteral.create(1)),
         ReadContextValueNode.create(0, tempSlot)
-    ), 2, bubblesortStateSlot);
+    ));
     BlockNode whenDisordered = BlockNode.create(List.of(
         markSwap,
         defTemp,
