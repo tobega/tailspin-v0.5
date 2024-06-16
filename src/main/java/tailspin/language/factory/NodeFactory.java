@@ -11,8 +11,10 @@ import tailspin.language.nodes.TailspinNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
+import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.BigIntegerLiteral;
 import tailspin.language.nodes.numeric.IntegerLiteral;
+import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.parser.ParseNode;
@@ -68,8 +70,19 @@ public class NodeFactory {
   private ValueNode visitArithmeticExpression(ParseNode ae) {
     return switch (ae) {
       case ParseNode(String name, ParseNode term) when name.equals("term") -> visitTerm(term);
+      case ParseNode(String name, List<?> addition) when name.equals("addition") -> visitAddition(addition);
       default -> throw new IllegalStateException("Unexpected value: " + ae);
     };
+  }
+
+  private ValueNode visitAddition(List<?> addition) {
+    ValueNode left = visitArithmeticExpression((ParseNode) addition.getFirst());
+    ValueNode right = visitArithmeticExpression((ParseNode) addition.getLast());
+    if(addition.get(1).equals("+")) {
+      return AddNode.create(left, right);
+    } else {
+      return SubtractNode.create(left, right);
+    }
   }
 
   private ValueNode visitTerm(ParseNode term) {

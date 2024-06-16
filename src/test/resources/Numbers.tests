@@ -7,3 +7,13 @@
 ---numeric literal separator
 1_337!
 =1337
+---negative number literal
+-1337 !
+=-1337
+---addition
+3 + 5 !
+=8
+---subtraction
+3 - 5 !
+=-2
+
