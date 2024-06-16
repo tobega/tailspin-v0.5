@@ -23,13 +23,12 @@ import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.state.GetStateNode;
 import tailspin.language.nodes.state.SetStateNode;
 import tailspin.language.nodes.transform.BlockNode;
-import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
+import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.nodes.value.LocalDefinitionNode;
-import tailspin.language.nodes.value.LocalReferenceNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.Templates;
@@ -122,20 +121,20 @@ public class PascalBenchmark extends TruffleBenchmark {
     int matchChainResultSlot = fdbMatch.addSlot(FrameSlotKind.Static, null, null);
     //    when <[](..50)> do
     MatcherNode whenLengthLe50 = LessThanMatcherNode.create(true,
-        MessageNode.create("length", LocalReferenceNode.create(CV_SLOT)),
+        MessageNode.create("length", ReadContextValueNode.create(0, CV_SLOT)),
         IntegerLiteral.create(50));
     //      $!
-    EmitNode emitValue1 = EmitNode.create(ResultAggregatingNode.create(LocalReferenceNode.create(CV_SLOT)));
+    EmitNode emitValue1 = EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(0, CV_SLOT)));
     //      $ -> next-row -> #
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(
-        ResultAggregatingNode.create(LocalReferenceNode.create(CV_SLOT)),
+        ResultAggregatingNode.create(ReadContextValueNode.create(0, CV_SLOT)),
         SendToTemplatesNode.create(matchChainCvSlot, nextRow, 2),
         SendToTemplatesNode.create(matchChainCvSlot, matchers, 1)
     ));
     //    otherwise
     MatcherNode otherwise = AlwaysTrueMatcherNode.create();
     //      $!
-    EmitNode emitValue2 = EmitNode.create(ResultAggregatingNode.create(LocalReferenceNode.create(CV_SLOT)));
+    EmitNode emitValue2 = EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(0, CV_SLOT)));
     //   end triangle
     matchers.setCallTarget(TemplatesRootNode.create(fdbMatch.build(), MatchStatementNode.create(List.of(
         MatchTemplateNode.create(whenLengthLe50, BlockNode.create(List.of(
@@ -160,7 +159,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     Templates matchers = new Templates();
     //  templates next-row
     //    def in: $;
-    LocalDefinitionNode defIn = LocalDefinitionNode.create(LocalReferenceNode.create(CV_SLOT), inSlot);
+    LocalDefinitionNode defIn = LocalDefinitionNode.create(ReadContextValueNode.create(0, CV_SLOT), inSlot);
     //    @: 0;
     SetStateNode initState = SetStateNode.create(IntegerLiteral.create(0), 0, stateSlot);
     //    [1 -> #, $@] !
@@ -184,19 +183,19 @@ public class PascalBenchmark extends TruffleBenchmark {
     int matchChainResultSlot = fdbMatch.addSlot(FrameSlotKind.Static, null, null);
     //    when <..$in::length> do
     MatcherNode whenLeLength = LessThanMatcherNode.create(true,
-        LocalReferenceNode.create(CV_SLOT),
+        ReadContextValueNode.create(0, CV_SLOT),
         MessageNode.create("length", ReadContextValueNode.create(1, inSlot)));
     //      $@ + $in($) !
     EmitNode emitValue = EmitNode.create(ResultAggregatingNode.create(AddNode.create(GetStateNode.create(1, stateSlot),
-        ArrayReadNode.create(ReadContextValueNode.create(1, inSlot), LocalReferenceNode.create(CV_SLOT)))));
+        ArrayReadNode.create(ReadContextValueNode.create(1, inSlot), ReadContextValueNode.create(0, CV_SLOT)))));
     //      @: $in($);
     SetStateNode updateState = SetStateNode.create(
-        ArrayReadNode.create(ReadContextValueNode.create(1, inSlot), LocalReferenceNode.create(CV_SLOT)),
+        ArrayReadNode.create(ReadContextValueNode.create(1, inSlot), ReadContextValueNode.create(0, CV_SLOT)),
         1, stateSlot
     );
     //      $ + 1 -> #
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(
-        ResultAggregatingNode.create(AddNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1))),
+        ResultAggregatingNode.create(AddNode.create(ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(1))),
         SendToTemplatesNode.create(matchChainCvSlot, matchers, 1)
     ));
     //  end next-row

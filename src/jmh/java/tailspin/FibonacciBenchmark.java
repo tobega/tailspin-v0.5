@@ -18,12 +18,12 @@ import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.SubtractNode;
-import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
+import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
-import tailspin.language.nodes.value.LocalReferenceNode;
+import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
 import tailspin.language.runtime.Templates;
 
@@ -65,19 +65,19 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     Templates templates = new Templates();
     // when <=0> do 0 !
     MatcherNode eq0 = EqualityMatcherNodeGen.create(
-        LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(0));
+        ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(0));
     StatementNode whenEq0 = EmitNode.create(ResultAggregatingNode.create(IntegerLiteral.create(0)));
 
     // when <=1> do 1!
     MatcherNode eq1 = EqualityMatcherNodeGen.create(
-        LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1));
+        ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(1));
     StatementNode whenEq1 = EmitNode.create(ResultAggregatingNode.create(IntegerLiteral.create(1)));
 
     // otherwise ($ - 1 -> #) + ($ - 2 -> #) !
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
-    SubtractNode prevInd = SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1));
+    SubtractNode prevInd = SubtractNode.create(ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(1));
     SendToTemplatesNode sendPrev = SendToTemplatesNode.create(chainCvSlot, templates, -1);
-    SubtractNode prevPrevInd = SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(2));
+    SubtractNode prevPrevInd = SubtractNode.create(ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(2));
     SendToTemplatesNode sendPrevPrev = SendToTemplatesNode.create(chainCvSlot, templates, -1);
     ValueNode sum = AddNode.create(
         SingleValueNode.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(ResultAggregatingNode.create(prevInd), sendPrev))),

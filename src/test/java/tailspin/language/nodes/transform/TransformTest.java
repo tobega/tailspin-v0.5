@@ -7,13 +7,13 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import tailspin.language.nodes.TestUtil;
 import tailspin.language.TypeError;
+import tailspin.language.nodes.TestUtil;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.value.LocalDefinitionNodeGen;
-import tailspin.language.nodes.value.LocalReferenceNode;
+import tailspin.language.nodes.value.ReadContextValueNode;
 
 public class TransformTest {
 
@@ -23,7 +23,7 @@ public class TransformTest {
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     ValueNode valueNode = AddNode.create(
         IntegerLiteral.create(12),
-        LocalReferenceNode.create(cvSlot));
+        ReadContextValueNode.create(0, cvSlot));
     assertEquals(46L,
         TestUtil.evaluate(valueNode,
             fdb.build(),
@@ -36,7 +36,7 @@ public class TransformTest {
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     ValueNode valueNode  = AddNode.create(
         IntegerLiteral.create(12),
-        LocalReferenceNode.create(cvSlot));
+        ReadContextValueNode.create(0, cvSlot));
     assertThrows(TypeError.class, () -> TestUtil.evaluate(valueNode, fdb.build(), List.of()));
   }
 }

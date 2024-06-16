@@ -29,14 +29,14 @@ import tailspin.language.nodes.state.FreezeNode;
 import tailspin.language.nodes.state.GetStateNode;
 import tailspin.language.nodes.state.SetStateNode;
 import tailspin.language.nodes.transform.BlockNode;
-import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
+import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.SinkNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.nodes.value.LocalDefinitionNode;
-import tailspin.language.nodes.value.LocalReferenceNode;
+import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.Templates;
 
@@ -124,9 +124,9 @@ public class BubblesortBenchmark extends TruffleBenchmark {
 
     // -> \($! 100 - $!\)
     BlockNode flatMapBlock = BlockNode.create(List.of(
-        EmitNode.create(ResultAggregatingNode.create(LocalReferenceNode.create(CV_SLOT))),
+        EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(0, CV_SLOT))),
         EmitNode.create(ResultAggregatingNode.create(
-            SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(CV_SLOT))))
+            SubtractNode.create(IntegerLiteral.create(100L), ReadContextValueNode.create(0, CV_SLOT))))
     ));
     flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), flatMapBlock));
 
@@ -156,7 +156,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     Templates sortedCopyMatchers = new Templates();
     defineSortedCopyMatchers(sortedCopyMatchers, stateSlot);
     // @: $;
-    SetStateNode setState = SetStateNode.create(LocalReferenceNode.create(CV_SLOT), 0, stateSlot);
+    SetStateNode setState = SetStateNode.create(ReadContextValueNode.create(0, CV_SLOT), 0, stateSlot);
     // $::length..2:-1
     // -> 2..$
     // -> !#
@@ -168,7 +168,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         rangeJSlot,
         toMatchers,
         IntegerLiteral.create(2),
-        LocalReferenceNode.create(CV_SLOT),
+        ReadContextValueNode.create(0, CV_SLOT),
         IntegerLiteral.create(1)
     );
     SendToTemplatesNode doAllJ = SendToTemplatesNode.create(rangeISlot, allJTemplates, 0);
@@ -176,7 +176,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     RangeIteration allI = RangeIteration.create(
         rangeISlot,
         doAllJ,
-        MessageNode.create("length", LocalReferenceNode.create(CV_SLOT)),
+        MessageNode.create("length", ReadContextValueNode.create(0, CV_SLOT)),
         IntegerLiteral.create(2),
         IntegerLiteral.create(-1));
     allI.setResultSlot(sinkSlot);
@@ -200,26 +200,26 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int tempSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     // when <?($@($) <..~$@($ - 1)>)> do
     MatcherNode isDisordered = LessThanMatcherNode.create(false,
-        ArrayReadNode.create(GetStateNode.create(1, stateSlot), LocalReferenceNode.create(CV_SLOT)),
+        ArrayReadNode.create(GetStateNode.create(1, stateSlot), ReadContextValueNode.create(0, CV_SLOT)),
         ArrayReadNode.create(GetStateNode.create(1, stateSlot),
-            SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1)))
+            SubtractNode.create(ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(1)))
     );
     //   def temp: $@($);
     LocalDefinitionNode defTemp = LocalDefinitionNode.create(ArrayReadNode.create(
-        GetStateNode.create(1, stateSlot), LocalReferenceNode.create(CV_SLOT)), tempSlot);
+        GetStateNode.create(1, stateSlot), ReadContextValueNode.create(0, CV_SLOT)), tempSlot);
     //   @($): $@($ - 1);
     SetStateNode setStateCurrent = SetStateNode.create(ArrayWriteNode.create(
         GetStateNode.create(1, stateSlot),
-        LocalReferenceNode.create(CV_SLOT),
+        ReadContextValueNode.create(0, CV_SLOT),
         ArrayReadNode.create(GetStateNode.create(1, stateSlot),
-            SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1))
+            SubtractNode.create(ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(1))
         )
     ), 1, stateSlot);
     //   @($ - 1): $temp;
     SetStateNode setStatePrev = SetStateNode.create(ArrayWriteNode.create(
         GetStateNode.create(1, stateSlot),
-        SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1)),
-        LocalReferenceNode.create(tempSlot)
+        SubtractNode.create(ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(1)),
+        ReadContextValueNode.create(0, tempSlot)
     ), 1, stateSlot);
     BlockNode whenDisordered = BlockNode.create(List.of(
         defTemp,
@@ -246,12 +246,12 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     Templates matchers = new Templates();
     //
     //    @: $;
-    SetStateNode setState = SetStateNode.create(LocalReferenceNode.create(CV_SLOT), 0, stateSlot);
+    SetStateNode setState = SetStateNode.create(ReadContextValueNode.create(0, CV_SLOT), 0, stateSlot);
     //    $::length -> !#
     ChainNode lengthToMatchers = ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot,
         List.of(
             ResultAggregatingNode.create(
-                MessageNode.create("length", LocalReferenceNode.create(CV_SLOT))),
+                MessageNode.create("length", ReadContextValueNode.create(0, CV_SLOT))),
             SendToTemplatesNode.create(chainCvSlot, matchers, 0)
         ));
     //    $@ !
@@ -276,12 +276,12 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainIsFirstSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     //        when <2..> do
-    MatcherNode isGteq2 = GreaterThanMatcherNode.create(true, LocalReferenceNode.create(CV_SLOT),
+    MatcherNode isGteq2 = GreaterThanMatcherNode.create(true, ReadContextValueNode.create(0, CV_SLOT),
         IntegerLiteral.create(2));
     //      $ -> bubble -> !#
     StatementNode whenGteq2 = SinkNode.create(
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
-            ResultAggregatingNode.create(LocalReferenceNode.create(CV_SLOT)),
+            ResultAggregatingNode.create(ReadContextValueNode.create(0, CV_SLOT)),
             SendToTemplatesNode.create(chainCvSlot, bubble, 1),
             SendToTemplatesNode.create(chainCvSlot, matchers, 1)
         )));
@@ -306,7 +306,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         chainCvSlot,
         SendToTemplatesNode.create(chainCvSlot, matchers, 0),
         IntegerLiteral.create(1),
-        SubtractNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1)),
+        SubtractNode.create(ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(1)),
         IntegerLiteral.create(1))
     );
     //    $@ !
@@ -329,12 +329,12 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     //        when <?($@bubblesort($+1) <..~$@bubblesort($)>)> do
     MatcherNode isDisordered = LessThanMatcherNode.create(false,
         ArrayReadNode.create(GetStateNode.create(2, bubblesortStateSlot),
-            AddNode.create(LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(1))),
+            AddNode.create(ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(1))),
         ArrayReadNode.create(GetStateNode.create(2, bubblesortStateSlot),
-            LocalReferenceNode.create(CV_SLOT))
+            ReadContextValueNode.create(0, CV_SLOT))
     );
     //      @: $;
-    SetStateNode markSwap = SetStateNode.create(LocalReferenceNode.create(CV_SLOT), 1, stateSlot);
+    SetStateNode markSwap = SetStateNode.create(ReadContextValueNode.create(0, CV_SLOT), 1, stateSlot);
     //    def temp: $@bubblesort($@);
     LocalDefinitionNode defTemp = LocalDefinitionNode.create(ArrayReadNode.create(
         GetStateNode.create(2, bubblesortStateSlot), GetStateNode.create(1, stateSlot)), tempSlot);
@@ -350,7 +350,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     SetStateNode setStateNext = SetStateNode.create(ArrayWriteNode.create(
         GetStateNode.create(2, bubblesortStateSlot),
         AddNode.create(GetStateNode.create(1, stateSlot), IntegerLiteral.create(1)),
-        LocalReferenceNode.create(tempSlot)
+        ReadContextValueNode.create(0, tempSlot)
     ), 2, bubblesortStateSlot);
     BlockNode whenDisordered = BlockNode.create(List.of(
         markSwap,

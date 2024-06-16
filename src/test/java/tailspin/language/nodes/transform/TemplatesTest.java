@@ -22,7 +22,7 @@ import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.SubtractNode;
-import tailspin.language.nodes.value.LocalReferenceNode;
+import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.Templates;
 
@@ -33,12 +33,12 @@ public class TemplatesTest {
 
     ValueNode expr1 = AddNode.create(
         IntegerLiteral.create(5),
-        LocalReferenceNode.create(CV_SLOT));
+        ReadContextValueNode.create(0, CV_SLOT));
     StatementNode first = EmitNode.create(ResultAggregatingNode.create(expr1));
 
     ValueNode expr2 = AddNode.create(
         IntegerLiteral.create(7),
-        LocalReferenceNode.create(CV_SLOT));
+        ReadContextValueNode.create(0, CV_SLOT));
     StatementNode second = EmitNode.create(ResultAggregatingNode.create(expr2));
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(first, second)));
@@ -54,11 +54,11 @@ public class TemplatesTest {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
 
     MatcherNode eq3 = EqualityMatcherNodeGen.create(
-        LocalReferenceNode.create(CV_SLOT), IntegerLiteral.create(3));
+        ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(3));
     StatementNode whenEq3 = EmitNode.create(ResultAggregatingNode.create(IntegerLiteral.create(0)));
 
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
-    StatementNode otherwise = EmitNode.create(ResultAggregatingNode.create(LocalReferenceNode.create(CV_SLOT)));
+    StatementNode otherwise = EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(0, CV_SLOT)));
 
     MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
         MatchTemplateNode.create(eq3, whenEq3),
@@ -83,8 +83,8 @@ public class TemplatesTest {
 
     // -> \($! 100 - $!\)
     BlockNode flatMapBlock = BlockNode.create(List.of(
-        EmitNode.create(ResultAggregatingNode.create(LocalReferenceNode.create(CV_SLOT))),
-        EmitNode.create(ResultAggregatingNode.create(SubtractNode.create(IntegerLiteral.create(100L), LocalReferenceNode.create(CV_SLOT)))
+        EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(0, CV_SLOT))),
+        EmitNode.create(ResultAggregatingNode.create(SubtractNode.create(IntegerLiteral.create(100L), ReadContextValueNode.create(0, CV_SLOT)))
         )
     ));
     flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), flatMapBlock));

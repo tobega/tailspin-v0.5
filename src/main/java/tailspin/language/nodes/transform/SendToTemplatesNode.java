@@ -12,7 +12,7 @@ import com.oracle.truffle.api.nodes.Node;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.GetContextFrameNode;
-import tailspin.language.nodes.value.LocalReferenceNode;
+import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.runtime.Templates;
 
 public abstract class SendToTemplatesNode extends TransformNode {
@@ -25,7 +25,7 @@ public abstract class SendToTemplatesNode extends TransformNode {
   protected final int definitionLevel;
 
   protected SendToTemplatesNode(int chainCvSlot, Templates templates, int definitionLevel) {
-    this.valueNode = LocalReferenceNode.create(chainCvSlot);
+    this.valueNode = ReadContextValueNode.create(0, chainCvSlot);
     this.definitionLevel = definitionLevel;
     this.templates = templates;
   }

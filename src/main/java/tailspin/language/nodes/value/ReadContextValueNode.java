@@ -19,7 +19,7 @@ public abstract class ReadContextValueNode extends ValueNode {
       @Cached(neverDefault = true) GetContextFrameNode getFrame,
       @Cached(neverDefault = true) ReadLocalValueNode readValue) {
     VirtualFrame contextFrame = getFrame.execute(frame, this, getLevel());
-    return readValue.readObject(contextFrame, getSlot());
+    return readValue.executeGeneric(contextFrame, this, getSlot());
   }
 
   public static ReadContextValueNode create(int level, int slot) {

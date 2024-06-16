@@ -252,3 +252,14 @@ Shaving a little by relentless profiling
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |36,817 |± 0,185  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  |14,845 |± 0,245  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  |21,177 |± 0,324  |us/op|
+
+ReadContextValue replaces LocalReferenceNode
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|-----------------------------------------------|------|--------|---------|-------|-----|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |37,924 |± 1,745  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  |19,598 |± 0,602  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |40,549 |± 0,383  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |54,846 |± 1,213  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |35,963 |± 0,745  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  |11,833 |± 0,182  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  |20,541 |± 1,972  |us/op|
