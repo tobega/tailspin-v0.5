@@ -43,7 +43,7 @@ public class TemplatesTest {
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(first, second)));
     @SuppressWarnings("unchecked")
-    Iterator<Object> result = ((ArrayList<Object>) callTarget.call(3L, null, null)).iterator();
+    Iterator<Object> result = ((ArrayList<Object>) callTarget.call(null, 3L, null)).iterator();
     assertEquals(8L, result.next());
     assertEquals(10L, result.next());
     assertFalse(result.hasNext());
@@ -66,9 +66,9 @@ public class TemplatesTest {
     ));
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), matchStatement);
-    assertEquals(0L, callTarget.call(3L, null, null));
+    assertEquals(0L, callTarget.call(null, 3L, null));
 
-    assertEquals(5L, callTarget.call(5L, null, null));
+    assertEquals(5L, callTarget.call(null, 5L, null));
   }
 
   @Test

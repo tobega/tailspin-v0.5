@@ -6,11 +6,10 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.Node;
+import tailspin.language.nodes.transform.TemplatesRootNode;
 
 @GenerateInline
 public abstract class GetContextFrameNode extends Node {
-
-  public static final int DEFINING_SCOPE_ARG = 1;
 
   public abstract VirtualFrame execute(VirtualFrame frame, Node node, int level);
 
@@ -24,7 +23,7 @@ public abstract class GetContextFrameNode extends Node {
   VirtualFrame doUplevel(VirtualFrame frame, int level) {
     VirtualFrame definingScope = frame;
     for (int i = 0; i < level; i++)
-      definingScope = (VirtualFrame) definingScope.getArguments()[DEFINING_SCOPE_ARG];
+      definingScope = (VirtualFrame) definingScope.getArguments()[TemplatesRootNode.DEFINING_SCOPE_ARG];
     return definingScope;
   }
 

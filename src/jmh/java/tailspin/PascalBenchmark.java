@@ -144,7 +144,7 @@ public class PascalBenchmark extends TruffleBenchmark {
         MatchTemplateNode.create(otherwise, emitValue2)
     ))));
 
-    return () -> (TailspinArray) triangleCallTarget.call(null, Truffle.getRuntime().createMaterializedFrame(new Object[0]), null);
+    return () -> (TailspinArray) triangleCallTarget.call(Truffle.getRuntime().createMaterializedFrame(new Object[0]), null, null);
   }
 
   private static Templates defineNextRow() {

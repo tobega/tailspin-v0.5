@@ -63,7 +63,7 @@ public abstract class SendToTemplatesNode extends TransformNode {
         Frame definingScope,
         Object resultBuilder,
         @Cached("create(templates.getCallTarget())") DirectCallNode directCallNode) {
-      return directCallNode.call(currentValue, definingScope, resultBuilder);
+      return directCallNode.call(definingScope, currentValue, resultBuilder);
     }
   }
 }
