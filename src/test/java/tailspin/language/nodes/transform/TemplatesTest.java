@@ -3,6 +3,7 @@ package tailspin.language.nodes.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static tailspin.language.runtime.Templates.CV_SLOT;
+import static tailspin.language.runtime.Templates.createScopeFdb;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -33,15 +34,15 @@ public class TemplatesTest {
 
     ValueNode expr1 = AddNode.create(
         IntegerLiteral.create(5),
-        ReadContextValueNode.create(0, CV_SLOT));
+        ReadContextValueNode.create(-1, CV_SLOT));
     StatementNode first = EmitNode.create(ResultAggregatingNode.create(expr1));
 
     ValueNode expr2 = AddNode.create(
         IntegerLiteral.create(7),
-        ReadContextValueNode.create(0, CV_SLOT));
+        ReadContextValueNode.create(-1, CV_SLOT));
     StatementNode second = EmitNode.create(ResultAggregatingNode.create(expr2));
 
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), BlockNode.create(List.of(first, second)));
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), createScopeFdb().build(), BlockNode.create(List.of(first, second)));
     @SuppressWarnings("unchecked")
     Iterator<Object> result = ((ArrayList<Object>) callTarget.call(null, 3L, null)).iterator();
     assertEquals(8L, result.next());
@@ -54,18 +55,18 @@ public class TemplatesTest {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
 
     MatcherNode eq3 = EqualityMatcherNodeGen.create(
-        ReadContextValueNode.create(0, CV_SLOT), IntegerLiteral.create(3));
+        ReadContextValueNode.create(-1, CV_SLOT), IntegerLiteral.create(3));
     StatementNode whenEq3 = EmitNode.create(ResultAggregatingNode.create(IntegerLiteral.create(0)));
 
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
-    StatementNode otherwise = EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(0, CV_SLOT)));
+    StatementNode otherwise = EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(-1, CV_SLOT)));
 
     MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
         MatchTemplateNode.create(eq3, whenEq3),
         MatchTemplateNode.create(alwaysTrue, otherwise)
     ));
 
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), matchStatement);
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), createScopeFdb().build(), matchStatement);
     assertEquals(0L, callTarget.call(null, 3L, null));
 
     assertEquals(5L, callTarget.call(null, 5L, null));
@@ -79,20 +80,21 @@ public class TemplatesTest {
 
     Templates flatMap = new Templates();
     // [100..1:-1
-    RangeIteration backwards = RangeIteration.create(rangeSlot, SendToTemplatesNode.create(rangeSlot, flatMap, 0), IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
+    RangeIteration backwards = RangeIteration.create(rangeSlot, SendToTemplatesNode.create(rangeSlot, flatMap), IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
 
     // -> \($! 100 - $!\)
     BlockNode flatMapBlock = BlockNode.create(List.of(
-        EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(0, CV_SLOT))),
-        EmitNode.create(ResultAggregatingNode.create(SubtractNode.create(IntegerLiteral.create(100L), ReadContextValueNode.create(0, CV_SLOT)))
+        EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(-1, CV_SLOT))),
+        EmitNode.create(ResultAggregatingNode.create(SubtractNode.create(IntegerLiteral.create(100L), ReadContextValueNode.create(-1, CV_SLOT)))
         )
     ));
-    flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), flatMapBlock));
+    flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), createScopeFdb().build(), flatMapBlock));
 
     // ]
     ArrayLiteral input = ArrayLiteral.create(buildSlot, List.of(backwards));
 
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), EmitNode.create(ResultAggregatingNode.create(input)));
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), createScopeFdb().build(),
+        EmitNode.create(ResultAggregatingNode.create(input)));
     TailspinArray result = (TailspinArray) callTarget.call(null, null, null);
     assertEquals(200, result.getArraySize());
     assertEquals(100L, result.getNative(0));

@@ -1,7 +1,6 @@
 package tailspin.language.nodes.transform;
 
 import com.oracle.truffle.api.dsl.Cached;
-import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.Executed;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -11,7 +10,6 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.value.GetContextFrameNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.runtime.Templates;
 
@@ -22,34 +20,22 @@ public abstract class SendToTemplatesNode extends TransformNode {
   protected ValueNode valueNode;
 
   private final Templates templates;
-  protected final int definitionLevel;
 
-  protected SendToTemplatesNode(int chainCvSlot, Templates templates, int definitionLevel) {
-    this.valueNode = ReadContextValueNode.create(0, chainCvSlot);
-    this.definitionLevel = definitionLevel;
+  protected SendToTemplatesNode(int chainCvSlot, Templates templates) {
+    this.valueNode = ReadContextValueNode.create(-1, chainCvSlot);
     this.templates = templates;
   }
 
-  public static SendToTemplatesNode create(int chainCvSlot, Templates templates, int definitionLevel) {
-    return SendToTemplatesNodeGen.create(chainCvSlot, templates, definitionLevel);
+  public static SendToTemplatesNode create(int chainCvSlot, Templates templates) {
+    return SendToTemplatesNodeGen.create(chainCvSlot, templates);
   }
 
-  @Specialization(guards = "definitionLevel >= 0")
+  @Specialization
   public void doDispatch(VirtualFrame frame, Object value,
-      @Cached(inline = true) GetContextFrameNode getContextFrameNode,
-      @Cached @Shared DispatchNode dispatchNode) {
-    VirtualFrame contextFrame = getContextFrameNode.execute(frame, this, definitionLevel);
+      @Cached DispatchNode dispatchNode) {
     Object resultBuilder = frame.getObjectStatic(getResultSlot());
-    Object result = dispatchNode.executeDispatch(templates, value, contextFrame.materialize(),
+    Object result = dispatchNode.executeDispatch(templates, value, templates.getDefiningScope(),
         resultBuilder);
-    frame.setObjectStatic(getResultSlot(), result);
-  }
-
-  @Specialization(guards = "definitionLevel < 0")
-  public void doFree(@SuppressWarnings("unused") VirtualFrame frame, Object value,
-      @Cached @Shared DispatchNode dispatchNode) {
-    Object resultBuilder = frame.getObjectStatic(getResultSlot());
-    Object result = dispatchNode.executeDispatch(templates, value, null, resultBuilder);
     frame.setObjectStatic(getResultSlot(), result);
   }
 

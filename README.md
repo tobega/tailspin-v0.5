@@ -274,3 +274,14 @@ Using truffle block node helps a little
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |35,896 |± 0,646  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  |11,518 |± 0,314  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  |20,326 |± 0,462  |us/op|
+
+Handling closures of defining scopes properly takes a bit of a hit
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|--------------------------------------------|------|-----|-------|---------|-----|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |79,106 |± 1,384  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  |19,771 |± 0,901  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |47,963 |± 0,633  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |59,065 |± 0,926  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |41,363 |± 0,491  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  |11,600 |± 0,083  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  |23,894 |± 0,812  |us/op|

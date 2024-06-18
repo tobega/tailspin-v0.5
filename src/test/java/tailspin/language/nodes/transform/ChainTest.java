@@ -30,7 +30,7 @@ public class ChainTest {
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode expr = AddNode.create(
             IntegerLiteral.create(12),
-            ReadContextValueNode.create(0, rangeSlot));
+            ReadContextValueNode.create(-1, rangeSlot));
     RangeIteration source = RangeIteration.create(rangeSlot, ResultAggregatingNode.create(expr), IntegerLiteral.create(1L), IntegerLiteral.create(3L), IntegerLiteral.create(1L));
     source.setResultSlot(resultSlot);
     @SuppressWarnings("unchecked")
@@ -50,7 +50,7 @@ public class ChainTest {
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode expr = AddNode.create(
             IntegerLiteral.create(12),
-            ReadContextValueNode.create(0, cvSlot));
+            ReadContextValueNode.create(-1, cvSlot));
     ValueNode source = IntegerLiteral.create(1L);
     ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(
         ResultAggregatingNode.create(source), ResultAggregatingNode.create(expr)));
@@ -65,7 +65,7 @@ public class ChainTest {
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode source = ArrayLiteral.create(buildSlot, List.of(ResultAggregatingNode.create(IntegerLiteral.create(12))));
-    ValueNode expr = ArrayReadNode.create(ReadContextValueNode.create(0, cvSlot), IntegerLiteral.create(1));
+    ValueNode expr = ArrayReadNode.create(ReadContextValueNode.create(-1, cvSlot), IntegerLiteral.create(1));
     ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(
         ResultAggregatingNode.create(source), ResultAggregatingNode.create(expr)));
     assertEquals(12L, TestUtil.evaluate(SingleValueNode.create(chain), fdb.build(),
