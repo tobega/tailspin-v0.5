@@ -2,10 +2,10 @@ package tailspin;
 
 import static tailspin.language.runtime.Templates.CV_SLOT;
 import static tailspin.language.runtime.Templates.STATE_SLOT;
+import static tailspin.language.runtime.Templates.createBasicFdb;
 import static tailspin.language.runtime.Templates.createScopeFdb;
 
 import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import java.util.ArrayList;
@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import org.openjdk.jmh.annotations.Benchmark;
 import tailspin.language.nodes.MatcherNode;
+import tailspin.language.nodes.ProgramRootNode;
 import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.array.ArrayReadNode;
 import tailspin.language.nodes.iterate.ChainNode;
@@ -97,12 +98,22 @@ public class PascalBenchmark extends TruffleBenchmark {
   }
 
   private static Supplier<TailspinArray> createTailspinCall() {
+    FrameDescriptor.Builder programScope = createScopeFdb();
+    int nextRowSlot = programScope.addSlot(FrameSlotKind.Illegal, null, null);
+    int triangleSlot = programScope.addSlot(FrameSlotKind.Illegal, null, null);
+
+    Templates triangle = new Templates();
+
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int innerBuildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+
+    FrameDescriptor.Builder scopeFdb = createScopeFdb();
+    int matcherSlot = scopeFdb.addSlot(FrameSlotKind.Illegal, null, null);
+
     Templates nextRow = defineNextRow();
 
     Templates matchers = new Templates();
@@ -111,13 +122,14 @@ public class PascalBenchmark extends TruffleBenchmark {
     EmitNode emitTriangle = EmitNode.create(ResultAggregatingNode.create(ArrayLiteral.create(buildSlot, List.of(
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
             ResultAggregatingNode.create(ArrayLiteral.create(innerBuildSlot, List.of(ResultAggregatingNode.create(IntegerLiteral.create(1))))),
-            SendToTemplatesNode.create(chainCvSlot, matchers)
+            SendToTemplatesNode.create(chainCvSlot, 0, matcherSlot)
         ))
     ))));
-    CallTarget triangleCallTarget = TemplatesRootNode.create(fdb.build(), createScopeFdb().build(),
+    CallTarget triangleCallTarget = TemplatesRootNode.create(fdb.build(), scopeFdb.build(),
         BlockNode.create(List.of(
-            DefineTemplatesNode.create(matchers),
+            DefineTemplatesNode.create(matchers, matcherSlot),
             emitTriangle)));
+    triangle.setCallTarget(triangleCallTarget);
 
     FrameDescriptor.Builder fdbMatch = Templates.createBasicFdb();
     int matchChainValuesSlot = fdbMatch.addSlot(FrameSlotKind.Static, null, null);
@@ -132,8 +144,8 @@ public class PascalBenchmark extends TruffleBenchmark {
     //      $ -> next-row -> #
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(
         ResultAggregatingNode.create(ReadContextValueNode.create(-1, CV_SLOT)),
-        SendToTemplatesNode.create(matchChainCvSlot, nextRow),
-        SendToTemplatesNode.create(matchChainCvSlot, matchers)
+        SendToTemplatesNode.create(matchChainCvSlot, 1, nextRowSlot),
+        SendToTemplatesNode.create(matchChainCvSlot, 0, matcherSlot)
     ));
     //    otherwise
     MatcherNode otherwise = AlwaysTrueMatcherNode.create();
@@ -148,7 +160,14 @@ public class PascalBenchmark extends TruffleBenchmark {
         MatchTemplateNode.create(otherwise, emitValue2)
     ))));
 
-    return () -> (TailspinArray) triangleCallTarget.call(Truffle.getRuntime().createMaterializedFrame(new Object[0]), null, null);
+    CallTarget program = ProgramRootNode.create(null, createBasicFdb().build(), programScope.build(),
+        BlockNode.create(List.of(
+            DefineTemplatesNode.create(nextRow, nextRowSlot),
+            DefineTemplatesNode.create(triangle, triangleSlot),
+            EmitNode.create(SendToTemplatesNode.create(CV_SLOT, 0, triangleSlot))
+        )));
+
+    return () -> (TailspinArray) program.call();
   }
 
   private static Templates defineNextRow() {
@@ -160,6 +179,7 @@ public class PascalBenchmark extends TruffleBenchmark {
 
     FrameDescriptor.Builder scopedb = createScopeFdb();
     int inSlot = scopedb.addSlot(FrameSlotKind.Illegal, null, null);
+    int matcherSlot = scopedb.addSlot(FrameSlotKind.Illegal, null, null);
 
     Templates matchers = new Templates();
     //  templates next-row
@@ -171,13 +191,13 @@ public class PascalBenchmark extends TruffleBenchmark {
     EmitNode emitRow = EmitNode.create(ResultAggregatingNode.create(ArrayLiteral.create(buildSlot, List.of(
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
             ResultAggregatingNode.create(IntegerLiteral.create(1)),
-            SendToTemplatesNode.create(chainCvSlot, matchers)
+            SendToTemplatesNode.create(chainCvSlot, 0, matcherSlot)
             )),
         ResultAggregatingNode.create(ReadContextValueNode.create(0, STATE_SLOT))
         ))));
     Templates nextRow = new Templates();
     nextRow.setCallTarget(TemplatesRootNode.create(fdb.build(), scopedb.build(), BlockNode.create(List.of(
-        DefineTemplatesNode.create(matchers),
+        DefineTemplatesNode.create(matchers, matcherSlot),
         defIn,
         initState,
         emitRow
@@ -201,7 +221,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     //      $ + 1 -> #
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(
         ResultAggregatingNode.create(AddNode.create(ReadContextValueNode.create(-1, CV_SLOT), IntegerLiteral.create(1))),
-        SendToTemplatesNode.create(matchChainCvSlot, matchers)
+        SendToTemplatesNode.create(matchChainCvSlot, 0, matcherSlot)
     ));
     //  end next-row
     matchers.setCallTarget(TemplatesRootNode.create(fdbMatch.build(), null, MatchStatementNode.create(List.of(

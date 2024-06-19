@@ -78,9 +78,12 @@ public class TemplatesTest {
     int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
+    FrameDescriptor.Builder scopeFdb = createScopeFdb();
+    int flatMapSlot = scopeFdb.addSlot(FrameSlotKind.Illegal, null, null);
+
     Templates flatMap = new Templates();
     // [100..1:-1
-    RangeIteration backwards = RangeIteration.create(rangeSlot, SendToTemplatesNode.create(rangeSlot, flatMap), IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
+    RangeIteration backwards = RangeIteration.create(rangeSlot, SendToTemplatesNode.create(rangeSlot, 0, flatMapSlot), IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
 
     // -> \($! 100 - $!\)
     BlockNode flatMapBlock = BlockNode.create(List.of(
@@ -93,8 +96,11 @@ public class TemplatesTest {
     // ]
     ArrayLiteral input = ArrayLiteral.create(buildSlot, List.of(backwards));
 
-    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), createScopeFdb().build(),
-        EmitNode.create(ResultAggregatingNode.create(input)));
+    CallTarget callTarget = TemplatesRootNode.create(fdb.build(), scopeFdb.build(),
+        BlockNode.create(List.of(
+            DefineTemplatesNode.create(flatMap, flatMapSlot),
+            EmitNode.create(ResultAggregatingNode.create(input)))
+        ));
     TailspinArray result = (TailspinArray) callTarget.call(null, null, null);
     assertEquals(200, result.getArraySize());
     assertEquals(100L, result.getNative(0));

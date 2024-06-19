@@ -285,3 +285,14 @@ Handling closures of defining scopes properly takes a bit of a hit
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |41,363 |± 0,491  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  |11,600 |± 0,083  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  |23,894 |± 0,812  |us/op|
+
+Introducing a templates instance record goes all over the map
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|--------------------------------------------|------|-----|-------|---------|-----|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |38,649 |± 0,204  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  |19,849 |± 0,072  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |57,756 |± 0,645  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |95,931 |± 4,360  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |36,529 |± 0,239  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  |11,999 |± 0,132  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  |24,322 |± 0,449  |us/op|

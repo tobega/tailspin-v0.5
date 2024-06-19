@@ -24,6 +24,7 @@ public class NodeFactory {
 
   private final TailspinLanguage language;
   Builder rootFd = Templates.createBasicFdb();
+  Builder scopeFdb = Templates.createScopeFdb();
 
   public NodeFactory(TailspinLanguage tailspinLanguage) {
     this.language = tailspinLanguage;
@@ -36,7 +37,7 @@ public class NodeFactory {
           .map(s -> visitStatement((ParseNode) s)).toList());
       default -> throw new IllegalStateException("Unexpected value: " + program.content());
     };
-    return ProgramRootNode.create(language, rootFd.build(), programBody);
+    return ProgramRootNode.create(language, rootFd.build(), scopeFdb.build(), programBody);
   }
 
   private StatementNode visitStatement(ParseNode statement) {

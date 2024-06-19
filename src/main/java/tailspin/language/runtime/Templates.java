@@ -4,7 +4,6 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.api.frame.MaterializedFrame;
 
 public class Templates {
   public static final int SCOPE_SLOT = 0;
@@ -36,21 +35,11 @@ public class Templates {
   @CompilationFinal
   private CallTarget callTarget;
 
-  private MaterializedFrame definingScope;
-
   public CallTarget getCallTarget() {
     return callTarget;
   }
 
   public void setCallTarget(CallTarget callTarget) {
     this.callTarget = callTarget;
-  }
-
-  public MaterializedFrame getDefiningScope() {
-    return definingScope;
-  }
-
-  public void setDefiningScope(MaterializedFrame definingScope) {
-    this.definingScope = definingScope;
   }
 }

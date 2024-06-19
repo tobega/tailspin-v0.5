@@ -21,11 +21,12 @@ import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
 import tailspin.language.nodes.value.TransformResultNode;
+import tailspin.language.runtime.Templates;
 
 public class ChainTest {
   @Test
   void expression_chain_stage() {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode expr = AddNode.create(
@@ -44,7 +45,7 @@ public class ChainTest {
 
   @Test
   void expression_chain_stage_single_value() {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
@@ -59,7 +60,7 @@ public class ChainTest {
 
   @Test
   void expression_chain_stage_single_array() {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);

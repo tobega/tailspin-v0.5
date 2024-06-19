@@ -8,27 +8,35 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import tailspin.language.TailspinLanguage;
+import tailspin.language.nodes.transform.TemplatesRootNode.CreateScopeNode;
 
 public class ProgramRootNode extends RootNode {
 
   @SuppressWarnings("FieldMayBeFinal")
   @Child
+  private StatementNode createScope;
+
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child
   private StatementNode statement;
+
   private ProgramRootNode(TruffleLanguage<?> language,
-      FrameDescriptor frameDescriptor, StatementNode statement) {
+      FrameDescriptor frameDescriptor, FrameDescriptor scopeDescriptor, StatementNode statement) {
     super(language, frameDescriptor);
+    this.createScope = CreateScopeNode.create(scopeDescriptor);
     this.statement = statement;
   }
 
   @Override
   public Object execute(VirtualFrame frame) {
+    createScope.executeVoid(frame);
     statement.executeVoid(frame);
     Object results = frame.getObjectStatic(EMIT_SLOT);
     frame.setObjectStatic(EMIT_SLOT, null);
     return results;
   }
 
-  public static CallTarget create(TailspinLanguage language, FrameDescriptor fd, StatementNode body) {
-    return new ProgramRootNode(language, fd, body).getCallTarget();
+  public static CallTarget create(TailspinLanguage language, FrameDescriptor fd, FrameDescriptor scopeDescriptor, StatementNode body) {
+    return new ProgramRootNode(language, fd, scopeDescriptor, body).getCallTarget();
   }
 }
