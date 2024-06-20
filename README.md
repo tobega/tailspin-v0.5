@@ -296,3 +296,14 @@ Introducing a templates instance record goes all over the map
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |36,529 |± 0,239  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  |11,999 |± 0,132  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  |24,322 |± 0,449  |us/op|
+
+No need to define matchers or other templates in direct scope line
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|--------------------------------------------|------|-----|-------|---------|-----|
+|BubblesortBenchmark.sort2_tailspin          |avgt  |  5  |37,777 |± 0,339  |us/op|
+|BubblesortBenchmark.sort_java               |avgt  |  5  |19,593 |± 0,379  |us/op|
+|BubblesortBenchmark.sort_tailspin           |avgt  |  5  |39,324 |± 1,089  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |54,915 |± 0,915  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |35,953 |± 0,268  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  |11,618 |± 0,221  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  |21,010 |± 0,707  |us/op|

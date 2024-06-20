@@ -21,11 +21,10 @@ import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.transform.BlockNode;
-import tailspin.language.nodes.transform.DefineTemplatesNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
-import tailspin.language.nodes.transform.SendToTemplatesNode;
+import tailspin.language.nodes.transform.ScopeSendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
@@ -60,10 +59,6 @@ public class FibonacciBenchmark extends TruffleBenchmark {
   }
 
   private static Supplier<Integer> createTailspinCall() {
-    // program scope
-    FrameDescriptor.Builder scopeFdb = createScopeFdb();
-    int templatesSlot = scopeFdb.addSlot(FrameSlotKind.Illegal, null, null);
-
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainCvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
@@ -84,9 +79,9 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     // otherwise ($ - 1 -> #) + ($ - 2 -> #) !
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
     SubtractNode prevInd = SubtractNode.create(ReadContextValueNode.create(-1, CV_SLOT), IntegerLiteral.create(1));
-    SendToTemplatesNode sendPrev = SendToTemplatesNode.create(chainCvSlot, 1, templatesSlot);
+    ScopeSendToTemplatesNode sendPrev = ScopeSendToTemplatesNode.create(chainCvSlot, templates, -1);
     SubtractNode prevPrevInd = SubtractNode.create(ReadContextValueNode.create(-1, CV_SLOT), IntegerLiteral.create(2));
-    SendToTemplatesNode sendPrevPrev = SendToTemplatesNode.create(chainCvSlot, 1, templatesSlot);
+    ScopeSendToTemplatesNode sendPrevPrev = ScopeSendToTemplatesNode.create(chainCvSlot, templates, -1);
     ValueNode sum = AddNode.create(
         SingleValueNode.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(ResultAggregatingNode.create(prevInd), sendPrev))),
         SingleValueNode.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(ResultAggregatingNode.create(prevPrevInd), sendPrevPrev))));
@@ -103,11 +98,10 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     templates.setCallTarget(callTarget);
 
     // Should really be a ProgramRootNode
-    CallTarget program = TemplatesRootNode.create(createBasicFdb().build(), scopeFdb.build(),
+    CallTarget program = TemplatesRootNode.create(createBasicFdb().build(), createScopeFdb().build(),
         BlockNode.create(List.of(
-            DefineTemplatesNode.create(templates, templatesSlot),
             // This probably wouldn't be simplified like this
-            EmitNode.create(SendToTemplatesNode.create(CV_SLOT, 0, templatesSlot))
+            EmitNode.create(ScopeSendToTemplatesNode.create(CV_SLOT, templates, -1))
         )));
     return () -> {
       Long results = (Long) program.call(null, 20L, null);
