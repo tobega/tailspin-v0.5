@@ -24,11 +24,11 @@ import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.transform.BlockNode;
+import tailspin.language.nodes.transform.CallDefinedTemplatesNode;
 import tailspin.language.nodes.transform.DefineTemplatesNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchStatementNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
-import tailspin.language.nodes.transform.ScopeSendToTemplatesNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
@@ -122,7 +122,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     EmitNode emitTriangle = EmitNode.create(ResultAggregatingNode.create(ArrayLiteral.create(buildSlot, List.of(
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
             ResultAggregatingNode.create(ArrayLiteral.create(innerBuildSlot, List.of(ResultAggregatingNode.create(IntegerLiteral.create(1))))),
-            ScopeSendToTemplatesNode.create(chainCvSlot, matchers, 0)
+            SendToTemplatesNode.create(ReadContextValueNode.create(-1, chainCvSlot), matchers, 0)
         ))
     ))));
     CallTarget triangleCallTarget = TemplatesRootNode.create(fdb.build(), scopeFdb.build(),
@@ -142,8 +142,8 @@ public class PascalBenchmark extends TruffleBenchmark {
     //      $ -> next-row -> #
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(
         ResultAggregatingNode.create(ReadContextValueNode.create(-1, CV_SLOT)),
-        SendToTemplatesNode.create(matchChainCvSlot, 1, nextRowSlot),
-        ScopeSendToTemplatesNode.create(matchChainCvSlot, matchers, 0)
+        CallDefinedTemplatesNode.create(ReadContextValueNode.create(-1, matchChainCvSlot), ReadContextValueNode.create(1, nextRowSlot)),
+        SendToTemplatesNode.create(ReadContextValueNode.create(-1, matchChainCvSlot), matchers, 0)
     ));
     //    otherwise
     MatcherNode otherwise = AlwaysTrueMatcherNode.create();
@@ -162,7 +162,7 @@ public class PascalBenchmark extends TruffleBenchmark {
         BlockNode.create(List.of(
             DefineTemplatesNode.create(nextRow, nextRowSlot),
             DefineTemplatesNode.create(triangle, triangleSlot),
-            EmitNode.create(SendToTemplatesNode.create(CV_SLOT, 0, triangleSlot))
+            EmitNode.create(CallDefinedTemplatesNode.create(ReadContextValueNode.create(-1, CV_SLOT), ReadContextValueNode.create(0, triangleSlot)))
         )));
 
     return () -> (TailspinArray) program.call();
@@ -188,7 +188,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     EmitNode emitRow = EmitNode.create(ResultAggregatingNode.create(ArrayLiteral.create(buildSlot, List.of(
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
             ResultAggregatingNode.create(IntegerLiteral.create(1)),
-            ScopeSendToTemplatesNode.create(chainCvSlot, matchers, 0)
+            SendToTemplatesNode.create(ReadContextValueNode.create(-1, chainCvSlot), matchers, 0)
             )),
         ResultAggregatingNode.create(ReadContextValueNode.create(0, STATE_SLOT))
         ))));
@@ -217,7 +217,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     //      $ + 1 -> #
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(
         ResultAggregatingNode.create(AddNode.create(ReadContextValueNode.create(-1, CV_SLOT), IntegerLiteral.create(1))),
-        ScopeSendToTemplatesNode.create(matchChainCvSlot, matchers, 0)
+        SendToTemplatesNode.create(ReadContextValueNode.create(-1, matchChainCvSlot), matchers, 0)
     ));
     //  end next-row
     matchers.setCallTarget(TemplatesRootNode.create(fdbMatch.build(), null, MatchStatementNode.create(List.of(
