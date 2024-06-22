@@ -17,18 +17,19 @@ import tailspin.language.parser.composer.SubComposerFactory;
 public class TailspinParser {
 
   static final String tailspinSyntax = """
-     rule program: <statement>+
+     rule program: (<WS>?) <statement>+ (<WS>?)
      
-     rule statement: <emit>
-     rule emit: <value-chain> (<WS>? <='!'> <WS>?)
+     rule statement: <emit> (<WS>?)
+     rule emit: <value-chain> (<WS>? <='!'>)
      
-     rule value-chain: <source>
-     rule source: <arithmetic-expression>
+     rule value-chain: <source> <transform>*
+     rule source: <arithmetic-expression> (<WS>?)
+     rule transform: (<='->'> <WS>?) <source>
      
      rule arithmetic-expression: <addition|multiplication|term>
-     rule addition: <addition|multiplication|term> (<WS>?) <'[+-]'> (<WS>?) <multiplication|term>
-     rule multiplication: <multiplication|term> (<WS>?) <'\\*|~/|mod'> (<WS>?) <term>
-     rule term: <INT|parentheses>
+     rule addition: <addition|multiplication|term> <'[+-]'> (<WS>?) <multiplication|term> (<WS>?)
+     rule multiplication: <multiplication|term> <'\\*|~/|mod'> (<WS>?) <term> (<WS>?)
+     rule term: <INT|parentheses> (<WS>?)
      rule parentheses: (<='('> <WS>?) <addition|multiplication|term> (<WS>? <=')'>)
      """;
 

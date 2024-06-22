@@ -4,6 +4,7 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.Executed;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NeverDefault;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeField;
@@ -67,7 +68,7 @@ public abstract class ChainStageNode extends TransformNode {
     frame.setObjectStatic(valuesSlot, null);
   }
 
-  @Specialization
+  @Fallback
   @SuppressWarnings("unused")
   public void doSingle(VirtualFrame frame, Object value, @Shared("cvSetters") @Cached(parameters = "cvSlot") SetChainCvNode setCv) {
     setCv.execute(frame, value);

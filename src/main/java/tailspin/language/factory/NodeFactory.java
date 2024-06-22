@@ -2,7 +2,9 @@ package tailspin.language.factory;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor.Builder;
+import com.oracle.truffle.api.nodes.Node;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import tailspin.language.TailspinLanguage;
 import tailspin.language.nodes.ProgramRootNode;
@@ -10,6 +12,7 @@ import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.TailspinNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.BigIntegerLiteral;
@@ -28,6 +31,10 @@ public class NodeFactory {
   private final TailspinLanguage language;
   Builder rootFd = Templates.createBasicFdb();
   Builder scopeFdb = Templates.createScopeFdb();
+
+  Builder currentFrame() {
+    return rootFd;
+  }
 
   public NodeFactory(TailspinLanguage tailspinLanguage) {
     this.language = tailspinLanguage;
@@ -52,16 +59,38 @@ public class NodeFactory {
 
   private TransformNode visitValueChain(ParseNode valueChain) {
     if (!valueChain.name().equals("value-chain")) throw new IllegalStateException("Unexpected value: " + valueChain);
-    return visitTransform(valueChain.content());
+    if (valueChain.content() instanceof ParseNode(String name, ParseNode source) && name.equals("source")) {
+      return asTransformNode(visitSource(source));
+    } else if (valueChain.content() instanceof List<?> chain
+        && chain.getFirst() instanceof ParseNode(String firstName, ParseNode source) && firstName.equals("source")) {
+      List<TransformNode> stages = new ArrayList<>();
+      stages.add(asTransformNode(visitSource(source)));
+      for (Object stage : chain.subList(1, chain.size())) {
+        TransformNode stageNode = switch (stage) {
+          case ParseNode(String name, Object transform) when name.equals("transform") -> visitTransform(transform);
+          default -> throw new IllegalStateException("Unexpected value: " + stage);
+        };
+        stages.add(stageNode);
+      }
+      ChainSlots chainSlots = ChainSlots.on(currentFrame());
+      return ChainNode.create(chainSlots.values(), chainSlots.cv(), chainSlots.result(), stages);
+    }
+    throw new IllegalStateException("Unexpected value " + valueChain.content());
+  }
+
+  private TransformNode asTransformNode(Node node) {
+    if (node instanceof ValueNode v)
+      return ResultAggregatingNode.create(v);
+    if (node instanceof TransformNode t)
+      return t;
+    throw new IllegalStateException("Unknown source node " + node);
   }
 
   private TransformNode visitTransform(Object transform) {
-    TailspinNode node = switch(transform) {
-      case ParseNode(String name, ParseNode source) when name.equals("source") -> visitSource(source);
+    return switch(transform) {
+      case ParseNode(String name, ParseNode source) when name.equals("source") -> asTransformNode(visitSource(source));
       default -> throw new IllegalStateException("Unexpected value: " + transform);
     };
-    if (node instanceof TransformNode tn) return tn;
-    else return ResultAggregatingNode.create((ValueNode) node);
   }
 
   private TailspinNode visitSource(ParseNode source) {
