@@ -108,6 +108,7 @@ public class NodeFactory {
     return switch (term) {
       case ParseNode(String name, Long value) when name.equals("INT") -> IntegerLiteral.create(value);
       case ParseNode(String name, BigInteger value) when name.equals("INT") -> BigIntegerLiteral.create(value);
+      case ParseNode(String name, ParseNode ae) when name.equals("parentheses") -> visitArithmeticExpression(ae);
       default -> throw new IllegalStateException("Unexpected value: " + term);
     };
   }
