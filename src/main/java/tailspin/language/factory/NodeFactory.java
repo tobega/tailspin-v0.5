@@ -14,7 +14,10 @@ import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.BigIntegerLiteral;
 import tailspin.language.nodes.numeric.IntegerLiteral;
+import tailspin.language.nodes.numeric.MathModNode;
+import tailspin.language.nodes.numeric.MultiplyNode;
 import tailspin.language.nodes.numeric.SubtractNode;
+import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.parser.ParseNode;
@@ -72,6 +75,7 @@ public class NodeFactory {
     return switch (ae) {
       case ParseNode(String name, ParseNode term) when name.equals("term") -> visitTerm(term);
       case ParseNode(String name, List<?> addition) when name.equals("addition") -> visitAddition(addition);
+      case ParseNode(String name, List<?> multiplication) when name.equals("multiplication") -> visitMultiplication(multiplication);
       default -> throw new IllegalStateException("Unexpected value: " + ae);
     };
   }
@@ -81,9 +85,23 @@ public class NodeFactory {
     ValueNode right = visitArithmeticExpression((ParseNode) addition.getLast());
     if(addition.get(1).equals("+")) {
       return AddNode.create(left, right);
-    } else {
+    } else if(addition.get(1).equals("-")) {
       return SubtractNode.create(left, right);
     }
+    throw new IllegalStateException("Unexpected value: " + addition);
+  }
+
+  private ValueNode visitMultiplication(List<?> multiplication) {
+    ValueNode left = visitArithmeticExpression((ParseNode) multiplication.getFirst());
+    ValueNode right = visitArithmeticExpression((ParseNode) multiplication.getLast());
+    if(multiplication.get(1).equals("*")) {
+      return MultiplyNode.create(left, right);
+    } else if(multiplication.get(1).equals("~/")) {
+      return TruncateDivideNode.create(left, right);
+    } else if(multiplication.get(1).equals("mod")) {
+      return MathModNode.create(left, right);
+    }
+    throw new IllegalStateException("Unexpected value: " + multiplication);
   }
 
   private ValueNode visitTerm(ParseNode term) {

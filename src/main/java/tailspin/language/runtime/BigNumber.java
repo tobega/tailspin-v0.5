@@ -156,6 +156,21 @@ public class BigNumber implements TruffleObject, Comparable<BigNumber> {
     return new BigNumber(value.subtract(right.value));
   }
 
+  @TruffleBoundary
+  public BigNumber multiply(BigNumber right) {
+    return new BigNumber(value.multiply(right.value));
+  }
+
+  @TruffleBoundary
+  public BigNumber divide(BigNumber right) {
+    return new BigNumber(value.divide(right.value));
+  }
+
+  @TruffleBoundary
+  public BigNumber mod(BigNumber right) {
+    return new BigNumber(value.mod(right.value.abs()));
+  }
+
   @Override
   public int hashCode() {
     return value.hashCode();
