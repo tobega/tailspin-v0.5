@@ -1,7 +1,8 @@
 package tailspin.language.factory;
 
+import static tailspin.language.runtime.Templates.CV_SLOT;
+
 import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.frame.FrameDescriptor.Builder;
 import com.oracle.truffle.api.nodes.Node;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -23,17 +24,33 @@ import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.EmitNode;
+import tailspin.language.nodes.transform.SendToTemplatesNode;
+import tailspin.language.nodes.transform.TemplatesRootNode;
+import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.parser.ParseNode;
 import tailspin.language.runtime.Templates;
 
 public class NodeFactory {
 
   private final TailspinLanguage language;
-  Builder rootFd = Templates.createBasicFdb();
-  Builder scopeFdb = Templates.createScopeFdb();
 
-  Builder currentFrame() {
-    return rootFd;
+  List<Integer> cvSlot = new ArrayList<>();
+  { cvSlot.add(CV_SLOT);}
+  int currentValueSlot() {
+    return cvSlot.getLast();
+  }
+
+  List<Scope> scopes = new ArrayList<>();
+  private void enterNewScope() {
+    scopes.addLast(new Scope());
+  }
+
+  private Scope exitScope() {
+    return scopes.removeLast();
+  }
+
+  private Scope currentScope() {
+    return scopes.getLast();
   }
 
   public NodeFactory(TailspinLanguage tailspinLanguage) {
@@ -41,13 +58,15 @@ public class NodeFactory {
   }
 
   public CallTarget createCallTarget(ParseNode program) {
+    enterNewScope();
     StatementNode programBody = switch (program.content()) {
       case ParseNode(String name, ParseNode statement) when name.equals("statement") -> visitStatement(statement);
       case List<?> statements -> BlockNode.create(statements.stream()
           .map(s -> visitStatement((ParseNode) s)).toList());
       default -> throw new IllegalStateException("Unexpected value: " + program.content());
     };
-    return ProgramRootNode.create(language, rootFd.build(), scopeFdb.build(), programBody);
+    Scope scope = exitScope();
+    return ProgramRootNode.create(language, scope.getRootFd(), scope.getScopeFd(), programBody);
   }
 
   private StatementNode visitStatement(ParseNode statement) {
@@ -72,7 +91,7 @@ public class NodeFactory {
         };
         stages.add(stageNode);
       }
-      ChainSlots chainSlots = ChainSlots.on(currentFrame());
+      ChainSlots chainSlots = currentScope().newChainSlots();
       return ChainNode.create(chainSlots.values(), chainSlots.cv(), chainSlots.result(), stages);
     }
     throw new IllegalStateException("Unexpected value " + valueChain.content());
@@ -89,7 +108,23 @@ public class NodeFactory {
   private TransformNode visitTransform(Object transform) {
     return switch(transform) {
       case ParseNode(String name, ParseNode source) when name.equals("source") -> asTransformNode(visitSource(source));
+      case ParseNode(String name, ParseNode body) when name.equals("inline-templates-call") -> {
+        Templates templates = new Templates();
+        enterNewScope();
+        StatementNode bodyNode = visitTemplatesBody(body);
+        Scope scope = exitScope();
+        templates.setCallTarget(TemplatesRootNode.create(scope.getRootFd(), scope.getScopeFd(), bodyNode));
+        yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), templates, -1);
+      }
       default -> throw new IllegalStateException("Unexpected value: " + transform);
+    };
+  }
+
+  private StatementNode visitTemplatesBody(ParseNode body) {
+    return switch (body) {
+      case ParseNode(String name, ParseNode(String withBlock, ParseNode statement)) when withBlock.equals("with-block") ->
+          visitStatement((ParseNode) statement.content());
+      default -> throw new IllegalStateException("Unexpected value: " + body);
     };
   }
 

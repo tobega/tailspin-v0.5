@@ -1,3 +1,6 @@
 ---replace value
  2 -> 8 -> 5 !
 =5
+---inline templates
+2 -> templates 5 ! end !
+=5

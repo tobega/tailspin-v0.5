@@ -24,7 +24,11 @@ public class TailspinParser {
      
      rule value-chain: <source> <transform>*
      rule source: <arithmetic-expression> (<WS>?)
-     rule transform: (<='->'> <WS>?) <source>
+     rule transform: (<='->'> <WS>?) <source|inline-templates-call>
+     
+     rule inline-templates-call: (<='templates'> <WS>) <anonymous-templates-body>
+     rule anonymous-templates-body: <with-block> (<='end'> <WS>?)
+     rule with-block: <statement>+
      
      rule arithmetic-expression: <addition|multiplication|term>
      rule addition: <addition|multiplication|term> <'[+-]'> (<WS>?) <multiplication|term> (<WS>?)
