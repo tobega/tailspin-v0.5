@@ -27,8 +27,18 @@ public class TailspinParser {
      rule transform: (<='->'> <WS>?) <source|inline-templates-call>
      
      rule inline-templates-call: (<='templates'> <WS>) <anonymous-templates-body>
-     rule anonymous-templates-body: <with-block> (<='end'> <WS>?)
-     rule with-block: <statement>+
+     rule anonymous-templates-body: <with-block|matchers> (<='end'> <WS>?)
+     rule with-block: <statement>+ <matchers>?
+     
+     rule matchers: <match-statement>+
+     rule match-statement: <when-do|otherwise> <statement>+
+     rule otherwise: <='otherwise'> (<WS>?)
+     rule when-do: (<='when'> <WS>? <='<'> <WS>?) <membrane> <else-membrane>* (<WS>? <='do'> <WS>?)
+     rule else-membrane: (<='|'> <WS>?) <membrane>
+     rule membrane: <literal-match|type-match> (<WS>?)
+     rule literal-match: (<='='> <WS>?) <source>
+     rule type-match: <range-match>
+     rule range-match: <arithmetic-expression>? <='~'>? <='..'> <='~'>? (<WS>?) <arithmetic-expression>?
      
      rule arithmetic-expression: <addition|multiplication|term>
      rule addition: <addition|multiplication|term> <'[+-]'> (<WS>?) <multiplication|term> (<WS>?)

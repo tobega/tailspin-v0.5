@@ -4,3 +4,8 @@
 ---inline templates
 2 -> templates 5 ! end !
 =5
+---always-true templates
+2 -> templates
+  otherwise 5 !
+end !
+=5

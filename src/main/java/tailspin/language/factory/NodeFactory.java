@@ -1,5 +1,6 @@
 package tailspin.language.factory;
 
+import static tailspin.language.parser.ParseNode.normalizeValues;
 import static tailspin.language.runtime.Templates.CV_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
@@ -8,6 +9,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import tailspin.language.TailspinLanguage;
+import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ProgramRootNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.TailspinNode;
@@ -15,6 +17,7 @@ import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
+import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.BigIntegerLiteral;
 import tailspin.language.nodes.numeric.IntegerLiteral;
@@ -24,6 +27,8 @@ import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.EmitNode;
+import tailspin.language.nodes.transform.MatchStatementNode;
+import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
@@ -59,14 +64,18 @@ public class NodeFactory {
 
   public CallTarget createCallTarget(ParseNode program) {
     enterNewScope();
-    StatementNode programBody = switch (program.content()) {
+    StatementNode programBody = visitBlock(program.content());
+    Scope scope = exitScope();
+    return ProgramRootNode.create(language, scope.getRootFd(), scope.getScopeFd(), programBody);
+  }
+
+  private StatementNode visitBlock(Object block) {
+    return switch (block) {
       case ParseNode(String name, ParseNode statement) when name.equals("statement") -> visitStatement(statement);
       case List<?> statements -> BlockNode.create(statements.stream()
           .map(s -> visitStatement((ParseNode) s)).toList());
-      default -> throw new IllegalStateException("Unexpected value: " + program.content());
+      default -> throw new IllegalStateException("Unexpected value: " + block);
     };
-    Scope scope = exitScope();
-    return ProgramRootNode.create(language, scope.getRootFd(), scope.getScopeFd(), programBody);
   }
 
   private StatementNode visitStatement(ParseNode statement) {
@@ -122,9 +131,31 @@ public class NodeFactory {
 
   private StatementNode visitTemplatesBody(ParseNode body) {
     return switch (body) {
-      case ParseNode(String name, ParseNode(String withBlock, ParseNode statement)) when withBlock.equals("with-block") ->
-          visitStatement((ParseNode) statement.content());
+      case ParseNode(String bodyName, ParseNode(String name, Object block)) when name.equals("with-block") ->
+          visitBlock(block);
+      case ParseNode(String bodyName, ParseNode(String name, Object matchers)) when name.equals("matchers") ->
+          visitMatchers(matchers);
       default -> throw new IllegalStateException("Unexpected value: " + body);
+    };
+  }
+
+  private StatementNode visitMatchers(Object matchers) {
+    return switch (matchers) {
+      case ParseNode(String name, List<?> matchStatement) when name.equals("match-statement") -> MatchStatementNode.create(List.of(visitMatchStatement(matchStatement)));
+      default -> throw new IllegalStateException("Unexpected value: " + matchers);
+    };
+  }
+
+  private MatchTemplateNode visitMatchStatement(List<?> matchStatement) {
+    MatcherNode matcherNode = visitMatcher((ParseNode) matchStatement.getFirst());
+    StatementNode block = visitBlock(normalizeValues(matchStatement.subList(1, matchStatement.size())));
+    return MatchTemplateNode.create(matcherNode, block);
+  }
+
+  private MatcherNode visitMatcher(ParseNode first) {
+    return switch (first) {
+      case ParseNode(String name, Object c) when name.equals("otherwise") -> AlwaysTrueMatcherNode.create();
+      default -> throw new IllegalStateException("Unexpected value: " + first);
     };
   }
 
