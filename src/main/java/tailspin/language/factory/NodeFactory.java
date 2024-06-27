@@ -152,11 +152,30 @@ public class NodeFactory {
     return MatchTemplateNode.create(matcherNode, block);
   }
 
-  private MatcherNode visitMatcher(ParseNode first) {
-    return switch (first) {
+  private MatcherNode visitMatcher(ParseNode matcher) {
+    return switch (matcher) {
       case ParseNode(String name, Object c) when name.equals("otherwise") -> AlwaysTrueMatcherNode.create();
-      default -> throw new IllegalStateException("Unexpected value: " + first);
+      case ParseNode(String name, Object membranes) when name.equals("when-do") -> visitMembranes(membranes);
+      default -> throw new IllegalStateException("Unexpected value: " + matcher);
     };
+  }
+
+  private MatcherNode visitMembranes(Object membranes) {
+    return switch (membranes) {
+      case ParseNode(String m, ParseNode(String type, ParseNode typeMatch)) when type.equals("type-match") -> visitTypeMatch(typeMatch);
+      default -> throw new IllegalStateException("Unexpected value: " + membranes);
+    };
+  }
+
+  private MatcherNode visitTypeMatch(ParseNode typeMatch) {
+    return switch (typeMatch.name()) {
+      case "range-match" -> visitRangeMatch((List<?>) typeMatch.content());
+      default -> throw new IllegalStateException("Unexpected value: " + typeMatch.name());
+    };
+  }
+
+  private MatcherNode visitRangeMatch(List<?> content) {
+    return null;
   }
 
   private TailspinNode visitSource(ParseNode source) {

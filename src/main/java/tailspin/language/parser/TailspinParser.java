@@ -33,7 +33,7 @@ public class TailspinParser {
      rule matchers: <match-statement>+
      rule match-statement: <when-do|otherwise> <statement>+
      rule otherwise: <='otherwise'> (<WS>?)
-     rule when-do: (<='when'> <WS>? <='<'> <WS>?) <membrane> <else-membrane>* (<WS>? <='do'> <WS>?)
+     rule when-do: (<='when'> <WS>? <='<'> <WS>?) <membrane> <else-membrane>* (<='>'> <WS>? <='do'> <WS>?)
      rule else-membrane: (<='|'> <WS>?) <membrane>
      rule membrane: <literal-match|type-match> (<WS>?)
      rule literal-match: (<='='> <WS>?) <source>

@@ -4,8 +4,13 @@
 ---inline templates
 2 -> templates 5 ! end !
 =5
----always-true templates
+---always-true inline templates
 2 -> templates
   otherwise 5 !
+end !
+=5
+---true inline templates
+2 -> templates
+  when <..3> do 5 !
 end !
 =5
