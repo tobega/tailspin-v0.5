@@ -19,7 +19,7 @@ import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
-import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
+import tailspin.language.nodes.matchers.EqualityMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.SubtractNode;
@@ -54,8 +54,7 @@ public class TemplatesTest {
   void simple_matcher() {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
 
-    MatcherNode eq3 = EqualityMatcherNodeGen.create(
-        ReadContextValueNode.create(-1, CV_SLOT), IntegerLiteral.create(3));
+    MatcherNode eq3 = EqualityMatcherNode.create(IntegerLiteral.create(3));
     StatementNode whenEq3 = EmitNode.create(ResultAggregatingNode.create(IntegerLiteral.create(0)));
 
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();

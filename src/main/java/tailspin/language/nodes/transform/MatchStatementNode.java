@@ -1,27 +1,47 @@
 package tailspin.language.nodes.transform;
 
+import static tailspin.language.runtime.Templates.CV_SLOT;
+
+import com.oracle.truffle.api.dsl.Executed;
+import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import java.util.List;
 import tailspin.language.nodes.StatementNode;
+import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.value.ReadContextValueNode;
 
-public class MatchStatementNode extends StatementNode {
+public abstract class MatchStatementNode extends StatementNode {
+  @Child
+  @Executed
+  @SuppressWarnings("FieldMayBeFinal")
+  ValueNode toMatchNode;
+
   @Children
   private final MatchTemplateNode[] matchTemplates;
 
-  private MatchStatementNode(List<MatchTemplateNode> matchTemplates) {
+  MatchStatementNode(ValueNode toMatchNode, List<MatchTemplateNode> matchTemplates) {
+    this.toMatchNode = toMatchNode;
     this.matchTemplates = matchTemplates.toArray(new MatchTemplateNode[0]);
   }
 
-  @Override
+  @Specialization
   @ExplodeLoop
-  public void executeVoid(VirtualFrame frame) {
+  public void doLong(VirtualFrame frame, long toMatch) {
     for (MatchTemplateNode matchTemplate : matchTemplates) {
-      if (matchTemplate.executeMatcher(frame)) return;
+      if (matchTemplate.executeLong(frame, toMatch)) return;
+    }
+  }
+
+  @Specialization
+  @ExplodeLoop
+  public void doObject(VirtualFrame frame, Object toMatch) {
+    for (MatchTemplateNode matchTemplate : matchTemplates) {
+      if (matchTemplate.executeGeneric(frame, toMatch)) return;
     }
   }
 
   public static MatchStatementNode create(List<MatchTemplateNode> matchTemplates) {
-    return new MatchStatementNode(matchTemplates);
+    return MatchStatementNodeGen.create(ReadContextValueNode.create(-1, CV_SLOT), matchTemplates);
   }
 }

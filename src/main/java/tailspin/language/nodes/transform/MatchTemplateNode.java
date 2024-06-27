@@ -20,8 +20,16 @@ public class MatchTemplateNode extends TailspinNode {
     this.body = body;
   }
 
-  public boolean executeMatcher(VirtualFrame frame) {
-    if (isTrue.profile(matcher.executeMatcher(frame))) {
+  public boolean executeLong(VirtualFrame frame, long toMatch) {
+    if (isTrue.profile(matcher.executeMatcherLong(frame, toMatch))) {
+      body.executeVoid(frame);
+      return true;
+    }
+    return false;
+  }
+
+  public boolean executeGeneric(VirtualFrame frame, Object toMatch) {
+    if (isTrue.profile(matcher.executeMatcherGeneric(frame, toMatch))) {
       body.executeVoid(frame);
       return true;
     }

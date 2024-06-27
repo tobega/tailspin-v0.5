@@ -8,7 +8,7 @@ import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
 
-@NodeChild(value = "toMatchNode", type = ValueNode.class)
+@NodeChild(value = "dummy", type = ValueNode.class)
 @NodeChild(value = "valueNode", type = ValueNode.class)
 public abstract class GreaterThanMatcherNode extends MatcherNode {
 
@@ -35,7 +35,7 @@ public abstract class GreaterThanMatcherNode extends MatcherNode {
     throw new TypeError("Cannot order " + value.getClass());
   }
 
-  public static GreaterThanMatcherNode create(boolean inclusive, ValueNode toMatchNode, ValueNode valueNode) {
-    return GreaterThanMatcherNodeGen.create(inclusive, toMatchNode, valueNode);
+  public static GreaterThanMatcherNode create(boolean inclusive, ValueNode valueNode) {
+    return GreaterThanMatcherNodeGen.create(inclusive, null, valueNode);
   }
 }

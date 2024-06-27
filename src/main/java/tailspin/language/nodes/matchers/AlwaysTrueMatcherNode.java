@@ -6,7 +6,14 @@ import tailspin.language.nodes.MatcherNode;
 public class AlwaysTrueMatcherNode extends MatcherNode {
 
   @Override
-  public boolean executeMatcher(VirtualFrame frame) {
+  @SuppressWarnings("unused")
+  public boolean executeMatcherLong(VirtualFrame frame, long toMatch) {
+    return true;
+  }
+
+  @Override
+  @SuppressWarnings("unused")
+  public boolean executeMatcherGeneric(VirtualFrame frame, Object toMatch) {
     return true;
   }
 

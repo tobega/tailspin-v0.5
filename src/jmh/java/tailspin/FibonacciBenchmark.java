@@ -16,7 +16,7 @@ import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
-import tailspin.language.nodes.matchers.EqualityMatcherNodeGen;
+import tailspin.language.nodes.matchers.EqualityMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.SubtractNode;
@@ -67,13 +67,11 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     // templates fibonacci
     Templates templates = new Templates();
     // when <=0> do 0 !
-    MatcherNode eq0 = EqualityMatcherNodeGen.create(
-        ReadContextValueNode.create(-1, CV_SLOT), IntegerLiteral.create(0));
+    MatcherNode eq0 = EqualityMatcherNode.create(IntegerLiteral.create(0));
     StatementNode whenEq0 = EmitNode.create(ResultAggregatingNode.create(IntegerLiteral.create(0)));
 
     // when <=1> do 1!
-    MatcherNode eq1 = EqualityMatcherNodeGen.create(
-        ReadContextValueNode.create(-1, CV_SLOT), IntegerLiteral.create(1));
+    MatcherNode eq1 = EqualityMatcherNode.create(IntegerLiteral.create(1));
     StatementNode whenEq1 = EmitNode.create(ResultAggregatingNode.create(IntegerLiteral.create(1)));
 
     // otherwise ($ - 1 -> #) + ($ - 2 -> #) !

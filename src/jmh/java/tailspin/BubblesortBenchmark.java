@@ -23,6 +23,7 @@ import tailspin.language.nodes.array.ArrayWriteNode;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
+import tailspin.language.nodes.matchers.ConditionNode;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
@@ -209,11 +210,12 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int tempSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     // when <?($@($) <..~$@($ - 1)>)> do
-    MatcherNode isDisordered = LessThanMatcherNode.create(false,
+    MatcherNode isDisordered = ConditionNode.create(
         ArrayReadNode.create(ReadContextValueNode.create(0, STATE_SLOT), ReadContextValueNode.create(-1, CV_SLOT)),
+        LessThanMatcherNode.create(false,
         ArrayReadNode.create(ReadContextValueNode.create(0, STATE_SLOT),
             SubtractNode.create(ReadContextValueNode.create(-1, CV_SLOT), IntegerLiteral.create(1)))
-    );
+    ));
     //   def temp: $@($);
     WriteContextValueNode defTemp = WriteContextValueNode.create(-1, tempSlot, ArrayReadNode.create(
         ReadContextValueNode.create(0, STATE_SLOT), ReadContextValueNode.create(-1, CV_SLOT)));
@@ -290,8 +292,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     int chainResultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int chainIsFirstSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     //        when <2..> do
-    MatcherNode isGteq2 = GreaterThanMatcherNode.create(true, ReadContextValueNode.create(-1, CV_SLOT),
-        IntegerLiteral.create(2));
+    MatcherNode isGteq2 = GreaterThanMatcherNode.create(true, IntegerLiteral.create(2));
     //      $ -> bubble -> !#
     StatementNode whenGteq2 = SinkNode.create(
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
@@ -342,12 +343,13 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int tempSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     //        when <?($@bubblesort($+1) <..~$@bubblesort($)>)> do
-    MatcherNode isDisordered = LessThanMatcherNode.create(false,
+    MatcherNode isDisordered = ConditionNode.create(
         ArrayReadNode.create(ReadContextValueNode.create(1, STATE_SLOT),
             AddNode.create(ReadContextValueNode.create(-1, CV_SLOT), IntegerLiteral.create(1))),
+        LessThanMatcherNode.create(false,
         ArrayReadNode.create(ReadContextValueNode.create(1, STATE_SLOT),
             ReadContextValueNode.create(-1, CV_SLOT))
-    );
+    ));
     //      @: $;
     WriteContextValueNode markSwap = WriteContextValueNode.create(0, STATE_SLOT, ReadContextValueNode.create(-1, CV_SLOT));
     //    def temp: $@bubblesort($@);

@@ -19,6 +19,7 @@ import tailspin.language.nodes.array.ArrayReadNode;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
+import tailspin.language.nodes.matchers.ConditionNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
@@ -134,9 +135,10 @@ public class PascalBenchmark extends TruffleBenchmark {
     int matchChainCvSlot = fdbMatch.addSlot(FrameSlotKind.Illegal, null, null);
     int matchChainResultSlot = fdbMatch.addSlot(FrameSlotKind.Static, null, null);
     //    when <[](..50)> do
-    MatcherNode whenLengthLe50 = LessThanMatcherNode.create(true,
+    MatcherNode whenLengthLe50 = ConditionNode.create(
         MessageNode.create("length", ReadContextValueNode.create(-1, CV_SLOT)),
-        IntegerLiteral.create(50));
+        LessThanMatcherNode.create(true,
+        IntegerLiteral.create(50)));
     //      $!
     EmitNode emitValue1 = EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(-1, CV_SLOT)));
     //      $ -> next-row -> #
@@ -205,7 +207,6 @@ public class PascalBenchmark extends TruffleBenchmark {
     int matchChainResultSlot = fdbMatch.addSlot(FrameSlotKind.Static, null, null);
     //    when <..$in::length> do
     MatcherNode whenLeLength = LessThanMatcherNode.create(true,
-        ReadContextValueNode.create(-1, CV_SLOT),
         MessageNode.create("length", ReadContextValueNode.create(0, inSlot)));
     //      $@ + $in($) !
     EmitNode emitValue = EmitNode.create(ResultAggregatingNode.create(AddNode.create(ReadContextValueNode.create(0, STATE_SLOT),
