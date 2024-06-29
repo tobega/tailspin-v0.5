@@ -45,7 +45,7 @@ public class TailspinParser {
      rule addition: <addition|multiplication|term> <'[+-]'> (<WS>?) <multiplication|term> (<WS>?)
      rule multiplication: <multiplication|term> <'\\*|~/|mod'> (<WS>?) <term> (<WS>?)
      rule numeric-literal: <INT>
-     rule term: <numeric-literal|parentheses> (<WS>?)
+     rule term: <numeric-literal|parentheses|reference> (<WS>?)
      rule parentheses: (<='('> <WS>?) <arithmetic-expression> (<WS>? <=')'>)
      """;
 

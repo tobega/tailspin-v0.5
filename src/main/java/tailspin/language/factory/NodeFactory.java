@@ -155,10 +155,10 @@ public class NodeFactory {
 
   private StatementNode visitTemplatesBody(ParseNode body) {
     return switch (body) {
-      case ParseNode(String bodyName, ParseNode(String name, Object block)) when name.equals("with-block") ->
-          visitBlock(block);
-      case ParseNode(String bodyName, ParseNode(String name, Object matchers)) when name.equals("matchers") ->
-          visitMatchers(matchers);
+      case ParseNode(@SuppressWarnings("unused") String bodyName, ParseNode(String name, Object block))
+          when name.equals("with-block") -> visitBlock(block);
+      case ParseNode(@SuppressWarnings("unused") String bodyName, ParseNode(String name, Object matchers))
+          when name.equals("matchers") -> visitMatchers(matchers);
       default -> throw new IllegalStateException("Unexpected value: " + body);
     };
   }
@@ -183,15 +183,17 @@ public class NodeFactory {
 
   private MatcherNode visitMatcher(ParseNode matcher) {
     return switch (matcher) {
-      case ParseNode(String name, Object c) when name.equals("otherwise") -> AlwaysTrueMatcherNode.create();
-      case ParseNode(String name, Object membranes) when name.equals("when-do") -> visitAlternativeMembranes(membranes);
+      case ParseNode(String name, @SuppressWarnings("unused") Object c)
+          when name.equals("otherwise") -> AlwaysTrueMatcherNode.create();
+      case ParseNode(String name, Object membranes)
+          when name.equals("when-do") -> visitAlternativeMembranes(membranes);
       default -> throw new IllegalStateException("Unexpected value: " + matcher);
     };
   }
 
   private MatcherNode visitAlternativeMembranes(Object membranes) {
     return switch (membranes) {
-      case ParseNode(String m, ParseNode single) -> visitMembrane(single);
+      case ParseNode(String m, ParseNode single) when m.equals("membrane") -> visitMembrane(single);
       default -> throw new IllegalStateException("Unexpected value: " + membranes);
     };
   }
@@ -296,6 +298,7 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
       case ParseNode(String name, ParseNode(String aeName, ParseNode ae))
           when name.equals("parentheses") && aeName.equals("arithmetic-expression") -> visitArithmeticExpression(ae);
+      case ParseNode(String name, Object ref) when name.equals("reference") -> asSingleValueNode(visitReference(ref));
       default -> throw new IllegalStateException("Unexpected value: " + term);
     };
   }
