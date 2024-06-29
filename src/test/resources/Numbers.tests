@@ -127,4 +127,15 @@ end !
   otherwise 0 !
 end !
 =5
-
+---long in big integer range
+100 -> templates
+  when <..20000000000000000000> do 5 !
+  otherwise 0 !
+end !
+=5
+---big integer in long range
+10000000000000000000 -> templates
+  when <1..> do 5 !
+  otherwise 0 !
+end !
+=5
