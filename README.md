@@ -18,6 +18,7 @@ Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.c
 
 ## New features
 - Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `when <.....>`
+- Assert a single value from a chain by surrounding with parentheses, `($source -> filter)`
 
 ## Performance check
 See the [performance tests](src/jmh/README.md) for how Tailspin performs relative to java

@@ -23,8 +23,10 @@ public class TailspinParser {
      rule emit: <value-chain> (<WS>? <='!'>)
      
      rule value-chain: <source> <transform>*
-     rule source: <arithmetic-expression|reference> (<WS>?)
-     rule reference: <='$'> (<WS>?)
+     rule source: <arithmetic-expression|reference|single-value-chain> (<WS>?)
+     rule reference: <='$'>
+     rule single-value-chain: (<='('> <WS>?) <value-chain> (<WS>? <=')'>)
+
      rule transform: (<='->'> <WS>?) <source|inline-templates-call>
      
      rule inline-templates-call: (<='templates'> <WS>) <anonymous-templates-body>
@@ -45,8 +47,7 @@ public class TailspinParser {
      rule addition: <addition|multiplication|term> <'[+-]'> (<WS>?) <multiplication|term> (<WS>?)
      rule multiplication: <multiplication|term> <'\\*|~/|mod'> (<WS>?) <term> (<WS>?)
      rule numeric-literal: <INT>
-     rule term: <numeric-literal|parentheses|reference> (<WS>?)
-     rule parentheses: (<='('> <WS>?) <arithmetic-expression> (<WS>? <=')'>)
+     rule term: <numeric-literal|single-value-chain|reference> (<WS>?)
      """;
 
   static final Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(tailspinSyntax);

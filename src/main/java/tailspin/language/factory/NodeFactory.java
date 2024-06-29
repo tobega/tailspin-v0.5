@@ -239,6 +239,7 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode ae) when name.equals("arithmetic-expression") -> visitArithmeticExpression(ae);
       case ParseNode(String name, Object ref) when name.equals("reference") -> visitReference(ref);
       case ParseNode(String name, ParseNode literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
+      case ParseNode(String name, ParseNode vc) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc));
       default -> throw new IllegalStateException("Unexpected value: " + source);
     };
   }
@@ -296,9 +297,8 @@ public class NodeFactory {
   private ValueNode visitTerm(ParseNode term) {
     return switch (term) {
       case ParseNode(String name, ParseNode literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
-      case ParseNode(String name, ParseNode(String aeName, ParseNode ae))
-          when name.equals("parentheses") && aeName.equals("arithmetic-expression") -> visitArithmeticExpression(ae);
       case ParseNode(String name, Object ref) when name.equals("reference") -> asSingleValueNode(visitReference(ref));
+      case ParseNode(String name, ParseNode vc) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc));
       default -> throw new IllegalStateException("Unexpected value: " + term);
     };
   }

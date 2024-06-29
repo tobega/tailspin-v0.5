@@ -169,3 +169,6 @@ end !
 ---current value in expression
 1 -> $ + 2 !
 =3
+---single value chain in expression
+1 + (1 -> templates 2 ! end) !
+=3
