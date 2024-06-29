@@ -14,3 +14,9 @@ end !
   when <..3> do 5 !
 end !
 =5
+---current value
+2 -> $ !
+=2
+---inline templates current value
+2 -> templates $ ! end !
+=2

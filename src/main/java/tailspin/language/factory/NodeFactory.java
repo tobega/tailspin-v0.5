@@ -60,9 +60,11 @@ public class NodeFactory {
   List<Scope> scopes = new ArrayList<>();
   private void enterNewScope() {
     scopes.addLast(new Scope());
+    pushCvSlot(CV_SLOT);
   }
 
   private Scope exitScope() {
+    popCvSlot();
     return scopes.removeLast();
   }
 
@@ -233,7 +235,15 @@ public class NodeFactory {
   private TailspinNode visitSource(ParseNode source) {
     return switch (source) {
       case ParseNode(String name, ParseNode ae) when name.equals("arithmetic-expression") -> visitArithmeticExpression(ae);
+      case ParseNode(String name, Object ref) when name.equals("reference") -> visitReference(ref);
       default -> throw new IllegalStateException("Unexpected value: " + source);
+    };
+  }
+
+  private TailspinNode visitReference(Object ref) {
+    return switch (ref) {
+      case String s when s.equals("$") -> ReadContextValueNode.create(-1, currentValueSlot());
+      default -> throw new IllegalStateException("Unexpected value: " + ref);
     };
   }
 

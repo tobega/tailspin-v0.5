@@ -23,7 +23,8 @@ public class TailspinParser {
      rule emit: <value-chain> (<WS>? <='!'>)
      
      rule value-chain: <source> <transform>*
-     rule source: <arithmetic-expression> (<WS>?)
+     rule source: <arithmetic-expression|reference> (<WS>?)
+     rule reference: <='$'> (<WS>?)
      rule transform: (<='->'> <WS>?) <source|inline-templates-call>
      
      rule inline-templates-call: (<='templates'> <WS>) <anonymous-templates-body>

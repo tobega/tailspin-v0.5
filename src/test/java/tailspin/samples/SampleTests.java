@@ -29,7 +29,12 @@ public class SampleTests {
             StringBuilder testProgram = new StringBuilder();
             while ((line = testReader.readLine()) != null) {
               if (line.startsWith("=")) {
-                Value result = context.eval("tt", testProgram);
+                Value result;
+                try {
+                  result = context.eval("tt", testProgram);
+                } catch (Exception e) {
+                  throw new AssertionError("Failed: " + testName, e);
+                }
                 assertEquals(line.substring(1), result.toString(), "Failed: " + testName);
               } else if (line.startsWith("---")) {
                 testName = line + " of " + filename;
