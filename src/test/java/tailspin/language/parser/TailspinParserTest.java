@@ -13,9 +13,9 @@ public class TailspinParserTest {
         new ParseNode("arithmetic-expression",
             new ParseNode("addition",
                 List.of(
-                    new ParseNode("term", new ParseNode("INT", 1L)),
+                    new ParseNode("term", new ParseNode("numeric-literal", new ParseNode("INT", 1L))),
                     "+",
-                    new ParseNode("term", new ParseNode("INT", 2L))
+                    new ParseNode("term", new ParseNode("numeric-literal", new ParseNode("INT", 2L)))
                 ))),
         parseNode
     );

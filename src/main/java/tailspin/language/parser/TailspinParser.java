@@ -41,11 +41,12 @@ public class TailspinParser {
      rule type-match: <range-match>
      rule range-match: <arithmetic-expression>? <='~'>? <='..'> <='~'>? (<WS>?) <arithmetic-expression>?
      
-     rule arithmetic-expression: <addition|multiplication|term>
+     rule arithmetic-expression: <addition|multiplication|numeric-literal>
      rule addition: <addition|multiplication|term> <'[+-]'> (<WS>?) <multiplication|term> (<WS>?)
      rule multiplication: <multiplication|term> <'\\*|~/|mod'> (<WS>?) <term> (<WS>?)
-     rule term: <INT|parentheses> (<WS>?)
-     rule parentheses: (<='('> <WS>?) <addition|multiplication|term> (<WS>? <=')'>)
+     rule numeric-literal: <INT>
+     rule term: <numeric-literal|parentheses> (<WS>?)
+     rule parentheses: (<='('> <WS>?) <arithmetic-expression> (<WS>? <=')'>)
      """;
 
   static final Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(tailspinSyntax);

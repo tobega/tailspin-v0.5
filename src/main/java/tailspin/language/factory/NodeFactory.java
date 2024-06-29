@@ -236,7 +236,16 @@ public class NodeFactory {
     return switch (source) {
       case ParseNode(String name, ParseNode ae) when name.equals("arithmetic-expression") -> visitArithmeticExpression(ae);
       case ParseNode(String name, Object ref) when name.equals("reference") -> visitReference(ref);
+      case ParseNode(String name, ParseNode literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
       default -> throw new IllegalStateException("Unexpected value: " + source);
+    };
+  }
+
+  private ValueNode visitNumericLiteral(ParseNode literal) {
+    return switch (literal) {
+      case ParseNode(String name, Long value) when name.equals("INT") -> IntegerLiteral.create(value);
+      case ParseNode(String name, BigInteger value) when name.equals("INT") -> BigIntegerLiteral.create(value);
+      default -> throw new IllegalStateException("Unexpected value: " + literal);
     };
   }
 
@@ -249,9 +258,11 @@ public class NodeFactory {
 
   private ValueNode visitArithmeticExpression(ParseNode ae) {
     return switch (ae) {
-      case ParseNode(String name, ParseNode term) when name.equals("term") -> visitTerm(term);
+      case ParseNode(String name, ParseNode literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
       case ParseNode(String name, List<?> addition) when name.equals("addition") -> visitAddition(addition);
       case ParseNode(String name, List<?> multiplication) when name.equals("multiplication") -> visitMultiplication(multiplication);
+      // We also handle term here just to simplify the recursive expression parsing
+      case ParseNode(String name, ParseNode term) when name.equals("term") -> visitTerm(term);
       default -> throw new IllegalStateException("Unexpected value: " + ae);
     };
   }
@@ -282,9 +293,9 @@ public class NodeFactory {
 
   private ValueNode visitTerm(ParseNode term) {
     return switch (term) {
-      case ParseNode(String name, Long value) when name.equals("INT") -> IntegerLiteral.create(value);
-      case ParseNode(String name, BigInteger value) when name.equals("INT") -> BigIntegerLiteral.create(value);
-      case ParseNode(String name, ParseNode ae) when name.equals("parentheses") -> visitArithmeticExpression(ae);
+      case ParseNode(String name, ParseNode literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
+      case ParseNode(String name, ParseNode(String aeName, ParseNode ae))
+          when name.equals("parentheses") && aeName.equals("arithmetic-expression") -> visitArithmeticExpression(ae);
       default -> throw new IllegalStateException("Unexpected value: " + term);
     };
   }
