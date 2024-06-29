@@ -11,7 +11,7 @@ import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 
-public abstract class MatchStatementNode extends StatementNode {
+public abstract class MatchBlockNode extends StatementNode {
   @Child
   @Executed
   @SuppressWarnings("FieldMayBeFinal")
@@ -20,7 +20,7 @@ public abstract class MatchStatementNode extends StatementNode {
   @Children
   private final MatchTemplateNode[] matchTemplates;
 
-  MatchStatementNode(ValueNode toMatchNode, List<MatchTemplateNode> matchTemplates) {
+  MatchBlockNode(ValueNode toMatchNode, List<MatchTemplateNode> matchTemplates) {
     this.toMatchNode = toMatchNode;
     this.matchTemplates = matchTemplates.toArray(new MatchTemplateNode[0]);
   }
@@ -41,7 +41,7 @@ public abstract class MatchStatementNode extends StatementNode {
     }
   }
 
-  public static MatchStatementNode create(List<MatchTemplateNode> matchTemplates) {
-    return MatchStatementNodeGen.create(ReadContextValueNode.create(-1, CV_SLOT), matchTemplates);
+  public static MatchBlockNode create(List<MatchTemplateNode> matchTemplates) {
+    return MatchBlockNodeGen.create(ReadContextValueNode.create(-1, CV_SLOT), matchTemplates);
   }
 }

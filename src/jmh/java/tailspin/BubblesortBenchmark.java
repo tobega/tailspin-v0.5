@@ -34,7 +34,7 @@ import tailspin.language.nodes.state.FreezeNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.DefineTemplatesNode;
 import tailspin.language.nodes.transform.EmitNode;
-import tailspin.language.nodes.transform.MatchStatementNode;
+import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.CallDefinedTemplatesNode;
@@ -238,7 +238,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         setStateCurrent,
         setStatePrev
     ));
-    MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
+    MatchBlockNode matchStatement = MatchBlockNode.create(List.of(
         MatchTemplateNode.create(isDisordered, whenDisordered)));
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), null, matchStatement);
     sortedCopyMatchers.setCallTarget(callTarget);
@@ -300,7 +300,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
             CallDefinedTemplatesNode.create(ReadContextValueNode.create(-1, chainCvSlot), ReadContextValueNode.create(0, bubbleSlot)),
             SendToTemplatesNode.create(ReadContextValueNode.create(-1, chainCvSlot), matchers, 0)
         )));
-    MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
+    MatchBlockNode matchStatement = MatchBlockNode.create(List.of(
         MatchTemplateNode.create(isGteq2, whenGteq2)));
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), null, matchStatement);
     matchers.setCallTarget(callTarget);
@@ -375,7 +375,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         setStateCurrent,
         setStateNext
     ));
-    MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
+    MatchBlockNode matchStatement = MatchBlockNode.create(List.of(
         MatchTemplateNode.create(isDisordered, whenDisordered)));
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), null, matchStatement);
     matchers.setCallTarget(callTarget);

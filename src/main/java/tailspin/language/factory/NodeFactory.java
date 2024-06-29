@@ -16,6 +16,7 @@ import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
+import tailspin.language.nodes.matchers.AllOfNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
@@ -28,7 +29,7 @@ import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.EmitNode;
-import tailspin.language.nodes.transform.MatchStatementNode;
+import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
@@ -159,16 +160,21 @@ public class NodeFactory {
     };
   }
 
-  private StatementNode visitMatchers(Object matchers) {
+  private MatchBlockNode visitMatchers(Object matchers) {
     return switch (matchers) {
-      case ParseNode(String name, List<?> matchStatement) when name.equals("match-statement") -> MatchStatementNode.create(List.of(visitMatchStatement(matchStatement)));
+      case ParseNode(String name, List<?> matchTemplate) when name.equals("match-template") -> MatchBlockNode.create(List.of(visitMatchTemplate(matchTemplate)));
+      case List<?> matchTemplates -> MatchBlockNode.create(matchTemplates.stream()
+          .map(mt -> {
+            if (mt instanceof ParseNode(String name, List<?> matchTemplate) && name.equals("match-template")) return visitMatchTemplate(matchTemplate);
+            else throw new IllegalStateException("Expected match-template got " + mt);
+          }).toList());
       default -> throw new IllegalStateException("Unexpected value: " + matchers);
     };
   }
 
-  private MatchTemplateNode visitMatchStatement(List<?> matchStatement) {
-    MatcherNode matcherNode = visitMatcher((ParseNode) matchStatement.getFirst());
-    StatementNode block = visitBlock(normalizeValues(matchStatement.subList(1, matchStatement.size())));
+  private MatchTemplateNode visitMatchTemplate(List<?> matchTemplate) {
+    MatcherNode matcherNode = visitMatcher((ParseNode) matchTemplate.getFirst());
+    StatementNode block = visitBlock(normalizeValues(matchTemplate.subList(1, matchTemplate.size())));
     return MatchTemplateNode.create(matcherNode, block);
   }
 
@@ -195,7 +201,7 @@ public class NodeFactory {
     if (conjunction.size() == 1) {
       return conjunction.getFirst();
     }
-    throw new UnsupportedOperationException("not yet implemented");
+    return AllOfNode.create(conjunction);
   }
 
   private List<MatcherNode> visitTypeMatch(ParseNode typeMatch) {

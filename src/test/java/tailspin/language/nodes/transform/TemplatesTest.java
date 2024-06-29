@@ -60,7 +60,7 @@ public class TemplatesTest {
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();
     StatementNode otherwise = EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(-1, CV_SLOT)));
 
-    MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
+    MatchBlockNode matchStatement = MatchBlockNode.create(List.of(
         MatchTemplateNode.create(eq3, whenEq3),
         MatchTemplateNode.create(alwaysTrue, otherwise)
     ));

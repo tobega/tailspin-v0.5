@@ -30,8 +30,8 @@ public class TailspinParser {
      rule anonymous-templates-body: <with-block|matchers> (<='end'> <WS>?)
      rule with-block: <statement>+ <matchers>?
      
-     rule matchers: <match-statement>+
-     rule match-statement: <when-do|otherwise> <statement>+
+     rule matchers: <match-template>+
+     rule match-template: <when-do|otherwise> <statement>+
      rule otherwise: <='otherwise'> (<WS>?)
      rule when-do: (<='when'> <WS>? <='<'> <WS>?) <membrane> <else-membrane>* (<='>'> <WS>? <='do'> <WS>?)
      rule else-membrane: (<='|'> <WS>?) <membrane>

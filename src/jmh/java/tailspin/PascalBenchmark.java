@@ -28,7 +28,7 @@ import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.CallDefinedTemplatesNode;
 import tailspin.language.nodes.transform.DefineTemplatesNode;
 import tailspin.language.nodes.transform.EmitNode;
-import tailspin.language.nodes.transform.MatchStatementNode;
+import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
@@ -152,7 +152,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     //      $!
     EmitNode emitValue2 = EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(-1, CV_SLOT)));
     //   end triangle
-    matchers.setCallTarget(TemplatesRootNode.create(fdbMatch.build(), null, MatchStatementNode.create(List.of(
+    matchers.setCallTarget(TemplatesRootNode.create(fdbMatch.build(), null, MatchBlockNode.create(List.of(
         MatchTemplateNode.create(whenLengthLe50, BlockNode.create(List.of(
             emitValue1,
             EmitNode.create(recurse)
@@ -221,7 +221,7 @@ public class PascalBenchmark extends TruffleBenchmark {
         SendToTemplatesNode.create(ReadContextValueNode.create(-1, matchChainCvSlot), matchers, 0)
     ));
     //  end next-row
-    matchers.setCallTarget(TemplatesRootNode.create(fdbMatch.build(), null, MatchStatementNode.create(List.of(
+    matchers.setCallTarget(TemplatesRootNode.create(fdbMatch.build(), null, MatchBlockNode.create(List.of(
         MatchTemplateNode.create(
           whenLeLength,
           BlockNode.create(List.of(

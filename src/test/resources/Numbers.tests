@@ -43,4 +43,88 @@
 ---parentheses
 (3 + 2) * (5 + 1) !
 =30
+---less than
+2 -> templates
+  when <..3> do 5 !
+  otherwise 0 !
+end !
+=5
+---inclusive less than on bound
+3 -> templates
+  when <..3> do 5 !
+  otherwise 0 !
+end !
+=5
+---exclusive less than on bound
+3 -> templates
+  when <..~3> do 5 !
+  otherwise 0 !
+end !
+=0
+---greater than
+4 -> templates
+  when <3..> do 5 !
+  otherwise 0 !
+end !
+=5
+---inclusive greater than on bound
+3 -> templates
+  when <3..> do 5 !
+  otherwise 0 !
+end !
+=5
+---exclusive greater than on bound
+3 -> templates
+  when <3~..> do 5 !
+  otherwise 0 !
+end !
+=0
+---inside range
+2 -> templates
+  when <1..3> do 5 !
+  otherwise 0 !
+end !
+=5
+---inclusive range on upper bound
+3 -> templates
+  when <1..3> do 5 !
+  otherwise 0 !
+end !
+=5
+---exclusive range on upper bound
+3 -> templates
+  when <1..~3> do 5 !
+  otherwise 0 !
+end !
+=0
+---inclusive range on lower bound
+1 -> templates
+  when <1..3> do 5 !
+  otherwise 0 !
+end !
+=5
+---exclusive range on lower bound
+1 -> templates
+  when <1~..3> do 5 !
+  otherwise 0 !
+end !
+=0
+---lower than range
+0 -> templates
+  when <1~..3> do 5 !
+  otherwise 0 !
+end !
+=0
+---higher than range
+4 -> templates
+  when <1~..3> do 5 !
+  otherwise 0 !
+end !
+=0
+---big integer range
+10000000000000000000 -> templates
+  when <..20000000000000000000> do 5 !
+  otherwise 0 !
+end !
+=5
 

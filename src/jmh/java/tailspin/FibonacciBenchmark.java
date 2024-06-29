@@ -22,7 +22,7 @@ import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.EmitNode;
-import tailspin.language.nodes.transform.MatchStatementNode;
+import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
@@ -85,7 +85,7 @@ public class FibonacciBenchmark extends TruffleBenchmark {
         SingleValueNode.create(ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(ResultAggregatingNode.create(prevPrevInd), sendPrevPrev))));
     StatementNode otherwise = EmitNode.create(ResultAggregatingNode.create(sum));
 
-    MatchStatementNode matchStatement = MatchStatementNode.create(List.of(
+    MatchBlockNode matchStatement = MatchBlockNode.create(List.of(
         MatchTemplateNode.create(eq0, whenEq0),
         MatchTemplateNode.create(eq1, whenEq1),
         MatchTemplateNode.create(alwaysTrue, otherwise)
