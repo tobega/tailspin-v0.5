@@ -32,7 +32,7 @@ public class SampleTests {
                 Value result = context.eval("tt", testProgram);
                 assertEquals(line.substring(1), result.toString(), "Failed: " + testName);
               } else if (line.startsWith("---")) {
-                testName = line;
+                testName = line + " of " + filename;
                 testProgram = new StringBuilder();
               } else {
                 testProgram.append(line).append('\n');

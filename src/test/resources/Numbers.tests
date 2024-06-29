@@ -1,12 +1,15 @@
 ---long constant
 1337!
 =1337
----big integer constant
+---big number constant
 10000000000000000000!
 =10000000000000000000
 ---numeric literal separator
 1_337!
 =1337
+---big number literal separator
+10_000_000_000_000_000_000!
+=10000000000000000000
 ---negative number literal
 -1337 !
 =-1337
@@ -121,21 +124,45 @@ end !
   otherwise 0 !
 end !
 =0
----big integer range
+---big number range
 10000000000000000000 -> templates
   when <..20000000000000000000> do 5 !
   otherwise 0 !
 end !
 =5
----long in big integer range
+---long in big number range
 100 -> templates
   when <..20000000000000000000> do 5 !
   otherwise 0 !
 end !
 =5
----big integer in long range
+---big number in long range
 10000000000000000000 -> templates
   when <1..> do 5 !
   otherwise 0 !
 end !
 =5
+---literal match
+3 -> templates
+  when <=3> do 5 !
+  otherwise 0 !
+end !
+=5
+---literal match false
+4 -> templates
+  when <=3> do 5 !
+  otherwise 0 !
+end !
+=0
+---big number literal match
+10000000000000000000 -> templates
+  when <=10000000000000000000> do 5 !
+  otherwise 0 !
+end !
+=5
+---big number literal match false
+20000000000000000002 -> templates
+  when <=10000000000000000000> do 5 !
+  otherwise 0 !
+end !
+=0

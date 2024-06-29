@@ -18,6 +18,7 @@ import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AllOfNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
+import tailspin.language.nodes.matchers.EqualityMatcherNode;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
@@ -196,6 +197,8 @@ public class NodeFactory {
   private MatcherNode visitMembrane(Object membranes) {
     List<MatcherNode> conjunction = switch (membranes) {
       case ParseNode(String type, ParseNode typeMatch) when type.equals("type-match") -> visitTypeMatch(typeMatch);
+      case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
+          -> List.of(EqualityMatcherNode.create(asSingleValueNode(visitSource(value))));
       default -> throw new IllegalStateException("Unexpected value: " + membranes);
     };
     if (conjunction.size() == 1) {
