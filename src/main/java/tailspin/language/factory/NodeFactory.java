@@ -4,7 +4,6 @@ import static tailspin.language.parser.ParseNode.normalizeValues;
 import static tailspin.language.runtime.Templates.CV_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.nodes.Node;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +17,8 @@ import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
+import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
+import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.BigIntegerLiteral;
 import tailspin.language.nodes.numeric.IntegerLiteral;
@@ -32,6 +33,7 @@ import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
+import tailspin.language.nodes.value.SingleValueNode;
 import tailspin.language.parser.ParseNode;
 import tailspin.language.runtime.Templates;
 
@@ -43,6 +45,14 @@ public class NodeFactory {
   { cvSlot.add(CV_SLOT);}
   int currentValueSlot() {
     return cvSlot.getLast();
+  }
+
+  void pushCvSlot(int slot) {
+    cvSlot.addLast(slot);
+  }
+
+  void popCvSlot() {
+    cvSlot.removeLast();
   }
 
   List<Scope> scopes = new ArrayList<>();
@@ -91,8 +101,10 @@ public class NodeFactory {
       return asTransformNode(visitSource(source));
     } else if (valueChain.content() instanceof List<?> chain
         && chain.getFirst() instanceof ParseNode(String firstName, ParseNode source) && firstName.equals("source")) {
+      ChainSlots chainSlots = currentScope().newChainSlots();
       List<TransformNode> stages = new ArrayList<>();
       stages.add(asTransformNode(visitSource(source)));
+      pushCvSlot(chainSlots.cv());
       for (Object stage : chain.subList(1, chain.size())) {
         TransformNode stageNode = switch (stage) {
           case ParseNode(String name, Object transform) when name.equals("transform") -> visitTransform(transform);
@@ -100,17 +112,25 @@ public class NodeFactory {
         };
         stages.add(stageNode);
       }
-      ChainSlots chainSlots = currentScope().newChainSlots();
+      popCvSlot();
       return ChainNode.create(chainSlots.values(), chainSlots.cv(), chainSlots.result(), stages);
     }
     throw new IllegalStateException("Unexpected value " + valueChain.content());
   }
 
-  private TransformNode asTransformNode(Node node) {
+  private TransformNode asTransformNode(TailspinNode node) {
     if (node instanceof ValueNode v)
       return ResultAggregatingNode.create(v);
     if (node instanceof TransformNode t)
       return t;
+    throw new IllegalStateException("Unknown source node " + node);
+  }
+
+  private ValueNode asSingleValueNode(TailspinNode node) {
+    if (node instanceof ValueNode v)
+      return v;
+    if (node instanceof TransformNode t)
+      return SingleValueNode.create(t);
     throw new IllegalStateException("Unknown source node " + node);
   }
 
@@ -155,27 +175,50 @@ public class NodeFactory {
   private MatcherNode visitMatcher(ParseNode matcher) {
     return switch (matcher) {
       case ParseNode(String name, Object c) when name.equals("otherwise") -> AlwaysTrueMatcherNode.create();
-      case ParseNode(String name, Object membranes) when name.equals("when-do") -> visitMembranes(membranes);
+      case ParseNode(String name, Object membranes) when name.equals("when-do") -> visitAlternativeMembranes(membranes);
       default -> throw new IllegalStateException("Unexpected value: " + matcher);
     };
   }
 
-  private MatcherNode visitMembranes(Object membranes) {
+  private MatcherNode visitAlternativeMembranes(Object membranes) {
     return switch (membranes) {
-      case ParseNode(String m, ParseNode(String type, ParseNode typeMatch)) when type.equals("type-match") -> visitTypeMatch(typeMatch);
+      case ParseNode(String m, ParseNode single) -> visitMembrane(single);
       default -> throw new IllegalStateException("Unexpected value: " + membranes);
     };
   }
 
-  private MatcherNode visitTypeMatch(ParseNode typeMatch) {
+  private MatcherNode visitMembrane(Object membranes) {
+    List<MatcherNode> conjunction = switch (membranes) {
+      case ParseNode(String type, ParseNode typeMatch) when type.equals("type-match") -> visitTypeMatch(typeMatch);
+      default -> throw new IllegalStateException("Unexpected value: " + membranes);
+    };
+    if (conjunction.size() == 1) {
+      return conjunction.getFirst();
+    }
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  private List<MatcherNode> visitTypeMatch(ParseNode typeMatch) {
     return switch (typeMatch.name()) {
       case "range-match" -> visitRangeMatch((List<?>) typeMatch.content());
       default -> throw new IllegalStateException("Unexpected value: " + typeMatch.name());
     };
   }
 
-  private MatcherNode visitRangeMatch(List<?> content) {
-    return null;
+  private List<MatcherNode> visitRangeMatch(List<?> content) {
+    List<MatcherNode> bounds = new ArrayList<>();
+    int separator = content.indexOf("..");
+    if (separator > 0) {
+      boolean inclusive = separator == 1;
+      ValueNode low = asSingleValueNode(visitSource((ParseNode) content.getFirst()));
+      bounds.add(GreaterThanMatcherNode.create(inclusive, low));
+    }
+    if (separator + 1 < content.size()) {
+      boolean inclusive = separator + 2 == content.size();
+      ValueNode high = asSingleValueNode(visitSource((ParseNode) content.getLast()));
+      bounds.add(LessThanMatcherNode.create(inclusive, high));
+    }
+    return bounds;
   }
 
   private TailspinNode visitSource(ParseNode source) {
