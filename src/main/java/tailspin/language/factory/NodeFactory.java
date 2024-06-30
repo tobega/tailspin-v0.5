@@ -92,6 +92,7 @@ public class NodeFactory {
 
   private StatementNode visitStatement(ParseNode statement) {
     return switch (statement) {
+      case ParseNode(String name, ParseNode stmt) when name.equals("statement") -> visitStatement(stmt);
       case ParseNode(String name, ParseNode valueChain) when name.equals("emit") -> EmitNode.create(visitValueChain(valueChain));
       default -> throw new IllegalStateException("Unexpected value: " + statement);
     };
@@ -158,8 +159,19 @@ public class NodeFactory {
     switch (body) {
       case ParseNode(@SuppressWarnings("unused") String bodyName, ParseNode(String name, Object block))
           when name.equals("with-block"):
+        Object matchBlock = null;
+        if (block instanceof List<?> list
+            && list.getLast() instanceof ParseNode(String type, Object m)
+            && type.equals("matchers")) {
+          matchBlock = m;
+          block = list.subList(0, list.size() - 1);
+        }
         StatementNode blockNode = visitBlock(block);
         currentScope().setBlock(blockNode);
+        if (matchBlock != null) {
+          currentScope().checkMatchersCalled();
+          visitMatchers(matchBlock);
+        }
       break;
       case ParseNode(@SuppressWarnings("unused") String bodyName, ParseNode(String name, Object matchers))
           when name.equals("matchers"):

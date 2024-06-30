@@ -31,8 +31,11 @@ public class Scope {
     return matcherTemplates;
   }
 
-  public void makeMatcherCallTarget(MatchBlockNode matchBlockNode) {
+  public void checkMatchersCalled() {
     if (matcherTemplates == null && block != null) throw new IllegalStateException("Matchers defined but never called");
+  }
+
+  public void makeMatcherCallTarget(MatchBlockNode matchBlockNode) {
     getOrCreateMatcherTemplates();
     matcherTemplates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), block == null ? scopeFdb.build() : null, matchBlockNode));
   }
