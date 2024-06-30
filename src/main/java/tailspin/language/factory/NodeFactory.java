@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import tailspin.language.TailspinLanguage;
 import tailspin.language.nodes.MatcherNode;
-import tailspin.language.nodes.ProgramRootNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.TailspinNode;
 import tailspin.language.nodes.TransformNode;
@@ -33,7 +32,6 @@ import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
-import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
 import tailspin.language.parser.ParseNode;
@@ -80,7 +78,7 @@ public class NodeFactory {
     enterNewScope();
     StatementNode programBody = visitBlock(program.content());
     Scope scope = exitScope();
-    return ProgramRootNode.create(language, scope.getRootFd(), scope.getScopeFd(), programBody);
+    return scope.createProgramRootNode(language, programBody);
   }
 
   private StatementNode visitBlock(Object block) {
@@ -142,29 +140,37 @@ public class NodeFactory {
     return switch(transform) {
       case ParseNode(String name, ParseNode source) when name.equals("source") -> asTransformNode(visitSource(source));
       case ParseNode(String name, ParseNode body) when name.equals("inline-templates-call") -> {
-        Templates templates = new Templates();
         enterNewScope();
-        StatementNode bodyNode = visitTemplatesBody(body);
+        visitTemplatesBody(body);
         Scope scope = exitScope();
-        templates.setCallTarget(TemplatesRootNode.create(scope.getRootFd(), scope.getScopeFd(), bodyNode));
+        Templates templates = scope.getTemplates();
         yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), templates, -1);
+      }
+      case String crosshatch when crosshatch.equals("#") -> {
+        Templates matchers = currentScope().getOrCreateMatcherTemplates();
+        yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), matchers, -1);
       }
       default -> throw new IllegalStateException("Unexpected value: " + transform);
     };
   }
 
-  private StatementNode visitTemplatesBody(ParseNode body) {
-    return switch (body) {
+  private void visitTemplatesBody(ParseNode body) {
+    switch (body) {
       case ParseNode(@SuppressWarnings("unused") String bodyName, ParseNode(String name, Object block))
-          when name.equals("with-block") -> visitBlock(block);
+          when name.equals("with-block"):
+        StatementNode blockNode = visitBlock(block);
+        currentScope().setBlock(blockNode);
+      break;
       case ParseNode(@SuppressWarnings("unused") String bodyName, ParseNode(String name, Object matchers))
-          when name.equals("matchers") -> visitMatchers(matchers);
-      default -> throw new IllegalStateException("Unexpected value: " + body);
-    };
+          when name.equals("matchers"):
+        visitMatchers(matchers);
+      break;
+      default: throw new IllegalStateException("Unexpected value: " + body);
+    }
   }
 
-  private MatchBlockNode visitMatchers(Object matchers) {
-    return switch (matchers) {
+  private void visitMatchers(Object matchers) {
+    MatchBlockNode matchBlockNode = switch (matchers) {
       case ParseNode(String name, List<?> matchTemplate) when name.equals("match-template") -> MatchBlockNode.create(List.of(visitMatchTemplate(matchTemplate)));
       case List<?> matchTemplates -> MatchBlockNode.create(matchTemplates.stream()
           .map(mt -> {
@@ -173,6 +179,7 @@ public class NodeFactory {
           }).toList());
       default -> throw new IllegalStateException("Unexpected value: " + matchers);
     };
+    currentScope().makeMatcherCallTarget(matchBlockNode);
   }
 
   private MatchTemplateNode visitMatchTemplate(List<?> matchTemplate) {

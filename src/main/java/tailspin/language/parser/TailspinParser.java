@@ -27,7 +27,7 @@ public class TailspinParser {
      rule reference: <='$'>
      rule single-value-chain: (<='('> <WS>?) <value-chain> (<WS>? <=')'>)
 
-     rule transform: (<='->'> <WS>?) <source|inline-templates-call>
+     rule transform: (<='->'> <WS>?) <source|inline-templates-call|='#'> (<WS>?)
      
      rule inline-templates-call: (<='templates'> <WS>) <anonymous-templates-body>
      rule anonymous-templates-body: <with-block|matchers> (<='end'> <WS>?)

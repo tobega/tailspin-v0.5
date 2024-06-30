@@ -23,3 +23,9 @@ end !
 ---single value chain
 (2 -> templates 5 ! end) !
 =5
+---recurse on matchers
+1 -> templates
+  when <=3> do $ !
+  otherwise $ + 1 -> # !
+end !
+=3
