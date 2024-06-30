@@ -38,6 +38,21 @@ import tailspin.language.runtime.Templates;
 public class FibonacciBenchmark extends TruffleBenchmark {
   private static final Supplier<Integer> tailspinFibonacci = createTailspinCall();
 
+  private static final String tailspinProgram = """
+      20 -> templates
+        when <=0> do 0 !
+        when <=1> do 1 !
+        otherwise ($ - 1 -> #) + ($ - 2 -> #) !
+      end !
+      """;
+
+  @Benchmark
+  public int recursive_tailspin() {
+    int value = truffleContext.eval("tt", tailspinProgram).asInt();
+    if (value != 6765) throw new AssertionError("value " + value);
+    return value;
+  }
+
   @Benchmark
   public int recursive_eval_tailspin() {
     int value = tailspinFibonacci.get();

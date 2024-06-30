@@ -57,7 +57,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
       defineBubblesort());
 
   @Benchmark
-  public void iterate_tailspin() {
+  public void sort_tailspin_iterate() {
     TailspinArray sorted = tailspinSortIterate.get();
     if (sorted.getArraySize() != 100) {
       throw new AssertionError("Too short array " + sorted.getArraySize());
@@ -70,7 +70,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
   }
 
   @Benchmark
-  public void recurse_tailspin() {
+  public void sort_tailspin_recurse() {
     TailspinArray sorted = tailspinSortRecurse.get();
     if (sorted.getArraySize() != 100) {
       throw new AssertionError("Too short array " + sorted.getArraySize());

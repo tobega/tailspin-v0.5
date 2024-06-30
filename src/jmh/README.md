@@ -21,3 +21,15 @@
 |FibonacciBenchmark.recursive_java           |avgt  |  5  |41,736 |± 0,654  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  |11,702 |± 0,295  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  |21,075 |± 0,317  |us/op|
+
+2024-06-30 Run the fibonacci benchmark from tailspin source code
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|--------------------------------------------|------|-----|-------|---------|-----|
+|BubblesortBenchmark.sort_java               |avgt  |  5  |19,688 |± 0,486  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate   |avgt  |  5  |41,042 |± 0,827  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse   |avgt  |  5  |38,868 |± 1,090  |us/op|
+|FibonacciBenchmark.recursive_eval_tailspin  |avgt  |  5  |54,976 |± 1,228  |us/op|
+|FibonacciBenchmark.recursive_java           |avgt  |  5  |35,881 |± 0,356  |us/op|
+|FibonacciBenchmark.recursive_tailspin       |avgt  |  5  |55,696 |± 0,807  |us/op|
+|PascalBenchmark.triangle_java               |avgt  |  5  |11,541 |± 0,220  |us/op|
+|PascalBenchmark.triangle_tailspin           |avgt  |  5  |20,897 |± 0,505  |us/op|
