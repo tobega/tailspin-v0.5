@@ -1,0 +1,71 @@
+-- from adventofcode 2021 day 18, compare https://github.com/tobega/aoc2021/blob/main/day18tt/app.tt
+tail requires <|{}>
+
+snailfishNumber composer
+  @ set 0;
+  [<|pair>]
+  pair rule (<|='['> @ set $@ + 1;) <|pair|number> (<|=','>) <|pair|number> (<|=']'> @ set $@ - 1;)
+  number rule {value:<|INT"1">, level:$@}
+end snailfishNumber
+
+numbers is [$IN::lines -> snailfishNumber];
+
+add (left operator right)
+  deepen templates
+    @ set $;
+    $@::first -> #
+    when <|$@::last~..> do $@!
+    when <?($@($) matches <|{level: <=4>}>)> do --explode
+      $ -> when <|$@deepen::first~..> -> @($-1; value:) set $@($-1; value:) + $@($; value:);
+      ^@($) -> !VOID
+      $ -> when <|..~$@deepen::last> -> @($+1; value:) set $@($+1; value:) + $@($; value:);
+      @($; value:) set 0"1";
+      $ + 1 -> #
+    otherwise @($; level:) set $@($; level:)::raw + 1;
+      $ + 1 -> #
+  end deepen
+  checkSplits templates
+    @ set $;
+    $@::first -> #
+    when <|$@::last~..> do $@!
+    when <|$@::first.. ?($@($) matches <|{value: <|10"1"..>, level: <|=4>}>)> do --explodes immediately
+      toSplit is $@($; value:);
+      $ -> when <|$@::first~..> -> @($-1; value:) set $@($-1; value:) + $@($; value:) ~/ 2;
+      $ -> when <|..~$@::last> -> @($+1; value:) set  $@($+1; value:) + ($@($; value:) + 1"1") ~/ 2;
+      @($; value:) set  0"1";
+      $ - 1 -> #
+    when <|$@::first.. ?($@($) matches <|{value: <|10"1"..>}>)> do
+      @ set [$@(first..~$)...,
+        {value: $@($;value:) ~/ 2, level: $@($; level:)::raw + 1},
+        {value: ($@($; value:) + 1"1") ~/ 2, level: $@($; level:)::raw + 1},
+        $@($~..last)...];
+      $ -> #
+    otherwise $+1 -> #
+  end checkSplits
+  [$left ..., $right ...] -> deepen -> checkSplits!
+end add
+
+magnitude templates
+  @ set $;
+  $@::first -> #
+  when <|..~$@::first> do $ + 1 -> #
+  when <?($@($) matches <|{level: <|=0>}>)> do $@($; value:) !
+  when <?($@($+1) matches <|{level: <|=$@($; level:)>}>)> do
+    @($) set {level: $@($; level:)::raw - 1, value: 3 * $@($; value:) + 2 * $@($+1; value:)};
+    ^@($+1) -> !VOID
+    $ - 1 -> #
+  otherwise $ + 1 -> #
+end magnitude
+
+-- part 1
+$numbers -> templates
+  @ set $(first);
+  $(first~..last)... -> @ set ($@ add $);
+  $@!
+end -> magnitude -> !OUT::write
+
+'
+' -> !OUT::write
+
+// part 2
+[by $numbers..., by $numbers...] -> ($(first) add $(last)) -> magnitude -> ..=Max&{by: :(), select: :()} -> !OUT::write

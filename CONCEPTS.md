@@ -3,11 +3,13 @@ Mostly based on [my blogpost on concepts and programming language usability](htt
 
 ## General design principles, in priority order
 1. Tailspin programming structures shall strive to be a visual representation of the desired result, as far as possible. 
-2. There is a clear value in representing constructs intended for different purposes in visibly different ways. 
-3. The default behaviour shall be consistent with sound programming, "trickier" code shall be more work and be as explicit as possible. 
-4. Tailspin shall fail hard if it seems like the program might be erroneous. 
-5. Tailspin should be slightly helpfully annoying to force the programmer to communicate intent clearly, if possible to do without too much extra work for the programmer. 
-6. Programming structures shall have a clear beginning and end.
+2. There is a clear value in representing constructs intended for different purposes in visibly different ways.
+3. There is also a clear value in having things that have similar purpose be structured the same way.
+4. Tailspin code distinguishes between immutable, serializable data on one hand and functions and mutable objects on the other. 
+5. The default behaviour shall be consistent with sound programming, "trickier" code shall be more work and be as explicit as possible. 
+6. Tailspin shall fail hard if it seems like the program might be erroneous. 
+7. Tailspin should be slightly helpfully annoying to force the programmer to communicate intent clearly, if possible to do without too much extra work for the programmer. 
+8. Programming structures shall have a clear beginning and end.
 
 ## Identified concepts
 - Repetition - Purpose: Allows repeating similar operations with slight variation. Operational Principle: If you provide the parts that vary, the algorithm is repeated with those variations.

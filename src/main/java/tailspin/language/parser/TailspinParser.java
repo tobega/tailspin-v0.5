@@ -19,12 +19,13 @@ public class TailspinParser {
   static final String tailspinSyntax = """
      rule program: (<WS>?) <statement>+ (<WS>?)
      
-     rule statement: <emit> (<WS>?)
+     rule statement: <emit|definition> (<WS>?)
      rule emit: <value-chain> (<WS>? <='!'>)
+     rule definition: (<='def'> <WS>) <'(?U)\\w[-\\w]*'> (<WS>? <=':'> <WS>?) <value-chain> (<=';'> <WS>?)
      
      rule value-chain: <source> <transform>*
      rule source: <arithmetic-expression|reference|single-value-chain> (<WS>?)
-     rule reference: <='$'>
+     rule reference: <='$'> <'(?U)\\w[-\\w]*'>?
      rule single-value-chain: (<='('> <WS>?) <value-chain> (<WS>? <=')'>)
 
      rule transform: (<='->'> <WS>?) <source|inline-templates-call|='#'> (<WS>?)
