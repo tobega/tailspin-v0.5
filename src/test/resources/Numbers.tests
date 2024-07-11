@@ -48,121 +48,121 @@
 =30
 ---less than
 2 -> templates
-  when <..3> do 5 !
+  when <|..3> do 5 !
   otherwise 0 !
 end !
 =5
 ---inclusive less than on bound
 3 -> templates
-  when <..3> do 5 !
+  when <|..3> do 5 !
   otherwise 0 !
 end !
 =5
 ---exclusive less than on bound
 3 -> templates
-  when <..~3> do 5 !
+  when <|..~3> do 5 !
   otherwise 0 !
 end !
 =0
 ---greater than
 4 -> templates
-  when <3..> do 5 !
+  when <|3..> do 5 !
   otherwise 0 !
 end !
 =5
 ---inclusive greater than on bound
 3 -> templates
-  when <3..> do 5 !
+  when <|3..> do 5 !
   otherwise 0 !
 end !
 =5
 ---exclusive greater than on bound
 3 -> templates
-  when <3~..> do 5 !
+  when <|3~..> do 5 !
   otherwise 0 !
 end !
 =0
 ---inside range
 2 -> templates
-  when <1..3> do 5 !
+  when <|1..3> do 5 !
   otherwise 0 !
 end !
 =5
 ---inclusive range on upper bound
 3 -> templates
-  when <1..3> do 5 !
+  when <|1..3> do 5 !
   otherwise 0 !
 end !
 =5
 ---exclusive range on upper bound
 3 -> templates
-  when <1..~3> do 5 !
+  when <|1..~3> do 5 !
   otherwise 0 !
 end !
 =0
 ---inclusive range on lower bound
 1 -> templates
-  when <1..3> do 5 !
+  when <|1..3> do 5 !
   otherwise 0 !
 end !
 =5
 ---exclusive range on lower bound
 1 -> templates
-  when <1~..3> do 5 !
+  when <|1~..3> do 5 !
   otherwise 0 !
 end !
 =0
 ---lower than range
 0 -> templates
-  when <1~..3> do 5 !
+  when <|1~..3> do 5 !
   otherwise 0 !
 end !
 =0
 ---higher than range
 4 -> templates
-  when <1~..3> do 5 !
+  when <|1~..3> do 5 !
   otherwise 0 !
 end !
 =0
 ---big number range
 10000000000000000000 -> templates
-  when <..20000000000000000000> do 5 !
+  when <|..20000000000000000000> do 5 !
   otherwise 0 !
 end !
 =5
 ---long in big number range
 100 -> templates
-  when <..20000000000000000000> do 5 !
+  when <|..20000000000000000000> do 5 !
   otherwise 0 !
 end !
 =5
 ---big number in long range
 10000000000000000000 -> templates
-  when <1..> do 5 !
+  when <|1..> do 5 !
   otherwise 0 !
 end !
 =5
 ---literal match
 3 -> templates
-  when <=3> do 5 !
+  when <|=3> do 5 !
   otherwise 0 !
 end !
 =5
 ---literal match false
 4 -> templates
-  when <=3> do 5 !
+  when <|=3> do 5 !
   otherwise 0 !
 end !
 =0
 ---big number literal match
 10000000000000000000 -> templates
-  when <=10000000000000000000> do 5 !
+  when <|=10000000000000000000> do 5 !
   otherwise 0 !
 end !
 =5
 ---big number literal match false
 20000000000000000002 -> templates
-  when <=10000000000000000000> do 5 !
+  when <|=10000000000000000000> do 5 !
   otherwise 0 !
 end !
 =0

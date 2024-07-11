@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Stream;
 import tailspin.language.parser.composer.CompositionSpec;
 import tailspin.language.parser.composer.CompositionSpec.CaptureComposition;
 import tailspin.language.parser.composer.CompositionSpec.ChoiceComposition;
@@ -68,27 +67,21 @@ public class ParserParser {
             new NamedComposition("tokenMatcher"),
             new NamedComposition("sourceReference")
         ))),
-        // rule tokenMatcher: (<='<'>) <='~'>? (<WS>?) <compositionToken> <alternativeCompositionToken>* (<WS>? <='>'>) <multiplier>? (<WS>?)
+        // rule tokenMatcher: (<='<'>) <='~'>? (<WS>?) <compositionToken>+ (<WS>? <='>'>) <multiplier>? (<WS>?)
         "tokenMatcher", List.of(
             new SkipComposition(List.of(new LiteralComposition((s) -> "<"))),
             new MultiplierComposition(new LiteralComposition((s) -> "~"), RangeMatch.AT_MOST_ONE),
             new NamedComposition("optionalWhitespace"),
-            new NamedComposition("compositionToken"),
-            new NamedComposition("optionalWhitespace"),
-            new MultiplierComposition(new NamedComposition("alternativeCompositionToken"), RangeMatch.ANY_AMOUNT),
+            new MultiplierComposition(new NamedComposition("compositionToken"), RangeMatch.AT_LEAST_ONE),
             new NamedComposition("optionalWhitespace"),
             new SkipComposition(List.of(new LiteralComposition((s) -> ">"))),
             new MultiplierComposition(new NamedComposition("multiplier"), RangeMatch.AT_MOST_ONE),
             new NamedComposition("optionalWhitespace")
         ),
-        "alternativeCompositionToken", List.of(
-            new SkipComposition(List.of(new LiteralComposition((s) -> "|"))),
-            new NamedComposition("optionalWhitespace"),
-            new NamedComposition("compositionToken"),
-            new NamedComposition("optionalWhitespace")
-        ),
         // compositionToken: (Equal tag? (sourceReference|stringLiteral)|tag? localIdentifier|tag? stringLiteral) unit?;
         "compositionToken", List.of(
+            new SkipComposition(List.of(new LiteralComposition((s) -> "|"))),
+            new NamedComposition("optionalWhitespace"),
             new ChoiceComposition(List.of(
                 new NamedComposition("literalComposition"),
                 new NamedComposition("localIdentifier"),
@@ -237,10 +230,7 @@ public class ParserParser {
         return new InverseComposition(visitTokenMatcher(normalizeValues(l.subList(1, l.size()))));
       }
       return new ChoiceComposition(
-          Stream.concat(
-            Stream.of(visitTokenMatcher(l.getFirst())),
-            l.stream().skip(1).map((alt) -> visitTokenMatcher(((ParseNode) alt).content()))
-          ).toList());
+          l.stream().map(ParserParser::visitTokenMatcher).toList());
     }
     throw new IllegalStateException("Unexpected value " + tm);
   }

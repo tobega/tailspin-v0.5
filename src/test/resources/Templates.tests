@@ -5,12 +5,12 @@ end !
 =5
 ---true inline templates
 2 -> templates
-  when <..3> do 5 !
+  when <|..3> do 5 !
 end !
 =5
 ---recurse on matchers
 1 -> templates
-  when <=3> do $ !
+  when <|=3> do $ !
   otherwise $ + 1 -> # !
 end !
 =3

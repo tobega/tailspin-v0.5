@@ -17,38 +17,37 @@ import tailspin.language.parser.composer.SubComposerFactory;
 public class TailspinParser {
 
   static final String tailspinSyntax = """
-     program rule (<WS>?) <statement>+ (<WS>?)
+     program rule (<|WS>?) <|statement>+ (<|WS>?)
      
-     statement rule <emit|definition> (<WS>?)
-     emit rule <value-chain> (<WS>? <='!'>)
-     definition rule (<='def'> <WS>) <'(?U)\\w[-\\w]*'> (<WS>? <=':'> <WS>?) <value-chain> (<=';'> <WS>?)
+     statement rule <|emit|definition> (<|WS>?)
+     emit rule <|value-chain> (<|WS>? <|='!'>)
+     definition rule (<|='def'> <|WS>) <|'(?U)\\w[-\\w]*'> (<|WS>? <|=':'> <|WS>?) <|value-chain> (<|=';'> <|WS>?)
      
-     value-chain rule <source> <transform>*
-     source rule <arithmetic-expression|reference|single-value-chain> (<WS>?)
-     reference rule <='$'> <'(?U)\\w[-\\w]*'>?
-     single-value-chain rule (<='('> <WS>?) <value-chain> (<WS>? <=')'>)
+     value-chain rule <|source> <|transform>*
+     source rule <|arithmetic-expression|reference|single-value-chain> (<|WS>?)
+     reference rule <|='$'> <|'(?U)\\w[-\\w]*'>?
+     single-value-chain rule (<|='('> <|WS>?) <|value-chain> (<|WS>? <|=')'>)
 
-     transform rule (<='->'> <WS>?) <source|inline-templates-call|='#'> (<WS>?)
+     transform rule (<|='->'> <|WS>?) <|source|inline-templates-call|='#'> (<|WS>?)
      
-     inline-templates-call rule (<='templates'> <WS>) <anonymous-templates-body>
-     anonymous-templates-body rule <with-block|matchers> (<='end'> <WS>?)
-     with-block rule <statement>+ <matchers>?
+     inline-templates-call rule (<|='templates'> <|WS>) <|anonymous-templates-body>
+     anonymous-templates-body rule <|with-block|matchers> (<|='end'> <|WS>?)
+     with-block rule <|statement>+ <|matchers>?
      
-     matchers rule <match-template>+
-     match-template rule <when-do|otherwise> <statement>+
-     otherwise rule <='otherwise'> (<WS>?)
-     when-do rule (<='when'> <WS>? <='<'> <WS>?) <membrane> <else-membrane>* (<='>'> <WS>? <='do'> <WS>?)
-     else-membrane rule (<='|'> <WS>?) <membrane>
-     membrane rule <literal-match|type-match> (<WS>?)
-     literal-match rule (<='='> <WS>?) <source>
-     type-match rule <range-match>
-     range-match rule <arithmetic-expression>? <='~'>? <='..'> <='~'>? (<WS>?) <arithmetic-expression>?
+     matchers rule <|match-template>+
+     match-template rule <|when-do|otherwise> <|statement>+
+     otherwise rule <|='otherwise'> (<|WS>?)
+     when-do rule (<|='when'> <|WS>? <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|='do'> <|WS>?)
+     membrane rule (<|='|'>) <|literal-match|type-match> (<|WS>?)
+     literal-match rule (<|='='> <|WS>?) <|source>
+     type-match rule <|range-match>
+     range-match rule <|arithmetic-expression>? <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|arithmetic-expression>?
      
-     arithmetic-expression rule <addition|multiplication|numeric-literal>
-     addition rule <addition|multiplication|term> <'[+-]'> (<WS>?) <multiplication|term> (<WS>?)
-     multiplication rule <multiplication|term> <'\\*|~/|mod'> (<WS>?) <term> (<WS>?)
-     numeric-literal rule <INT>
-     term rule <numeric-literal|single-value-chain|reference> (<WS>?)
+     arithmetic-expression rule <|addition|multiplication|numeric-literal>
+     addition rule <|addition|multiplication|term> <|'[+-]'> (<|WS>?) <|multiplication|term> (<|WS>?)
+     multiplication rule <|multiplication|term> <|'\\*|~/|mod'> (<|WS>?) <|term> (<|WS>?)
+     numeric-literal rule <|INT>
+     term rule <|numeric-literal|single-value-chain|reference> (<|WS>?)
      """;
 
   static final Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(tailspinSyntax);

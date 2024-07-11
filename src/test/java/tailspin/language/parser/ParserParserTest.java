@@ -31,7 +31,7 @@ public class ParserParserTest {
   @Test
   void single_named_rule() {
     String parserDefinition = """
-    a rule <b>
+    a rule <|b>
     """;
     assertEquals(Map.of("a", List.of(new NamedComposition("b"))),
         ParserParser.createSyntaxRules(parserDefinition));
@@ -40,7 +40,7 @@ public class ParserParserTest {
   @Test
   void regex() {
     String parserDefinition = """
-    a rule <'.*'>
+    a rule <|'.*'>
     """;
     assertEquals(Map.of("a", List.of(new RegexComposition(".*"))),
         ParserParser.createSyntaxRules(parserDefinition));
@@ -49,7 +49,7 @@ public class ParserParserTest {
   @Test
   void literal_constant() {
     String parserDefinition = """
-    a rule <='foobar'>
+    a rule <|='foobar'>
     """;
     Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(
         parserDefinition);
@@ -62,7 +62,7 @@ public class ParserParserTest {
   @Test
   void literal_reference() {
     String parserDefinition = """
-    a rule <=$foo>
+    a rule <|=$foo>
     """;
     Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(
         parserDefinition);
@@ -77,8 +77,8 @@ public class ParserParserTest {
   @Test
   void two_named_rules() {
     String parserDefinition = """
-    a rule <b>
-    b rule <INT>
+    a rule <|b>
+    b rule <|INT>
     """;
     assertEquals(Map.of("a", List.of(new NamedComposition("b")),
             "b", List.of(new NamedComposition("INT"))),
@@ -88,7 +88,7 @@ public class ParserParserTest {
   @Test
   void sequence() {
     String parserDefinition = """
-    a rule <b> <c>
+    a rule <|b> <|c>
     """;
     assertEquals(Map.of("a", List.of(new NamedComposition("b"), new NamedComposition("c"))),
         ParserParser.createSyntaxRules(parserDefinition));
@@ -98,7 +98,7 @@ public class ParserParserTest {
   @MethodSource
   void multiplier(String multiplier, RangeMatch matcher) {
     String parserDefinition = """
-    a rule <b>%s
+    a rule <|b>%s
     """;
     assertEquals(Map.of("a", List.of(new MultiplierComposition(
         new NamedComposition("b"), matcher))),
@@ -116,7 +116,7 @@ public class ParserParserTest {
   @Test
   void custom_int_multiplier() {
     String parserDefinition = """
-    a rule <b>=5
+    a rule <|b>=5
     """;
     Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(
         parserDefinition);
@@ -137,7 +137,7 @@ public class ParserParserTest {
   @Test
   void custom_reference_multiplier() {
     String parserDefinition = """
-    a rule <b>=$ref
+    a rule <|b>=$ref
     """;
     Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(
         parserDefinition);
@@ -159,7 +159,7 @@ public class ParserParserTest {
   @Test
   void inverse() {
     String parserDefinition = """
-    a rule <~b>
+    a rule <~|b>
     """;
     assertEquals(Map.of("a", List.of(new InverseComposition(new NamedComposition("b")))),
         ParserParser.createSyntaxRules(parserDefinition));
@@ -168,7 +168,7 @@ public class ParserParserTest {
   @Test
   void choice() {
     String parserDefinition = """
-    a rule <a|b>
+    a rule <|a|b>
     """;
     assertEquals(Map.of("a", List.of(
         new ChoiceComposition(List.of(
@@ -180,7 +180,7 @@ public class ParserParserTest {
   @Test
   void choices() {
     String parserDefinition = """
-    a rule <a|b|c>
+    a rule <|a|b|c>
     """;
     assertEquals(Map.of("a", List.of(
         new ChoiceComposition(List.of(
@@ -193,7 +193,7 @@ public class ParserParserTest {
   @Test
   void single_skipped_rule() {
     String parserDefinition = """
-    a rule (<b>)
+    a rule (<|b>)
     """;
     assertEquals(Map.of("a", List.of(new SkipComposition(List.of(new NamedComposition("b"))))),
         ParserParser.createSyntaxRules(parserDefinition));
@@ -202,7 +202,7 @@ public class ParserParserTest {
   @Test
   void skipped_sequence() {
     String parserDefinition = """
-    a rule (<b> <c>)
+    a rule (<|b> <|c>)
     """;
     assertEquals(Map.of("a", List.of(new SkipComposition(List.of(new NamedComposition("b"), new NamedComposition("c"))))),
         ParserParser.createSyntaxRules(parserDefinition));
@@ -211,7 +211,7 @@ public class ParserParserTest {
   @Test
   void token_capture() {
     String parserDefinition = """
-    a rule (def c: <b>;)
+    a rule (def c: <|b>;)
     """;
     assertEquals(Map.of("a", List.of(new SkipComposition(List.of(new CaptureComposition("c", new NamedComposition("b")))))),
         ParserParser.createSyntaxRules(parserDefinition));
