@@ -13,6 +13,7 @@ Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.c
   - `is` for definitions, so `def foo: 5;` will be `foo is 5;`
   - `set` for mutations, so `@: 7;` will be `@ set 7;`
   - The word `matches` is introduced for conditions, `?($foo matches <'a.*'>)` instead of `?($foo <'a.*'>)`
+  - `data` constructs are replaced by the word `requires` between the identifier and the matcher (the word `local` is not used)
   - As mentioned below, the anonymous inline templates will just use `templates ... end` instead of the weird `\( ... \)`
   - Also, indexed array templates will be handled by the new harmonized projection syntax, see below
 

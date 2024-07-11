@@ -51,10 +51,8 @@ public class ParserParser {
     syntaxRules.putAll(Map.of(
         // rule definedCompositionSequence: <='rule'> <localIdentifier> (<=':'> <WS>?) <compositionComponent>+
         "definedCompositionSequence", List.of(
-            new SkipComposition(List.of(new LiteralComposition((s) -> "rule"), new NamedComposition("WS"))),
             new NamedComposition("localIdentifier"),
-            new SkipComposition(List.of(new LiteralComposition((s) -> ":"),
-                new NamedComposition("optionalWhitespace"))),
+            new SkipComposition(List.of(new NamedComposition("WS"), new LiteralComposition((s) -> "rule"), new NamedComposition("WS"))),
             new MultiplierComposition(new NamedComposition("compositionComponent"), RangeMatch.AT_LEAST_ONE)
         ),
         // compositionComponent: compositionMatcher | compositionSkipRule

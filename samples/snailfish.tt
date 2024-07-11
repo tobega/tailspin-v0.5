@@ -67,5 +67,5 @@ end -> magnitude -> !OUT::write
 '
 ' -> !OUT::write
 
-// part 2
+-- part 2
 [by $numbers..., by $numbers...] -> ($(first) add $(last)) -> magnitude -> ..=Max&{by: :(), select: :()} -> !OUT::write
