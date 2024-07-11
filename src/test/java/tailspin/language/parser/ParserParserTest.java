@@ -211,7 +211,7 @@ public class ParserParserTest {
   @Test
   void token_capture() {
     String parserDefinition = """
-    a rule (def c: <|b>;)
+    a rule (c is <|b>;)
     """;
     assertEquals(Map.of("a", List.of(new SkipComposition(List.of(new CaptureComposition("c", new NamedComposition("b")))))),
         ParserParser.createSyntaxRules(parserDefinition));

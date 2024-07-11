@@ -67,7 +67,7 @@ public class ParserParser {
             new NamedComposition("tokenMatcher"),
             new NamedComposition("sourceReference")
         ))),
-        // rule tokenMatcher: (<='<'>) <='~'>? (<WS>?) <compositionToken>+ (<WS>? <='>'>) <multiplier>? (<WS>?)
+        // tokenMatcher rule (<|='<'>) <|='~'>? (<|WS>?) <|compositionToken>+ (<|WS>? <|='>'>) <|multiplier>? (<|WS>?)
         "tokenMatcher", List.of(
             new SkipComposition(List.of(new LiteralComposition((s) -> "<"))),
             new MultiplierComposition(new LiteralComposition((s) -> "~"), RangeMatch.AT_MOST_ONE),
@@ -78,7 +78,7 @@ public class ParserParser {
             new MultiplierComposition(new NamedComposition("multiplier"), RangeMatch.AT_MOST_ONE),
             new NamedComposition("optionalWhitespace")
         ),
-        // compositionToken: (Equal tag? (sourceReference|stringLiteral)|tag? localIdentifier|tag? stringLiteral) unit?;
+        // compositionToken rule (<|='|'> <|WS>?) <|literalComposition|localIdentifier|stringLiteral> (<|WS>?)
         "compositionToken", List.of(
             new SkipComposition(List.of(new LiteralComposition((s) -> "|"))),
             new NamedComposition("optionalWhitespace"),
@@ -125,14 +125,12 @@ public class ParserParser {
             new NamedComposition("tokenCapture"),
             new NamedComposition("tokenMatcher")
         ))),
-        // rule tokenCapture: (<=def> <WS>?) localIdentifier (<WS>? <=':'> <WS>?) <compositionMatcher> (<WS>? <=';'> <WS>?)
+        // rule tokenCapture: localIdentifier (<WS> <='is'> <WS>) <compositionMatcher> (<WS>? <=';'> <WS>?)
         "tokenCapture", List.of(
-            new SkipComposition(List.of(new LiteralComposition((s) -> "def"))),
-            new SkipComposition(List.of(new NamedComposition("WS"))),
             new NamedComposition("localIdentifier"),
-            new NamedComposition("optionalWhitespace"),
-            new SkipComposition(List.of(new LiteralComposition((s) -> ":"))),
-            new NamedComposition("optionalWhitespace"),
+            new SkipComposition(List.of(new NamedComposition("WS"))),
+            new SkipComposition(List.of(new LiteralComposition((s) -> "is"))),
+            new SkipComposition(List.of(new NamedComposition("WS"))),
             new NamedComposition("compositionMatcher"),
             new NamedComposition("optionalWhitespace"),
             new SkipComposition(List.of(new LiteralComposition((s) -> ";"))),
