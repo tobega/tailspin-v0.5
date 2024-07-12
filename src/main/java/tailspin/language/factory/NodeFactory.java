@@ -34,7 +34,9 @@ import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
+import tailspin.language.nodes.value.WriteContextValueNode;
 import tailspin.language.parser.ParseNode;
+import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.Templates;
 
 public class NodeFactory {
@@ -94,8 +96,18 @@ public class NodeFactory {
     return switch (statement) {
       case ParseNode(String name, ParseNode stmt) when name.equals("statement") -> visitStatement(stmt);
       case ParseNode(String name, ParseNode valueChain) when name.equals("emit") -> EmitNode.create(visitValueChain(valueChain));
+      case ParseNode(String name, List<?> def) when name.equals("definition") -> visitDefinition(def);
       default -> throw new IllegalStateException("Unexpected value: " + statement);
     };
+  }
+
+  private StatementNode visitDefinition(List<?> def) {
+    if (def.getFirst() instanceof ParseNode(String name, String identifier) && name.equals("ID")) {
+      Reference defined = currentScope().defineIdentifier(identifier);
+      TransformNode expr = visitValueChain((ParseNode) def.getLast());
+      return WriteContextValueNode.create(defined, asSingleValueNode(expr));
+    }
+    throw new IllegalStateException("Unexpected value: " + def);
   }
 
   private TransformNode visitValueChain(ParseNode valueChain) {
@@ -169,7 +181,7 @@ public class NodeFactory {
         StatementNode blockNode = visitBlock(block);
         currentScope().setBlock(blockNode);
         if (matchBlock != null) {
-          currentScope().checkMatchersCalled();
+          currentScope().startMatchBlock();
           visitMatchers(matchBlock);
         }
       break;
@@ -274,6 +286,10 @@ public class NodeFactory {
   private TailspinNode visitReference(Object ref) {
     return switch (ref) {
       case String s when s.equals("$") -> ReadContextValueNode.create(-1, currentValueSlot());
+      case List<?> l when l.getFirst().equals("$") && l.getLast() instanceof ParseNode(String name, String identifier) -> {
+        Reference reference = currentScope().getIdentifier(identifier, -1);
+        yield ReadContextValueNode.create(reference);
+      }
       default -> throw new IllegalStateException("Unexpected value: " + ref);
     };
   }

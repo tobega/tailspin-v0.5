@@ -3,7 +3,6 @@ package tailspin.language.nodes.value;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateCached;
 import com.oracle.truffle.api.dsl.GenerateInline;
-import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
@@ -11,24 +10,29 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import tailspin.language.nodes.TailspinTypesGen;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.ReadContextValueNodeGen.ReadLocalValueNodeGen;
+import tailspin.language.runtime.Reference;
 
-@NodeField(name = "level", type = int.class)
-@NodeField(name = "slot", type = int.class)
 @GenerateCached(alwaysInlineCached=true)
 public abstract class ReadContextValueNode extends ValueNode {
-  protected abstract int getLevel();
-  protected abstract int getSlot();
+  private final Reference reference;
+
+  protected ReadContextValueNode(Reference reference) {
+    this.reference = reference;
+  }
 
   @Specialization
   protected Object readObject(VirtualFrame frame,
       @Cached(neverDefault = true) GetContextFrameNode getFrame,
       @Cached(neverDefault = true) ReadLocalValueNode readValue) {
-    VirtualFrame contextFrame = getFrame.execute(frame, this, getLevel());
-    return readValue.executeGeneric(contextFrame, this, getSlot());
+    VirtualFrame contextFrame = getFrame.execute(frame, this, reference.getLevel());
+    return readValue.executeGeneric(contextFrame, this, reference.getSlot());
   }
 
   public static ReadContextValueNode create(int level, int slot) {
-    return ReadContextValueNodeGen.create(level, slot);
+    return create(Reference.to(level, slot));
+  }
+  public static ReadContextValueNode create(Reference reference) {
+    return ReadContextValueNodeGen.create(reference);
   }
 
   @GenerateInline

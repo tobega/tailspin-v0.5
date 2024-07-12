@@ -21,11 +21,11 @@ public class TailspinParser {
      
      statement rule <|emit|definition> (<|WS>?)
      emit rule <|value-chain> (<|WS>? <|='!'>)
-     definition rule (<|='def'> <|WS>) <|'(?U)\\w[-\\w]*'> (<|WS>? <|=':'> <|WS>?) <|value-chain> (<|=';'> <|WS>?)
+     definition rule <|ID> (<|WS> <|='is'> <|WS>) <|value-chain> (<|=';'> <|WS>?)
      
      value-chain rule <|source> <|transform>*
      source rule <|arithmetic-expression|reference|single-value-chain> (<|WS>?)
-     reference rule <|='$'> <|'(?U)\\w[-\\w]*'>?
+     reference rule <|='$'> <|ID>?
      single-value-chain rule (<|='('> <|WS>?) <|value-chain> (<|WS>? <|=')'>)
 
      transform rule (<|='->'> <|WS>?) <|source|inline-templates-call|='#'> (<|WS>?)

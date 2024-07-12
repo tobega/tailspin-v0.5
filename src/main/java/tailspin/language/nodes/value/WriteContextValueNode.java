@@ -6,40 +6,45 @@ import com.oracle.truffle.api.dsl.GenerateCached;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeChild;
-import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.Reference;
 
 @NodeChild(value = "valueExpr", type = ValueNode.class)
-@NodeField(name = "level", type = int.class)
-@NodeField(name = "slot", type = int.class)
 @GenerateCached(alwaysInlineCached=true)
 public abstract class WriteContextValueNode extends StatementNode {
-  protected abstract int getLevel();
-  protected abstract int getSlot();
+  private final Reference reference;
+
+  protected WriteContextValueNode(Reference reference) {
+    this.reference = reference;
+  }
 
   @Specialization
   protected void writeLong(VirtualFrame frame, long value,
       @Cached(neverDefault = true) @Shared GetContextFrameNode getFrame,
       @Cached(neverDefault = true) @Shared WriteLocalValueNode writeValue) {
-    VirtualFrame contextFrame = getFrame.execute(frame, this, getLevel());
-    writeValue.executeLong(contextFrame, this, getSlot(), value);
+    VirtualFrame contextFrame = getFrame.execute(frame, this, reference.getLevel());
+    writeValue.executeLong(contextFrame, this, reference.getSlot(), value);
   }
 
   @Specialization
   protected void writeObject(VirtualFrame frame, Object value,
       @Cached(neverDefault = true) @Shared GetContextFrameNode getFrame,
       @Cached(neverDefault = true) @Shared WriteLocalValueNode writeValue) {
-    VirtualFrame contextFrame = getFrame.execute(frame, this, getLevel());
-    writeValue.executeGeneric(contextFrame, this, getSlot(), value);
+    VirtualFrame contextFrame = getFrame.execute(frame, this, reference.getLevel());
+    writeValue.executeGeneric(contextFrame, this, reference.getSlot(), value);
   }
 
   public static WriteContextValueNode create(int level, int slot, ValueNode valueNode) {
-    return WriteContextValueNodeGen.create(valueNode, level, slot);
+    return create(Reference.to(level, slot), valueNode);
+  }
+
+  public static WriteContextValueNode create(Reference reference, ValueNode valueNode) {
+    return WriteContextValueNodeGen.create(reference, valueNode);
   }
 
   @ImportStatic(FrameSlotKind.class)

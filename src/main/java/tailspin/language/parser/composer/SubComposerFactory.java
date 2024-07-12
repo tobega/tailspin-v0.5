@@ -38,6 +38,15 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
     namedValueCreators.put("WS", Function.identity());
     namedPatterns.put("HEX", Pattern.compile(("[0-9a-fA-F]+")));
     namedValueCreators.put("HEX", SubComposerFactory::fromString);
+    // Not perfect, but it will do for now
+    namedPatterns.put("ID", Pattern.compile(("(?U)\\S+")));
+    namedValueCreators.put("ID", s -> {
+      if (!Character.isUnicodeIdentifierStart(s.codePointAt(0))) throw new AssertionError("Illegal identifier " + s);
+      s.codePoints().skip(1).forEach(c -> {
+        if (!Character.isUnicodeIdentifierStart(c)) throw new AssertionError("Illegal identifier " + s);
+      });
+      return s;
+    });
   }
 
   public static byte[] fromString(String hex) {

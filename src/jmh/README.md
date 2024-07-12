@@ -33,3 +33,5 @@
 |FibonacciBenchmark.recursive_tailspin       |avgt  |  5  |55,696 |± 0,807  |us/op|
 |PascalBenchmark.triangle_java               |avgt  |  5  |11,541 |± 0,220  |us/op|
 |PascalBenchmark.triangle_tailspin           |avgt  |  5  |20,897 |± 0,505  |us/op|
+
+2024-07-12 No change from introducing Reference class
