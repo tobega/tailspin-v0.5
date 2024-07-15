@@ -17,29 +17,33 @@ import tailspin.language.runtime.Templates;
 @NodeChild(value = "value", type = ValueNode.class)
 public abstract class SendToTemplatesNode extends TransformNode {
   private final Templates templates;
-  protected final int definitionLevel;
+  protected final int callLevel;
 
-  protected SendToTemplatesNode(Templates templates, int definitionLevel) {
-    this.definitionLevel = definitionLevel;
+  protected SendToTemplatesNode(Templates templates, int callLevel) {
+    this.callLevel = callLevel;
     this.templates = templates;
   }
 
-  public static SendToTemplatesNode create(ValueNode valueNode, Templates templates, int definitionLevel) {
-    return SendToTemplatesNodeGen.create(templates, definitionLevel, valueNode);
+  public static SendToTemplatesNode create(ValueNode valueNode, int callLevel, Templates templates) {
+    return SendToTemplatesNodeGen.create(templates, callLevel, valueNode);
   }
 
-  @Specialization(guards = "definitionLevel >= 0")
+  @Specialization(guards = "contextFrameLevel() >= 0")
   public void doDispatch(VirtualFrame frame, Object value,
       @Cached(inline = true) GetContextFrameNode getContextFrameNode,
       @Cached @Shared DispatchNode dispatchNode) {
-    VirtualFrame contextFrame = getContextFrameNode.execute(frame, this, definitionLevel);
+    VirtualFrame contextFrame = getContextFrameNode.execute(frame, this, contextFrameLevel());
     Object resultBuilder = frame.getObjectStatic(getResultSlot());
     Object result = dispatchNode.executeDispatch(templates, value, contextFrame.materialize(),
         resultBuilder);
     frame.setObjectStatic(getResultSlot(), result);
   }
 
-  @Specialization(guards = "definitionLevel < 0")
+  int contextFrameLevel() {
+    return templates.needsScope() ? callLevel - templates.getDefinitionLevel() : -1;
+  }
+
+  @Specialization(guards = "contextFrameLevel() < 0")
   public void doFree(@SuppressWarnings("unused") VirtualFrame frame, Object value,
       @Cached @Shared DispatchNode dispatchNode) {
     Object resultBuilder = frame.getObjectStatic(getResultSlot());

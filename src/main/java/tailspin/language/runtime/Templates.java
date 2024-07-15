@@ -35,11 +35,33 @@ public class Templates {
   @CompilationFinal
   private CallTarget callTarget;
 
+  @CompilationFinal
+  private boolean needsScope = false;
+
+  @CompilationFinal
+  private int definitionLevel = -100;
+
   public CallTarget getCallTarget() {
     return callTarget;
   }
 
   public void setCallTarget(CallTarget callTarget) {
     this.callTarget = callTarget;
+  }
+
+  public void setNeedsScope() {
+    needsScope = true;
+  }
+
+  public boolean needsScope() {
+    return needsScope;
+  }
+
+  public void setDefinitionLevel(int definitionLevel) {
+    this.definitionLevel = definitionLevel;
+  }
+
+  public int getDefinitionLevel() {
+    return definitionLevel;
   }
 }

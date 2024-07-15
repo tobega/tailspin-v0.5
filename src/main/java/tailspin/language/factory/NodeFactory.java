@@ -157,11 +157,12 @@ public class NodeFactory {
         visitTemplatesBody(body);
         Scope scope = exitScope();
         Templates templates = scope.getTemplates();
-        yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), templates, -1);
+        templates.setDefinitionLevel(scopes.size());
+        yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(), templates);
       }
       case String crosshatch when crosshatch.equals("#") -> {
         Templates matchers = currentScope().getOrCreateMatcherTemplates();
-        yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), matchers, -1);
+        yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size() - 1, matchers);
       }
       default -> throw new IllegalStateException("Unexpected value: " + transform);
     };
@@ -181,7 +182,7 @@ public class NodeFactory {
         StatementNode blockNode = visitBlock(block);
         currentScope().setBlock(blockNode);
         if (matchBlock != null) {
-          currentScope().startMatchBlock();
+          currentScope().verifyMatcherIsCalled();
           visitMatchers(matchBlock);
         }
       break;
@@ -203,6 +204,7 @@ public class NodeFactory {
           }).toList());
       default -> throw new IllegalStateException("Unexpected value: " + matchers);
     };
+    currentScope().getOrCreateMatcherTemplates().setDefinitionLevel(scopes.size() - 1);
     currentScope().makeMatcherCallTarget(matchBlockNode);
   }
 

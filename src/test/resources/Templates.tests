@@ -20,3 +20,24 @@ end !
   otherwise $ + 1 !
 end !
 =5
+---define and access value
+2 -> templates
+  a is $;
+  $a !
+end !
+=2
+---access block defined value from matcher
+2 -> templates
+  a is $;
+  $a -> # !
+  otherwise ($ + 1) * $a !
+end !
+=6
+---access block defined value from recursive matcher
+2 -> templates
+  a is $;
+  $a -> # !
+  when <|..7> do $ + $a -> # !
+  otherwise $ + $a !
+end !
+=10

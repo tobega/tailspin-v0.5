@@ -105,6 +105,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     int triangleSlot = programScope.addSlot(FrameSlotKind.Illegal, null, null);
 
     Templates triangle = new Templates();
+    triangle.setDefinitionLevel(1);
 
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int chainValuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
@@ -118,12 +119,13 @@ public class PascalBenchmark extends TruffleBenchmark {
     Templates nextRow = defineNextRow();
 
     Templates matchers = new Templates();
+    matchers.setDefinitionLevel(1);
     //  source triangle
     //    [[1] -> #] !
     EmitNode emitTriangle = EmitNode.create(ResultAggregatingNode.create(ArrayLiteral.create(buildSlot, List.of(
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
             ResultAggregatingNode.create(ArrayLiteral.create(innerBuildSlot, List.of(ResultAggregatingNode.create(IntegerLiteral.create(1))))),
-            SendToTemplatesNode.create(ReadContextValueNode.create(-1, chainCvSlot), matchers, 0)
+            SendToTemplatesNode.create(ReadContextValueNode.create(-1, chainCvSlot), 1, matchers)
         ))
     ))));
     CallTarget triangleCallTarget = TemplatesRootNode.create(fdb.build(), scopeFdb.build(),
@@ -145,8 +147,9 @@ public class PascalBenchmark extends TruffleBenchmark {
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(
         ResultAggregatingNode.create(ReadContextValueNode.create(-1, CV_SLOT)),
         CallDefinedTemplatesNode.create(ReadContextValueNode.create(-1, matchChainCvSlot), ReadContextValueNode.create(1, nextRowSlot)),
-        SendToTemplatesNode.create(ReadContextValueNode.create(-1, matchChainCvSlot), matchers, 0)
+        SendToTemplatesNode.create(ReadContextValueNode.create(-1, matchChainCvSlot), 1, matchers)
     ));
+    matchers.setNeedsScope();
     //    otherwise
     MatcherNode otherwise = AlwaysTrueMatcherNode.create();
     //      $!
@@ -181,6 +184,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     int inSlot = scopedb.addSlot(FrameSlotKind.Illegal, null, null);
 
     Templates matchers = new Templates();
+    matchers.setDefinitionLevel(1);
     //  templates next-row
     //    def in: $;
     WriteContextValueNode defIn = WriteContextValueNode.create(0, inSlot, ReadContextValueNode.create(-1, CV_SLOT));
@@ -190,11 +194,12 @@ public class PascalBenchmark extends TruffleBenchmark {
     EmitNode emitRow = EmitNode.create(ResultAggregatingNode.create(ArrayLiteral.create(buildSlot, List.of(
         ChainNode.create(chainValuesSlot, chainCvSlot, chainResultSlot, List.of(
             ResultAggregatingNode.create(IntegerLiteral.create(1)),
-            SendToTemplatesNode.create(ReadContextValueNode.create(-1, chainCvSlot), matchers, 0)
+            SendToTemplatesNode.create(ReadContextValueNode.create(-1, chainCvSlot), 1, matchers)
             )),
         ResultAggregatingNode.create(ReadContextValueNode.create(0, STATE_SLOT))
         ))));
     Templates nextRow = new Templates();
+    nextRow.setDefinitionLevel(1);
     nextRow.setCallTarget(TemplatesRootNode.create(fdb.build(), scopedb.build(), BlockNode.create(List.of(
         defIn,
         initState,
@@ -208,6 +213,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     //    when <..$in::length> do
     MatcherNode whenLeLength = LessThanMatcherNode.create(true,
         MessageNode.create("length", ReadContextValueNode.create(0, inSlot)));
+    matchers.setNeedsScope();
     //      $@ + $in($) !
     EmitNode emitValue = EmitNode.create(ResultAggregatingNode.create(AddNode.create(ReadContextValueNode.create(0, STATE_SLOT),
         ArrayReadNode.create(ReadContextValueNode.create(0, inSlot), ReadContextValueNode.create(-1, CV_SLOT)))));
@@ -218,7 +224,7 @@ public class PascalBenchmark extends TruffleBenchmark {
     //      $ + 1 -> #
     ChainNode recurse = ChainNode.create(matchChainValuesSlot, matchChainCvSlot, matchChainResultSlot, List.of(
         ResultAggregatingNode.create(AddNode.create(ReadContextValueNode.create(-1, CV_SLOT), IntegerLiteral.create(1))),
-        SendToTemplatesNode.create(ReadContextValueNode.create(-1, matchChainCvSlot), matchers, 0)
+        SendToTemplatesNode.create(ReadContextValueNode.create(-1, matchChainCvSlot), 1, matchers)
     ));
     //  end next-row
     matchers.setCallTarget(TemplatesRootNode.create(fdbMatch.build(), null, MatchBlockNode.create(List.of(

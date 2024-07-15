@@ -37,9 +37,7 @@ public class Scope {
     return matcherTemplates;
   }
 
-  boolean inMatchBlock = false;
-  public void startMatchBlock() {
-    inMatchBlock = true;
+  public void verifyMatcherIsCalled() {
     if (matcherTemplates == null && block != null) throw new IllegalStateException("Matchers defined but never called");
   }
 
@@ -52,7 +50,9 @@ public class Scope {
     definitions.values().stream().filter(Reference.class::isInstance).map(Reference.class::cast)
         .filter(r -> r.getSlot() < 0)
         .forEach(r -> {
-          int slot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+          int slot = r.getLevel() < 0
+              ? fdb.addSlot(FrameSlotKind.Illegal, null, null)
+              : scopeFdb.addSlot(FrameSlotKind.Illegal, null, null);
           r.setSlot(slot);
         });
   }
@@ -77,6 +77,12 @@ public class Scope {
   }
 
   public Reference getIdentifier(String identifier, int level) {
-    return (Reference) definitions.get(identifier);
+    if (block != null && level == -1) {
+      matcherTemplates.setNeedsScope();
+      level = 0;
+    }
+    Reference reference = (Reference) definitions.get(identifier);
+    reference.setLevel(level);
+    return reference;
   }
 }
