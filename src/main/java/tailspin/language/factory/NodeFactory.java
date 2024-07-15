@@ -2,6 +2,7 @@ package tailspin.language.factory;
 
 import static tailspin.language.parser.ParseNode.normalizeValues;
 import static tailspin.language.runtime.Templates.CV_SLOT;
+import static tailspin.language.runtime.Templates.STATE_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
 import java.math.BigInteger;
@@ -95,8 +96,12 @@ public class NodeFactory {
   private StatementNode visitStatement(ParseNode statement) {
     return switch (statement) {
       case ParseNode(String name, ParseNode stmt) when name.equals("statement") -> visitStatement(stmt);
-      case ParseNode(String name, ParseNode valueChain) when name.equals("emit") -> EmitNode.create(visitValueChain(valueChain));
+      case ParseNode(String name, ParseNode valueChain) when name.equals("emit") -> EmitNode.create(asTransformNode(visitValueChain(valueChain)));
       case ParseNode(String name, List<?> def) when name.equals("definition") -> visitDefinition(def);
+      case ParseNode(String name, ParseNode valueChain) when name.equals("set-state") -> {
+        TailspinNode value = visitValueChain(valueChain);
+        yield WriteContextValueNode.create(0, STATE_SLOT, asSingleValueNode(value));
+      }
       default -> throw new IllegalStateException("Unexpected value: " + statement);
     };
   }
@@ -104,16 +109,16 @@ public class NodeFactory {
   private StatementNode visitDefinition(List<?> def) {
     if (def.getFirst() instanceof ParseNode(String name, String identifier) && name.equals("ID")) {
       Reference defined = currentScope().defineIdentifier(identifier);
-      TransformNode expr = visitValueChain((ParseNode) def.getLast());
+      TailspinNode expr = visitValueChain((ParseNode) def.getLast());
       return WriteContextValueNode.create(defined, asSingleValueNode(expr));
     }
     throw new IllegalStateException("Unexpected value: " + def);
   }
 
-  private TransformNode visitValueChain(ParseNode valueChain) {
+  private TailspinNode visitValueChain(ParseNode valueChain) {
     if (!valueChain.name().equals("value-chain")) throw new IllegalStateException("Unexpected value: " + valueChain);
     if (valueChain.content() instanceof ParseNode(String name, ParseNode source) && name.equals("source")) {
-      return asTransformNode(visitSource(source));
+      return visitSource(source);
     } else if (valueChain.content() instanceof List<?> chain
         && chain.getFirst() instanceof ParseNode(String firstName, ParseNode source) && firstName.equals("source")) {
       ChainSlots chainSlots = currentScope().newChainSlots();
@@ -288,10 +293,11 @@ public class NodeFactory {
   private TailspinNode visitReference(Object ref) {
     return switch (ref) {
       case String s when s.equals("$") -> ReadContextValueNode.create(-1, currentValueSlot());
-      case List<?> l when l.getFirst().equals("$") && l.getLast() instanceof ParseNode(String name, String identifier) -> {
+      case List<?> l when l.getFirst().equals("$") && l.get(1) instanceof ParseNode(String name, String identifier) -> {
         Reference reference = currentScope().getIdentifier(identifier, -1);
         yield ReadContextValueNode.create(reference);
       }
+      case List<?> l when l.getFirst().equals("$") && l.get(1).equals("@") -> ReadContextValueNode.create(0, STATE_SLOT);
       default -> throw new IllegalStateException("Unexpected value: " + ref);
     };
   }

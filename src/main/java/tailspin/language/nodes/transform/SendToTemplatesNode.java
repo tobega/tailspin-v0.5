@@ -3,6 +3,7 @@ package tailspin.language.nodes.transform;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.GenerateInline;
+import com.oracle.truffle.api.dsl.Idempotent;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.Frame;
@@ -39,6 +40,7 @@ public abstract class SendToTemplatesNode extends TransformNode {
     frame.setObjectStatic(getResultSlot(), result);
   }
 
+  @Idempotent
   int contextFrameLevel() {
     return templates.needsScope() ? callLevel - templates.getDefinitionLevel() : -1;
   }

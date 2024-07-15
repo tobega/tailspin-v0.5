@@ -41,3 +41,9 @@ end !
   otherwise $ + $a !
 end !
 =10
+---define and access state
+2 -> templates
+  @ set $;
+  $@ !
+end !
+=2

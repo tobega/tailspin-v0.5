@@ -66,5 +66,4 @@ public abstract class WriteContextValueNode extends StatementNode {
       frame.setObject(slot, value);
     }
   }
-
 }

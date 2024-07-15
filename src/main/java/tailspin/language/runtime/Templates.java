@@ -24,7 +24,7 @@ public class Templates {
 
   public static FrameDescriptor.Builder createScopeFdb() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    assertSlot(STATE_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
+    assertSlot(STATE_SLOT, fdb.addSlot(FrameSlotKind.Illegal, null, null));
     return fdb;
   }
 
