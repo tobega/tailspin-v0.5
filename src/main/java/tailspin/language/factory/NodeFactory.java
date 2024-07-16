@@ -297,7 +297,8 @@ public class NodeFactory {
         Reference reference = currentScope().getIdentifier(identifier, -1);
         yield ReadContextValueNode.create(reference);
       }
-      case List<?> l when l.getFirst().equals("$") && l.get(1).equals("@") -> ReadContextValueNode.create(0, STATE_SLOT);
+      case List<?> l when l.getFirst().equals("$") && l.get(1).equals("@")
+          -> ReadContextValueNode.create(currentScope().accessState(), STATE_SLOT);
       default -> throw new IllegalStateException("Unexpected value: " + ref);
     };
   }

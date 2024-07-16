@@ -85,4 +85,11 @@ public class Scope {
     reference.setLevel(level);
     return reference;
   }
+
+  public int accessState() {
+    if (block != null) {
+      matcherTemplates.setNeedsScope();
+    }
+    return 0;
+  }
 }
