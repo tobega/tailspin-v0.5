@@ -99,6 +99,7 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode valueChain) when name.equals("emit") -> EmitNode.create(asTransformNode(visitValueChain(valueChain)));
       case ParseNode(String name, List<?> def) when name.equals("definition") -> visitDefinition(def);
       case ParseNode(String name, ParseNode valueChain) when name.equals("set-state") -> {
+        currentScope().accessState();
         TailspinNode value = visitValueChain(valueChain);
         yield WriteContextValueNode.create(0, STATE_SLOT, asSingleValueNode(value));
       }

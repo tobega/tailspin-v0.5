@@ -54,3 +54,10 @@ end !
   otherwise ($ + 1) * $@ !
 end !
 =6
+---set state from matcher
+2 -> templates
+  $ -> # !
+  $@ !
+  otherwise @ set $ + 1;
+end !
+=3
