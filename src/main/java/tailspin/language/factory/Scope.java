@@ -11,6 +11,7 @@ import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.runtime.Reference;
+import tailspin.language.runtime.Reference.Slot;
 import tailspin.language.runtime.Templates;
 
 public class Scope {
@@ -18,6 +19,12 @@ public class Scope {
   Builder scopeFdb = Templates.createScopeFdb();
 
   Map<String, Object> definitions = new HashMap<>();
+
+  private final Scope parent;
+
+  public Scope(Scope parent) {
+    this.parent = parent;
+  }
 
   public ChainSlots newChainSlots() {
     return ChainSlots.on(rootFdb);
@@ -47,20 +54,22 @@ public class Scope {
   }
 
   private void assignReferences(Builder fdb) {
-    definitions.values().stream().filter(Reference.class::isInstance).map(Reference.class::cast)
-        .filter(r -> r.getSlot() < 0)
-        .forEach(r -> {
-          int slot = r.getLevel() < 0
-              ? fdb.addSlot(FrameSlotKind.Illegal, null, null)
-              : scopeFdb.addSlot(FrameSlotKind.Illegal, null, null);
-          r.setSlot(slot);
+    definitions.values().stream().filter(Slot.class::isInstance).map(Slot.class::cast)
+        .filter(Slot::isUndefined)
+        .forEach(s -> {
+          int slot = s.isExported()
+              ? scopeFdb.addSlot(FrameSlotKind.Illegal, null, null)
+              : fdb.addSlot(FrameSlotKind.Illegal, null, null);
+          s.setSlot(slot);
         });
   }
 
+  boolean needsScope;
   public Templates getTemplates() {
     if (block == null) return matcherTemplates;
     assignReferences(blockRootFdb);
     Templates templates = new Templates();
+    if (needsScope) templates.setNeedsScope();
     templates.setCallTarget(TemplatesRootNode.create(blockRootFdb.build(), scopeFdb.build(), block));
     return templates;
   }
@@ -71,19 +80,24 @@ public class Scope {
   }
 
   public Reference defineIdentifier(String identifier) {
-    Reference defined = new Reference();
+    Slot defined = new Slot();
     definitions.put(identifier, defined);
-    return defined;
+    return defined.atLevel(-1);
   }
 
   public Reference getIdentifier(String identifier, int level) {
     if (block != null && level == -1) {
+      // TODO: We should be able to have local matcher values
       matcherTemplates.setNeedsScope();
       level = 0;
     }
-    Reference reference = (Reference) definitions.get(identifier);
-    reference.setLevel(level);
-    return reference;
+    Slot slot = (Slot) definitions.get(identifier);
+    if (slot == null) {
+      needsScope = true;
+      if (level == -1) level = 0;
+      return parent.getIdentifier(identifier, level + 1);
+    }
+    return slot.atLevel(level);
   }
 
   public int accessState() {

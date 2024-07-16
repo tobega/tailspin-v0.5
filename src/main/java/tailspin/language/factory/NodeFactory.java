@@ -60,7 +60,7 @@ public class NodeFactory {
 
   List<Scope> scopes = new ArrayList<>();
   private void enterNewScope() {
-    scopes.addLast(new Scope());
+    scopes.addLast(new Scope(scopes.isEmpty() ? null : scopes.getLast()));
     pushCvSlot(CV_SLOT);
   }
 

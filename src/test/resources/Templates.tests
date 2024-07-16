@@ -61,3 +61,13 @@ end !
   otherwise @ set $ + 1;
 end !
 =3
+---access defined value on many levels
+increment is 3;
+1 + $increment
+-> templates
+  $ + $increment
+  -> templates
+    $ + $increment !
+  end !
+end !
+=10
