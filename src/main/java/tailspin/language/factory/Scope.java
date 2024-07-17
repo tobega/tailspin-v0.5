@@ -106,4 +106,8 @@ public class Scope {
     }
     return 0;
   }
+
+  public int createBuildSlot() {
+    return rootFdb.addSlot(FrameSlotKind.Static, null, null);
+  }
 }

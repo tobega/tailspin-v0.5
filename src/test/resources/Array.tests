@@ -1,0 +1,9 @@
+---empty array
+[] !
+=[]
+---single element array
+[1+2] !
+=[3]
+---simple array
+[1,2,3] !
+=[1, 2, 3]

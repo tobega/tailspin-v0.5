@@ -14,6 +14,7 @@ import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.TailspinNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AllOfNode;
@@ -279,8 +280,28 @@ public class NodeFactory {
       case ParseNode(String name, Object ref) when name.equals("reference") -> visitReference(ref);
       case ParseNode(String name, ParseNode literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
       case ParseNode(String name, ParseNode vc) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc));
+      case ParseNode(String name, Object contents) when name.equals("array-literal") -> visitArrayLiteral(contents);
       default -> throw new IllegalStateException("Unexpected value: " + source);
     };
+  }
+
+  private ValueNode visitArrayLiteral(Object contents) {
+    List<TransformNode> contentNodes = switch (contents) {
+      case String bracket when bracket.equals("[") -> List.of();
+      case ParseNode(String name, ParseNode value) when name.equals("array-contents")
+          -> List.of(asTransformNode(visitValueChain(value)));
+      case ParseNode(String name, List<?> values) when name.equals("array-contents") -> {
+        List<TransformNode> valueNodes = new ArrayList<>();
+        valueNodes.add(asTransformNode(visitValueChain((ParseNode) values.getFirst())));
+        for (int i = 1; i < values.size(); i++) {
+          Object valueChain = ((ParseNode) values.get(i)).content();
+          valueNodes.add(asTransformNode(visitValueChain((ParseNode) valueChain)));
+        }
+        yield valueNodes;
+      }
+      default -> throw new IllegalStateException("Unexpected value: " + contents);
+    };
+    return ArrayLiteral.create(currentScope().createBuildSlot(), contentNodes);
   }
 
   private ValueNode visitNumericLiteral(ParseNode literal) {

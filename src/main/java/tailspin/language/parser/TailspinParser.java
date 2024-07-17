@@ -25,9 +25,13 @@ public class TailspinParser {
      set-state rule (<|='@'>) <|ID>? (<|WS>? <|='set'> <|WS>?) <|value-chain> (<|=';'> <|WS>?)
      
      value-chain rule <|source> <|transform>*
-     source rule <|arithmetic-expression|reference|single-value-chain> (<|WS>?)
+     source rule <|arithmetic-expression|reference|single-value-chain|array-literal> (<|WS>?)
      reference rule <|='$'> <|='@'>? <|ID>?
      single-value-chain rule (<|='('> <|WS>?) <|value-chain> (<|WS>? <|=')'>)
+
+     array-literal rule <|='['|array-contents>? (<|WS>? <|=']'> <|WS>?)
+     array-contents rule (<|='['> <|WS>?) <|value-chain> (<|WS>?) <|more-array-contents>*
+     more-array-contents rule (<|=','> <|WS>?) <|value-chain> (<|WS>?)
 
      transform rule (<|='->'> <|WS>?) <|source|inline-templates-call|='#'> (<|WS>?)
      
