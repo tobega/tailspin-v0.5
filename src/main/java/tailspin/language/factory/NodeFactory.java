@@ -19,6 +19,7 @@ import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AllOfNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
+import tailspin.language.nodes.matchers.ArrayTypeMatcherNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNode;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
@@ -268,6 +269,7 @@ public class NodeFactory {
   private List<MatcherNode> visitTypeMatch(ParseNode typeMatch) {
     return switch (typeMatch.name()) {
       case "range-match" -> visitRangeMatch((List<?>) typeMatch.content());
+      case "array-match" -> List.of(ArrayTypeMatcherNode.create());
       default -> throw new IllegalStateException("Unexpected value: " + typeMatch.name());
     };
   }

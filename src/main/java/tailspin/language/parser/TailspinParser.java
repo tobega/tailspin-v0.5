@@ -46,8 +46,9 @@ public class TailspinParser {
      when-do rule (<|='when'> <|WS>? <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|='do'> <|WS>?)
      membrane rule (<|='|'>) <|literal-match|type-match> (<|WS>?)
      literal-match rule (<|='='> <|WS>?) <|source>
-     type-match rule <|range-match>
+     type-match rule <|range-match|array-match>
      range-match rule <|arithmetic-expression>? <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|arithmetic-expression>?
+     array-match rule <|='['> (<|WS>?) (<|=']'> <|WS>?)
      
      arithmetic-expression rule <|addition|multiplication|numeric-literal>
      addition rule <|addition|multiplication|term> <|'[+-]'> (<|WS>?) <|multiplication|term> (<|WS>?)
