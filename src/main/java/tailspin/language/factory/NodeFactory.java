@@ -20,6 +20,7 @@ import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AllOfNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.ArrayTypeMatcherNode;
+import tailspin.language.nodes.matchers.ConditionNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNode;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
@@ -30,6 +31,7 @@ import tailspin.language.nodes.numeric.MathModNode;
 import tailspin.language.nodes.numeric.MultiplyNode;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.numeric.TruncateDivideNode;
+import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.DoNothingNode;
 import tailspin.language.nodes.transform.EmitNode;
@@ -269,9 +271,33 @@ public class NodeFactory {
   private List<MatcherNode> visitTypeMatch(ParseNode typeMatch) {
     return switch (typeMatch.name()) {
       case "range-match" -> visitRangeMatch((List<?>) typeMatch.content());
-      case "array-match" -> List.of(ArrayTypeMatcherNode.create());
+      case "array-match" -> {
+        List<MatcherNode> conditionNodes = new ArrayList<>();
+        conditionNodes.addLast(ArrayTypeMatcherNode.create());
+        if (typeMatch.content() instanceof List<?> conditions) {
+          if (conditions.getLast() instanceof ParseNode(String type, ParseNode content)
+              && type.equals("array-length-condition")) {
+            conditionNodes.addLast(visitArrayLengthCondition(content));
+            conditions = conditions.subList(0, conditions.size() - 1);
+          }
+          if (conditions.size() > 1) throw new UnsupportedOperationException(conditions.toString());
+        }
+        yield conditionNodes;
+      }
       default -> throw new IllegalStateException("Unexpected value: " + typeMatch.name());
     };
+  }
+
+  private MatcherNode visitArrayLengthCondition(ParseNode content) {
+    List<MatcherNode> lengthCondition = switch (content) {
+      case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
+          -> List.of(EqualityMatcherNode.create(asSingleValueNode(visitSource(value))));
+      case ParseNode(String type, List<?> range) when type.equals("range-match") -> visitRangeMatch(range);
+      default -> throw new IllegalStateException("Unexpected value: " + content);
+    };
+    return ConditionNode.create(
+        MessageNode.create("length", ReadContextValueNode.create(-1, CV_SLOT)),
+        lengthCondition.size() == 1 ? lengthCondition.getFirst() : AllOfNode.create(lengthCondition));
   }
 
   private List<MatcherNode> visitRangeMatch(List<?> content) {

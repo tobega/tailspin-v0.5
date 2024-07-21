@@ -15,11 +15,36 @@ end, 11 ] !
 ---test is array true
 [2, 3] -> templates
   when <|[]> do 1 !
+  otherwise 0 !
 end !
 =1
 ---test is array false
 3 -> templates
-  when <|[]> do [1, 2] !
+  when <|[]> do 1 !
+  otherwise 0 !
+end !
+=0
+---test array length literal true
+[2, 3] -> templates
+  when <|[](=2)> do 1 !
+  otherwise 0 !
+end !
+=1
+---test array length literal false
+[2, 3, 4] -> templates
+  when <|[](=2)> do 1 !
+  otherwise 0 !
+end !
+=0
+---test array length range true
+[2, 3] -> templates
+  when <|[](1..3)> do 1 !
+  otherwise 0 !
+end !
+=1
+---test array length range false
+[2, 3, 4, 5] -> templates
+  when <|[](1..3)> do 1 !
   otherwise 0 !
 end !
 =0

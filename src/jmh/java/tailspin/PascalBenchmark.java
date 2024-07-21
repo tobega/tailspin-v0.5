@@ -45,20 +45,20 @@ import tailspin.language.runtime.Templates;
 public class PascalBenchmark extends TruffleBenchmark {
   private static final String tailspinProgram = """
       next-row templates
-        def in: $;
-        @: 0;
+        in is $;
+        @ set 0;
         [1 -> #, $@] !
       
-        when <..$in::length> do
+        when <|..$in::length> do
           $@ + $in($) !
-          @: $in($);
+          @ set $in($);
           $ + 1 -> # !
       end next-row
 
       triangle source
         [[1] -> #] !
       
-        when <[](..50)> do
+        when <|[](..50)> do
           $!
           $ -> next-row -> # !
         otherwise $ !

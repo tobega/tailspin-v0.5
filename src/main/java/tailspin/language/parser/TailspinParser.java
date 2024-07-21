@@ -48,7 +48,8 @@ public class TailspinParser {
      literal-match rule (<|='='> <|WS>?) <|source>
      type-match rule <|range-match|array-match>
      range-match rule <|arithmetic-expression>? <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|arithmetic-expression>?
-     array-match rule <|='['> (<|WS>?) (<|=']'> <|WS>?)
+     array-match rule <|='['> (<|WS>?) (<|=']'> <|WS>?) <|array-length-condition>?
+     array-length-condition rule (<|='('> <|WS>?) <|literal-match|range-match> (<|WS>? <|=')'> <|WS>?)
      
      arithmetic-expression rule <|addition|multiplication|numeric-literal>
      addition rule <|addition|multiplication|term> <|'[+-]'> (<|WS>?) <|multiplication|term> (<|WS>?)
