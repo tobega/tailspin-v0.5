@@ -25,10 +25,12 @@ public class TailspinParser {
      
      value-chain rule <|source> <|transform>*
      source rule <|arithmetic-expression|reference|single-value-chain|array-literal> (<|WS>?)
-     reference rule <|='$'> <|='@'>? <|ID>? <|lens-expression>?
+     reference rule <|='$'> <|='@'>? <|ID>? <|lens-expression>? <|message-send>?
      single-value-chain rule (<|='('> <|WS>?) <|value-chain> (<|WS>? <|=')'>)
      
-     lens-expression rule (<|='('> <|WS>?) <|source> (<|=')'> <|WS>?)
+     lens-expression rule (<|='('> <|WS>?) <|source> (<|=')'>)
+     
+     message-send rule (<|='::'>) <|ID>
 
      array-literal rule <|='['|array-contents>? (<|WS>? <|=']'> <|WS>?)
      array-contents rule (<|='['> <|WS>?) <|value-chain> (<|WS>?) <|more-array-contents>*

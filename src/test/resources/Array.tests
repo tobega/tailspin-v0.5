@@ -61,3 +61,6 @@ $a(3) !
   $@(3) !
 end !
 =4
+---send length message
+[2, 3, 4, 5] -> $::length !
+=4

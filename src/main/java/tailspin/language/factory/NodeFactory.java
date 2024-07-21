@@ -388,6 +388,10 @@ public class NodeFactory {
     if (predicate.getFirst() instanceof ParseNode(String type, Object lensExpression) && type.equals("lens-expression")){
       value = visitLensExpression(asSingleValueNode(value), lensExpression);
     }
+    if (predicate.getLast() instanceof ParseNode(String sendType, ParseNode(String ignored, String message))
+        && sendType.equals("message-send")){
+      value = MessageNode.create(message, asSingleValueNode(value));
+    }
     return value;
   }
 
