@@ -1,14 +1,15 @@
 package tailspin.language.parser.composer;
 
 import java.util.List;
+import tailspin.language.parser.ParseNodeScope;
 
 public class CaptureSubComposer implements SubComposer {
   private final String identifier;
-  private final Scope scope;
+  private final ParseNodeScope scope;
   private final SubComposer subComposer;
   private boolean satisfied = false;
 
-  CaptureSubComposer(String identifier, Scope scope, SubComposer subComposer) {
+  CaptureSubComposer(String identifier, ParseNodeScope scope, SubComposer subComposer) {
     this.identifier = identifier;
     this.scope = scope;
     this.subComposer = subComposer;

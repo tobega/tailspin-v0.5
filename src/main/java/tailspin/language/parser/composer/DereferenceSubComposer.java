@@ -1,11 +1,13 @@
 package tailspin.language.parser.composer;
 
+import tailspin.language.parser.ParseNodeScope;
+
 class DereferenceSubComposer implements SubComposer {
   private final String identifier;
-  private final Scope scope;
+  private final ParseNodeScope scope;
   private boolean satisfied;
 
-  DereferenceSubComposer(String identifier, Scope scope) {
+  DereferenceSubComposer(String identifier, ParseNodeScope scope) {
     this.identifier = identifier;
     this.scope = scope;
   }

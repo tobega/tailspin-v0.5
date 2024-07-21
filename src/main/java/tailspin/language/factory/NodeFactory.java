@@ -30,6 +30,7 @@ import tailspin.language.nodes.numeric.MultiplyNode;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.transform.BlockNode;
+import tailspin.language.nodes.transform.DoNothingNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
@@ -104,6 +105,16 @@ public class NodeFactory {
         TailspinNode value = visitValueChain(valueChain);
         yield WriteContextValueNode.create(0, STATE_SLOT, asSingleValueNode(value));
       }
+      case ParseNode(String type, List<?> content) when type.equals("templates") -> {
+        String name = (String) content.getLast();
+        enterNewScope();
+        visitTemplatesBody((ParseNode) content.getFirst());
+        Scope scope = exitScope();
+        Templates templates = scope.getTemplates();
+        templates.setDefinitionLevel(scopes.size());
+        currentScope().registerTemplates(name, templates);
+        yield DoNothingNode.create();
+      }
       default -> throw new IllegalStateException("Unexpected value: " + statement);
     };
   }
@@ -171,6 +182,9 @@ public class NodeFactory {
         Templates matchers = currentScope().getOrCreateMatcherTemplates();
         yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size() - 1, matchers);
       }
+      case ParseNode(String type, ParseNode id) when type.equals("templates-call")
+          -> SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(),
+          currentScope().findTemplates((String) id.content()));
       default -> throw new IllegalStateException("Unexpected value: " + transform);
     };
   }

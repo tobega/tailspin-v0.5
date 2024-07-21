@@ -110,4 +110,14 @@ public class Scope {
   public int createBuildSlot() {
     return rootFdb.addSlot(FrameSlotKind.Static, null, null);
   }
+
+  public void registerTemplates(String name, Templates templates) {
+    if (definitions.put(name, templates) != null)
+      throw new IllegalStateException("Attempt to define " + name + " more than once");
+  }
+
+  public Templates findTemplates(String name) {
+    if (definitions.containsKey(name)) return (Templates) definitions.get(name);
+    else return parent.findTemplates(name);
+  }
 }

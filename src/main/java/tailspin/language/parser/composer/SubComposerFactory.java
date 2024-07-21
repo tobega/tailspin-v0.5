@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import tailspin.language.parser.ParseNodeScope;
 import tailspin.language.parser.composer.CompositionSpec.CaptureComposition;
 import tailspin.language.parser.composer.CompositionSpec.ChoiceComposition;
 import tailspin.language.parser.composer.CompositionSpec.Constant;
@@ -57,7 +58,7 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
     this.definedSequences = definedSequences;
   }
 
-  public SubComposer resolveSpec(CompositionSpec spec, Scope scope, CompositionSpec.Resolver resolver) {
+  public SubComposer resolveSpec(CompositionSpec spec, ParseNodeScope scope, CompositionSpec.Resolver resolver) {
     return switch (spec) {
       case NamedComposition namedSpec -> {
         String name = namedSpec.namedPattern();
@@ -89,7 +90,7 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
     };
   }
 
-  List<SubComposer> resolveSpecs(List<CompositionSpec> specs, Scope scope, CompositionSpec.Resolver resolver) {
+  List<SubComposer> resolveSpecs(List<CompositionSpec> specs, ParseNodeScope scope, CompositionSpec.Resolver resolver) {
     return specs.stream().map(spec -> resolver.resolveSpec(spec, scope, resolver)).collect(
         Collectors.toList());
   }

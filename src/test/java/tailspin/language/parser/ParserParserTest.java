@@ -24,7 +24,6 @@ import tailspin.language.parser.composer.CompositionSpec.NamedComposition;
 import tailspin.language.parser.composer.CompositionSpec.RegexComposition;
 import tailspin.language.parser.composer.CompositionSpec.SkipComposition;
 import tailspin.language.parser.composer.RangeMatch;
-import tailspin.language.parser.composer.Scope;
 
 public class ParserParserTest {
 
@@ -69,7 +68,7 @@ public class ParserParserTest {
     List<CompositionSpec> rule = syntaxRules.get("a");
     assertEquals(1, rule.size());
     assertInstanceOf(LiteralComposition.class, rule.getFirst());
-    Scope scope = new Scope(null);
+    ParseNodeScope scope = new ParseNodeScope(null);
     scope.defineValue("foo", "foobar");
     assertEquals("foobar", ((LiteralComposition) rule.getFirst()).literal().resolve(scope));
   }
@@ -125,7 +124,7 @@ public class ParserParserTest {
     assertEquals(1, rule.size());
     if (rule.getFirst() instanceof MultiplierComposition(NamedComposition(String name), RangeMatch matcher)) {
       assertEquals("b", name);
-      Scope scope = new Scope(null);
+      ParseNodeScope scope = new ParseNodeScope(null);
       assertFalse(matcher.matches(4, scope));
       assertTrue(matcher.matches(5, scope));
       assertFalse(matcher.matches(6, scope));
@@ -146,7 +145,7 @@ public class ParserParserTest {
     assertEquals(1, rule.size());
     if (rule.getFirst() instanceof MultiplierComposition(NamedComposition(String name), RangeMatch matcher)) {
       assertEquals("b", name);
-      Scope scope = new Scope(null);
+      ParseNodeScope scope = new ParseNodeScope(null);
       scope.defineValue("ref", 5L);
       assertFalse(matcher.matches(4, scope));
       assertTrue(matcher.matches(5, scope));

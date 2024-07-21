@@ -2,17 +2,18 @@ package tailspin.language.parser.composer;
 
 import java.util.ArrayList;
 import java.util.List;
+import tailspin.language.parser.ParseNodeScope;
 import tailspin.language.parser.composer.CompositionSpec.Resolver;
 
 public class MultiplierSubComposer implements SubComposer {
 
   private final CompositionSpec compositionSpec;
   private final RangeMatch multiplier;
-  private final Scope scope;
+  private final ParseNodeScope scope;
   private final Resolver resolver;
   private List<SubComposer> values;
 
-  public MultiplierSubComposer(CompositionSpec compositionSpec, RangeMatch multiplier, Scope scope,
+  public MultiplierSubComposer(CompositionSpec compositionSpec, RangeMatch multiplier, ParseNodeScope scope,
       Resolver resolver) {
     this.compositionSpec = compositionSpec;
     this.multiplier = multiplier;

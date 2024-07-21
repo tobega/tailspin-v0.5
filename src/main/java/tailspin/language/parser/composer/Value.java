@@ -1,9 +1,10 @@
 package tailspin.language.parser.composer;
 
 import java.util.Objects;
+import tailspin.language.parser.ParseNodeScope;
 
 public interface Value<T> {
-  T resolve(Scope scope);
+  T resolve(ParseNodeScope scope);
 
   class Constant<T> implements Value<T> {
     private final T value;
@@ -13,7 +14,7 @@ public interface Value<T> {
     }
 
     @Override
-    public T resolve(Scope scope) {
+    public T resolve(ParseNodeScope scope) {
       return value;
     }
 
@@ -33,7 +34,7 @@ public interface Value<T> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public T resolve(Scope scope) {
+    public T resolve(ParseNodeScope scope) {
       return (T) scope.getValue(identifier);
     }
 

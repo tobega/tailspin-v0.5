@@ -71,3 +71,10 @@ increment is 3;
   end !
 end !
 =10
+---named templates
+add1 templates
+  $ + 1 !
+end add1
+
+3 -> add1 !
+=4

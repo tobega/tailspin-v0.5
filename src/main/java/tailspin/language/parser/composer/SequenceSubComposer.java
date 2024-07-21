@@ -2,15 +2,16 @@ package tailspin.language.parser.composer;
 
 import java.util.ArrayList;
 import java.util.List;
+import tailspin.language.parser.ParseNodeScope;
 import tailspin.language.parser.composer.CompositionSpec.Resolver;
 
 public class SequenceSubComposer implements SubComposer {
   private final List<CompositionSpec> sequence;
-  private final Scope scope;
+  private final ParseNodeScope scope;
   private final Resolver resolver;
   private List<SubComposer> value;
 
-  public SequenceSubComposer(List<CompositionSpec> sequence, Scope scope, CompositionSpec.Resolver resolver) {
+  public SequenceSubComposer(List<CompositionSpec> sequence, ParseNodeScope scope, CompositionSpec.Resolver resolver) {
     this.sequence = sequence;
     this.scope = scope;
     this.resolver = resolver;

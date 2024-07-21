@@ -1,15 +1,16 @@
 package tailspin.language.parser.composer;
 
 import java.util.List;
+import tailspin.language.parser.ParseNodeScope;
 
 class RuleSubComposer implements SubComposer {
   private final String name;
   private final List<CompositionSpec> compositionSpecs;
-  private final Scope scope;
+  private final ParseNodeScope scope;
   private final CompositionSpec.Resolver resolver;
   SubComposer sequenceSubComposer;
 
-  RuleSubComposer(String name, List<CompositionSpec> compositionSpecs, Scope scope,
+  RuleSubComposer(String name, List<CompositionSpec> compositionSpecs, ParseNodeScope scope,
       CompositionSpec.Resolver resolver) {
     this.name = name;
     this.compositionSpecs = compositionSpecs;
@@ -32,7 +33,7 @@ class RuleSubComposer implements SubComposer {
       throw new LeftRecursionException(name);
     }
     memo.namedRulesStack.add(name);
-    sequenceSubComposer = new SequenceSubComposer(compositionSpecs, new Scope(scope),
+    sequenceSubComposer = new SequenceSubComposer(compositionSpecs, new ParseNodeScope(scope),
         resolver);
     Memo result = sequenceSubComposer.nibble(s, memo);
     result = resolveLeftRecursion(s, result);
@@ -51,7 +52,7 @@ class RuleSubComposer implements SubComposer {
         memo = result;
         memo.leftRecursionResult = sequenceSubComposer;
         memo.namedRulesStack.add(name);
-        sequenceSubComposer = new SequenceSubComposer(compositionSpecs, new Scope(scope),
+        sequenceSubComposer = new SequenceSubComposer(compositionSpecs, new ParseNodeScope(scope),
             resolver);
         result = sequenceSubComposer.nibble(s, memo);
       }

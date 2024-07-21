@@ -2,7 +2,6 @@ package tailspin.language.parser;
 
 import tailspin.language.parser.composer.CompositionSpec;
 import tailspin.language.parser.composer.CompositionSpec.Resolver;
-import tailspin.language.parser.composer.Scope;
 import tailspin.language.parser.composer.SubComposer;
 
 public class ParseComposerFactory implements CompositionSpec.Resolver {
@@ -13,7 +12,7 @@ public class ParseComposerFactory implements CompositionSpec.Resolver {
   }
 
   @Override
-  public SubComposer resolveSpec(CompositionSpec spec, Scope scope, Resolver resolver) {
+  public SubComposer resolveSpec(CompositionSpec spec, ParseNodeScope scope, Resolver resolver) {
     return new ParseNodeComposer(spec, realResolver.resolveSpec(spec, scope, resolver));
   }
 }

@@ -10,7 +10,6 @@ import tailspin.language.parser.composer.CompositionSpec;
 import tailspin.language.parser.composer.CompositionSpec.NamedComposition;
 import tailspin.language.parser.composer.CompositionSpec.Resolver;
 import tailspin.language.parser.composer.Memo;
-import tailspin.language.parser.composer.Scope;
 import tailspin.language.parser.composer.SequenceSubComposer;
 import tailspin.language.parser.composer.SubComposerFactory;
 
@@ -19,7 +18,7 @@ public class TailspinParser {
   static final String tailspinSyntax = """
      program rule (<|WS>?) <|statement>+ (<|WS>?)
      
-     statement rule <|emit|definition|set-state> (<|WS>?)
+     statement rule <|emit|definition|set-state|templates> (<|WS>?)
      emit rule <|value-chain> (<|WS>? <|='!'>)
      definition rule <|ID> (<|WS> <|='is'> <|WS>) <|value-chain> (<|=';'> <|WS>?)
      set-state rule (<|='@'>) <|ID>? (<|WS>? <|='set'> <|WS>?) <|value-chain> (<|=';'> <|WS>?)
@@ -33,10 +32,12 @@ public class TailspinParser {
      array-contents rule (<|='['> <|WS>?) <|value-chain> (<|WS>?) <|more-array-contents>*
      more-array-contents rule (<|=','> <|WS>?) <|value-chain> (<|WS>?)
 
-     transform rule (<|='->'> <|WS>?) <|source|inline-templates-call|='#'> (<|WS>?)
+     transform rule (<|='->'> <|WS>?) <|source|inline-templates-call|='#'|templates-call> (<|WS>?)
+     templates-call rule <|ID>
+     inline-templates-call rule (<|='templates'> <|WS>) <|templates-body>  (<|='end'> <|WS>?)
+     templates rule (name is <|ID>; <|WS> <|='templates'> <|WS>) <|templates-body>  (<|='end'> <|WS>) <|=$name>
      
-     inline-templates-call rule (<|='templates'> <|WS>) <|anonymous-templates-body>
-     anonymous-templates-body rule <|with-block|matchers> (<|='end'> <|WS>?)
+     templates-body rule <|with-block|matchers>
      with-block rule <|statement>+ <|matchers>?
      
      matchers rule <|match-template>+
@@ -72,7 +73,7 @@ public class TailspinParser {
   public static ParseNode parseRule(String rule, String s) {
     Resolver resolver = new ParseComposerFactory(new SubComposerFactory(syntaxRules));
     SequenceSubComposer composer = new SequenceSubComposer(List.of(
-        new NamedComposition(rule)), new Scope(null), resolver);
+        new NamedComposition(rule)), new ParseNodeScope(null), resolver);
     Memo end = composer.nibble(s, Memo.root(0));
     if (end.pos != s.length()) throw new AssertionError("Parse failed at \n" + s.substring(end.pos));
     return  (ParseNode) ParseNode.normalizeValues(composer.getValues());

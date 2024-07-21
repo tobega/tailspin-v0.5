@@ -19,7 +19,6 @@ import tailspin.language.parser.composer.CompositionSpec.Resolver;
 import tailspin.language.parser.composer.CompositionSpec.SkipComposition;
 import tailspin.language.parser.composer.Memo;
 import tailspin.language.parser.composer.RangeMatch;
-import tailspin.language.parser.composer.Scope;
 import tailspin.language.parser.composer.SequenceSubComposer;
 import tailspin.language.parser.composer.SubComposerFactory;
 import tailspin.language.parser.composer.Value;
@@ -143,7 +142,7 @@ public class ParserParser {
     Resolver resolver = new ParseComposerFactory(new SubComposerFactory(syntaxRules));
     SequenceSubComposer composer = new SequenceSubComposer(List.of(
         new NamedComposition("optionalWhitespace"),
-        new MultiplierComposition(new NamedComposition("definedCompositionSequence"), RangeMatch.AT_LEAST_ONE)), new Scope(null), resolver);
+        new MultiplierComposition(new NamedComposition("definedCompositionSequence"), RangeMatch.AT_LEAST_ONE)), new ParseNodeScope(null), resolver);
     Memo end = composer.nibble(parserDefinition, Memo.root(0));
     if (end.pos != parserDefinition.length()) throw new AssertionError("Parse failed at \n" + parserDefinition.substring(end.pos));
     @SuppressWarnings("unchecked")
@@ -245,7 +244,7 @@ public class ParserParser {
   private static Value<String> visitLiteralValue(Object v) {
     return switch (v) {
       case ParseNode(String type, String value) when type.equals("stringLiteral") -> new Constant<>(value);
-      case ParseNode(String type, ParseNode(String li, String identifier)) when type.equals("sourceReference")
+      case ParseNode(String type, ParseNode(String ignored, String identifier)) when type.equals("sourceReference")
           -> new Reference<>(identifier);
       default -> throw new IllegalStateException("Unexpected value: " + v);
     };

@@ -1,5 +1,6 @@
 package tailspin.language.parser.composer;
 
+import tailspin.language.parser.ParseNodeScope;
 import tailspin.language.parser.composer.Value.Constant;
 
 public class RangeMatch {
@@ -30,7 +31,7 @@ public class RangeMatch {
     this.upperBound = upperBound;
   }
 
-  public boolean matches(Object toMatch, Scope scope) {
+  public boolean matches(Object toMatch, ParseNodeScope scope) {
     boolean result = false;
     if (lowerBound != null) {
       Object low = lowerBound.value.resolve(scope);

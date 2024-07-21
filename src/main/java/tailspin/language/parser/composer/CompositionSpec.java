@@ -1,6 +1,7 @@
 package tailspin.language.parser.composer;
 
 import java.util.List;
+import tailspin.language.parser.ParseNodeScope;
 import tailspin.language.parser.composer.CompositionSpec.CaptureComposition;
 import tailspin.language.parser.composer.CompositionSpec.ChoiceComposition;
 import tailspin.language.parser.composer.CompositionSpec.Constant;
@@ -17,7 +18,7 @@ public sealed interface CompositionSpec permits NamedComposition, RegexCompositi
     InverseComposition, LiteralComposition {
   interface Resolver {
     // Pass in a resolver instance to allow wrapping
-    SubComposer resolveSpec(CompositionSpec spec, Scope scope, CompositionSpec.Resolver resolver);
+    SubComposer resolveSpec(CompositionSpec spec, ParseNodeScope scope, CompositionSpec.Resolver resolver);
   }
 
   record NamedComposition(String namedPattern) implements CompositionSpec {
