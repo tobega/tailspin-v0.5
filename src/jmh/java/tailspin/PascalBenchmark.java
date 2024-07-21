@@ -43,14 +43,49 @@ import tailspin.language.runtime.Templates;
  */
 @SuppressWarnings("unused")
 public class PascalBenchmark extends TruffleBenchmark {
+  private static final String tailspinProgram = """
+      next-row templates
+        def in: $;
+        @: 0;
+        [1 -> #, $@] !
+      
+        when <..$in::length> do
+          $@ + $in($) !
+          @: $in($);
+          $ + 1 -> # !
+      end next-row
+
+      triangle source
+        [[1] -> #] !
+      
+        when <[](..50)> do
+          $!
+          $ -> next-row -> # !
+        otherwise $ !
+      end triangle
+      
+      $triangle !
+      """;
+
   private static final Supplier<TailspinArray> tailspinPascal = createTailspinCall();
 
-  public static void main(String[] args) {
-    System.out.println(tailspinPascal.get());
-  }
 
   @Benchmark
   public void triangle_tailspin() {
+    TailspinArray triangle = truffleContext.eval("tt", tailspinProgram).asHostObject();
+    if (triangle.getArraySize() != 51) throw new AssertionError("Wrong number of rows " + triangle.getArraySize());
+    for (int i = 1; i < triangle.getArraySize(); i++) {
+      if (((TailspinArray) triangle.getNative(i)).getArraySize() != i + 1) {
+        throw new AssertionError("wrong length for row " + i + ". Triangle is " + triangle);
+      }
+      if ((Long) ((TailspinArray) triangle.getNative(i)).getNative(1) != i) {
+        throw new AssertionError("Wrong value " + i);
+      }
+    }
+  }
+
+  @Benchmark
+  public void triangle_tailspin_nodes() {
     TailspinArray triangle = tailspinPascal.get();
     if (triangle.getArraySize() != 51) throw new AssertionError("Wrong number of rows " + triangle.getArraySize());
     for (int i = 1; i < triangle.getArraySize(); i++) {
