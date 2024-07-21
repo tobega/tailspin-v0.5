@@ -37,7 +37,7 @@ public class TailspinParser {
      transform rule (<|='->'> <|WS>?) <|source|inline-templates-call|='#'|templates-call> (<|WS>?)
      templates-call rule <|ID>
      inline-templates-call rule (<|='templates'> <|WS>) <|templates-body>  (<|='end'> <|WS>?)
-     templates rule (name is <|ID>; <|WS> <|='templates'> <|WS>) <|templates-body>  (<|='end'> <|WS>) <|=$name>
+     templates rule (name is <|ID>; <|WS>) <|='templates'|='source'> (<|WS>) <|templates-body>  (<|='end'> <|WS>) <|=$name>
      
      templates-body rule <|with-block|matchers>
      with-block rule <|statement>+ <|matchers>?

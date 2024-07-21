@@ -78,3 +78,10 @@ end add1
 
 3 -> add1 !
 =4
+---named source
+val source
+  5 !
+end val
+
+$val !
+=5

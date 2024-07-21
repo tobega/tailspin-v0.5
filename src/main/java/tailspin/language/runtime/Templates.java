@@ -41,6 +41,8 @@ public class Templates {
   @CompilationFinal
   private int definitionLevel = -100;
 
+  private String type;
+
   public CallTarget getCallTarget() {
     return callTarget;
   }
@@ -63,5 +65,13 @@ public class Templates {
 
   public int getDefinitionLevel() {
     return definitionLevel;
+  }
+
+  public void setType(String templateType) {
+    type = templateType;
+  }
+
+  public String getType() {
+    return type;
   }
 }

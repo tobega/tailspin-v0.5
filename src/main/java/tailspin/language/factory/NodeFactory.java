@@ -41,6 +41,7 @@ import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
+import tailspin.language.nodes.value.VoidValue;
 import tailspin.language.nodes.value.WriteContextValueNode;
 import tailspin.language.parser.ParseNode;
 import tailspin.language.runtime.Reference;
@@ -111,10 +112,12 @@ public class NodeFactory {
       }
       case ParseNode(String type, List<?> content) when type.equals("templates") -> {
         String name = (String) content.getLast();
+        String templateType = (String) content.getFirst();
         enterNewScope();
-        visitTemplatesBody((ParseNode) content.getFirst());
+        visitTemplatesBody((ParseNode) content.get(1));
         Scope scope = exitScope();
         Templates templates = scope.getTemplates();
+        templates.setType(templateType);
         templates.setDefinitionLevel(scopes.size());
         currentScope().registerTemplates(name, templates);
         yield DoNothingNode.create();
@@ -125,7 +128,7 @@ public class NodeFactory {
 
   private StatementNode visitDefinition(List<?> def) {
     if (def.getFirst() instanceof ParseNode(String name, String identifier) && name.equals("ID")) {
-      Reference defined = currentScope().defineIdentifier(identifier);
+      Reference defined = currentScope().defineValue(identifier);
       TailspinNode expr = visitValueChain((ParseNode) def.getLast());
       return WriteContextValueNode.create(defined, asSingleValueNode(expr));
     }
@@ -357,12 +360,19 @@ public class NodeFactory {
 
   private TailspinNode visitReference(Object ref) {
     List<?> predicate = List.of();
-    ValueNode value = switch (ref) {
+    TailspinNode value = switch (ref) {
       case String s when s.equals("$") -> ReadContextValueNode.create(-1, currentValueSlot());
-      case List<?> l when l.getFirst().equals("$") && l.get(1) instanceof ParseNode(String name, String identifier) -> {
-        Reference reference = currentScope().getIdentifier(identifier, -1);
-        predicate = l.subList(2, l.size());
-        yield ReadContextValueNode.create(reference);
+      case List<?> l when l.getFirst().equals("$") && l.get(1) instanceof ParseNode(String ignored, String identifier) -> {
+        Object source = currentScope().getSource(identifier, -1);
+        if (source instanceof Reference reference) {
+          predicate = l.subList(2, l.size());
+          yield ReadContextValueNode.create(reference);
+        } else if (source instanceof Templates templates){
+          if (l.size() > 2) throw new IllegalStateException("Cannot have lens expressions or message sends on call to " + identifier);
+          yield SendToTemplatesNode.create(VoidValue.create(), scopes.size(), templates);
+        } else {
+          throw new IllegalStateException("Cannot use " + identifier + " as a source");
+        }
       }
       case List<?> l when l.getFirst().equals("$") && l.get(1).equals("@") -> {
         predicate = l.subList(2, l.size());
@@ -376,7 +386,7 @@ public class NodeFactory {
     };
     if (predicate.isEmpty()) return value;
     if (predicate.getFirst() instanceof ParseNode(String type, Object lensExpression) && type.equals("lens-expression")){
-      value = visitLensExpression(value, lensExpression);
+      value = visitLensExpression(asSingleValueNode(value), lensExpression);
     }
     return value;
   }

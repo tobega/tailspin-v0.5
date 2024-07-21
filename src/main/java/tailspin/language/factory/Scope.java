@@ -79,25 +79,34 @@ public class Scope {
     return ProgramRootNode.create(language, rootFdb.build(), scopeFdb.build(), programBody);
   }
 
-  public Reference defineIdentifier(String identifier) {
+  public Reference defineValue(String identifier) {
     Slot defined = new Slot();
     definitions.put(identifier, defined);
     return defined.atLevel(-1);
   }
 
-  public Reference getIdentifier(String identifier, int level) {
+  public Object getSource(String identifier, int level) {
     if (block != null && level == -1) {
       // TODO: We should be able to have local matcher values
       matcherTemplates.setNeedsScope();
       level = 0;
     }
-    Slot slot = (Slot) definitions.get(identifier);
-    if (slot == null) {
-      needsScope = true;
-      if (level == -1) level = 0;
-      return parent.getIdentifier(identifier, level + 1);
+    Object defined = definitions.get(identifier);
+    switch (defined) {
+      case null -> {
+        needsScope = true;
+        if (level == -1)
+          level = 0;
+        return parent.getSource(identifier, level + 1);
+      }
+      case Slot slot -> {
+        return slot.atLevel(level);
+      }
+      case Templates templates when templates.getType().equals("source") -> {
+        return templates;
+      }
+      default -> throw new IllegalStateException("May not use " + identifier + " as a source");
     }
-    return slot.atLevel(level);
   }
 
   public int accessState() {
