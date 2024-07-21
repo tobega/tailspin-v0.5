@@ -37,3 +37,5 @@
 2024-07-12 No change from introducing Reference class
 
 2024-07-15 No change from using callLevel and definitionLevl for SendToTemplates
+
+2024-07-21 adding @CompilationFinal to Slot brought things back to what it was

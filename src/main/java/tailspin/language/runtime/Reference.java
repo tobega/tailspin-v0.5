@@ -7,6 +7,7 @@ public class Reference {
   public static class Slot {
     @CompilationFinal
     int slot = -1;
+    @CompilationFinal
     boolean isExported;
 
     public void setSlot(int slot) {
@@ -27,7 +28,6 @@ public class Reference {
     }
   }
 
-  @CompilationFinal
   final int level;
   final Slot slot;
 
