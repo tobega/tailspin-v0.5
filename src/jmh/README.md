@@ -39,3 +39,16 @@
 2024-07-15 No change from using callLevel and definitionLevl for SendToTemplates
 
 2024-07-21 adding @CompilationFinal to Slot brought things back to what it was
+
+2024-07-21 Running pascal benchmark from tailspin source
+NOTE: evaluating the answer through truffle array interop is really slow, so casting Value to TailspinArray
+|Benchmark                                   |Mode  |Cnt  | Score |  Error  |Units|
+|--------------------------------------------|------|-----|-------|---------|-----|
+|BubblesortBenchmark.sort_java              |avgt    |5  |20,025 |± 0,264  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate  |avgt    |5  |41,724 |± 0,891  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse  |avgt    |5  |40,047 |± 0,277  |us/op|
+|FibonacciBenchmark.recursive_java          |avgt    |5  |36,336 |± 0,577  |us/op|
+|FibonacciBenchmark.recursive_tailspin      |avgt    |5  |56,017 |± 0,804  |us/op|
+|PascalBenchmark.triangle_java              |avgt    |5  |12,024 |± 0,415  |us/op|
+|PascalBenchmark.triangle_tailspin          |avgt    |5  |19,085 |± 0,239  |us/op|
+|PascalBenchmark.triangle_tailspin_nodes    |avgt    |5  |18,932 |± 0,383  |us/op|
