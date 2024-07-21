@@ -86,9 +86,9 @@ public class Scope {
   }
 
   public Object getSource(String identifier, int level) {
-    if (block != null && level == -1) {
+    if (level == -1 && (block != null || matcherTemplates == null)) {
       // TODO: We should be able to have local matcher values
-      matcherTemplates.setNeedsScope();
+      getOrCreateMatcherTemplates().setNeedsScope();
       level = 0;
     }
     Object defined = definitions.get(identifier);

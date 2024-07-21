@@ -309,12 +309,14 @@ public class NodeFactory {
     int separator = content.indexOf("..");
     if (separator > 0) {
       boolean inclusive = separator == 1;
-      ValueNode low = asSingleValueNode(visitSource((ParseNode) content.getFirst()));
+      ValueNode low = asSingleValueNode(visitSource(
+          (ParseNode) ((ParseNode) content.getFirst()).content()));
       bounds.add(GreaterThanMatcherNode.create(inclusive, low));
     }
     if (separator + 1 < content.size()) {
       boolean inclusive = separator + 2 == content.size();
-      ValueNode high = asSingleValueNode(visitSource((ParseNode) content.getLast()));
+      ValueNode high = asSingleValueNode(visitSource(
+          (ParseNode) ((ParseNode) content.getLast()).content()));
       bounds.add(LessThanMatcherNode.create(inclusive, high));
     }
     return bounds;

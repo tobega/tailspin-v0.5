@@ -51,7 +51,8 @@ public class TailspinParser {
      membrane rule (<|='|'>) <|literal-match|type-match> (<|WS>?)
      literal-match rule (<|='='> <|WS>?) <|source>
      type-match rule <|range-match|array-match>
-     range-match rule <|arithmetic-expression>? <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|arithmetic-expression>?
+     range-match rule <|range-bound>? <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound>?
+     range-bound rule <|arithmetic-expression|reference>
      array-match rule <|='['> (<|WS>?) (<|=']'> <|WS>?) <|array-length-condition>?
      array-length-condition rule (<|='('> <|WS>?) <|literal-match|range-match> (<|WS>? <|=')'> <|WS>?)
      

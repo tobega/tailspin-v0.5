@@ -85,3 +85,18 @@ end val
 
 $val !
 =5
+---range matcher bounded by defined value
+3 -> templates
+  upper is 4;
+  $ -> # !
+  when <|1..$upper> do 5 !
+  otherwise 0 !
+end !
+=5
+---range matcher bounded by defined value in outer scope
+upper is 4;
+3 -> templates
+  when <|1..$upper> do 5 !
+  otherwise 0 !
+end !
+=5
