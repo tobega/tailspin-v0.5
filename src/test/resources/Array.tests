@@ -48,3 +48,16 @@ end !
   otherwise 0 !
 end !
 =0
+---read single value index
+[2, 3, 4, 5] -> $(3) !
+=4
+---read single value index of defined array
+a is [2, 3, 4, 5];
+$a(3) !
+=4
+---read single value index of state array
+[2, 3, 4, 5] -> templates
+  @ set $;
+  $@(3) !
+end !
+=4

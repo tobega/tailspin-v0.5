@@ -15,6 +15,7 @@ import tailspin.language.nodes.TailspinNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.array.ArrayLiteral;
+import tailspin.language.nodes.array.ArrayReadNode;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AllOfNode;
@@ -355,15 +356,36 @@ public class NodeFactory {
   }
 
   private TailspinNode visitReference(Object ref) {
-    return switch (ref) {
+    List<?> predicate = List.of();
+    ValueNode value = switch (ref) {
       case String s when s.equals("$") -> ReadContextValueNode.create(-1, currentValueSlot());
       case List<?> l when l.getFirst().equals("$") && l.get(1) instanceof ParseNode(String name, String identifier) -> {
         Reference reference = currentScope().getIdentifier(identifier, -1);
+        predicate = l.subList(2, l.size());
         yield ReadContextValueNode.create(reference);
       }
-      case List<?> l when l.getFirst().equals("$") && l.get(1).equals("@")
-          -> ReadContextValueNode.create(currentScope().accessState(), STATE_SLOT);
+      case List<?> l when l.getFirst().equals("$") && l.get(1).equals("@") -> {
+        predicate = l.subList(2, l.size());
+        yield ReadContextValueNode.create(currentScope().accessState(), STATE_SLOT);
+      }
+      case List<?> l when l.getFirst().equals("$") -> {
+        predicate = l.subList(1, l.size());
+        yield ReadContextValueNode.create(-1, currentValueSlot());
+      }
       default -> throw new IllegalStateException("Unexpected value: " + ref);
+    };
+    if (predicate.isEmpty()) return value;
+    if (predicate.getFirst() instanceof ParseNode(String type, Object lensExpression) && type.equals("lens-expression")){
+      value = visitLensExpression(value, lensExpression);
+    }
+    return value;
+  }
+
+  private ValueNode visitLensExpression(ValueNode value, Object lensExpression) {
+    return switch (lensExpression) {
+      case ParseNode(String type, ParseNode source) when type.equals("source")
+          -> ArrayReadNode.create(value, asSingleValueNode(visitSource(source)));
+      default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };
   }
 
