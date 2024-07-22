@@ -21,7 +21,7 @@ public class TailspinParser {
      statement rule <|emit|definition|set-state|templates> (<|WS>?)
      emit rule <|value-chain> (<|WS>? <|='!'>)
      definition rule <|ID> (<|WS> <|='is'> <|WS>) <|value-chain> (<|=';'> <|WS>?)
-     set-state rule (<|='@'>) <|ID>? (<|WS>? <|='set'> <|WS>?) <|value-chain> (<|=';'> <|WS>?)
+     set-state rule (<|='@'>) <|ID>? <|lens-expression>? (<|WS>? <|='set'> <|WS>?) <|value-chain> (<|=';'> <|WS>?)
      
      value-chain rule <|source> <|transform>*
      source rule <|arithmetic-expression|reference|single-value-chain|array-literal> (<|WS>?)

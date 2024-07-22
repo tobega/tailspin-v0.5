@@ -64,3 +64,10 @@ end !
 ---send length message
 [2, 3, 4, 5] -> $::length !
 =4
+---set array element
+[1, 2, 3] -> templates
+  @ set $;
+  @(1) set 5;
+  $@ !
+end !
+=[5, 2, 3]

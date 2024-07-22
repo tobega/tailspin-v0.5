@@ -16,6 +16,7 @@ import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.array.ArrayReadNode;
+import tailspin.language.nodes.array.ArrayWriteNode;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AllOfNode;
@@ -105,11 +106,7 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode stmt) when name.equals("statement") -> visitStatement(stmt);
       case ParseNode(String name, ParseNode valueChain) when name.equals("emit") -> EmitNode.create(asTransformNode(visitValueChain(valueChain)));
       case ParseNode(String name, List<?> def) when name.equals("definition") -> visitDefinition(def);
-      case ParseNode(String name, ParseNode valueChain) when name.equals("set-state") -> {
-        currentScope().accessState();
-        TailspinNode value = visitValueChain(valueChain);
-        yield WriteContextValueNode.create(0, STATE_SLOT, asSingleValueNode(value));
-      }
+      case ParseNode(String name, Object setExpr) when name.equals("set-state") -> visitSetState(setExpr);
       case ParseNode(String type, List<?> content) when type.equals("templates") -> {
         String name = (String) content.getLast();
         String templateType = (String) content.getFirst();
@@ -123,6 +120,31 @@ public class NodeFactory {
         yield DoNothingNode.create();
       }
       default -> throw new IllegalStateException("Unexpected value: " + statement);
+    };
+  }
+
+  private StatementNode visitSetState(Object expr) {
+    currentScope().accessState();
+    TailspinNode value;
+    switch (expr) {
+      case ParseNode valueChain -> value = visitValueChain(valueChain);
+      case List<?> l -> {
+        value = visitValueChain((ParseNode) l.getLast());
+        ValueNode receiver = ReadContextValueNode.create(0, STATE_SLOT);
+        if (l.getFirst() instanceof ParseNode(String type, ParseNode lensExpr) && type.equals("lens-expression")) {
+          value = visitWriteLensExpression(receiver, lensExpr, value);
+        }
+      }
+      default -> throw new IllegalStateException("Unexpected value: " + expr);
+    }
+    return WriteContextValueNode.create(0, STATE_SLOT, asSingleValueNode(value));
+  }
+
+  private ValueNode visitWriteLensExpression(ValueNode receiver, Object lensExpression, TailspinNode value) {
+    return switch (lensExpression) {
+      case ParseNode(String type, ParseNode source) when type.equals("source")
+          -> ArrayWriteNode.create(receiver, asSingleValueNode(visitSource(source)), asSingleValueNode(value));
+      default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };
   }
 
@@ -388,7 +410,7 @@ public class NodeFactory {
     };
     if (predicate.isEmpty()) return value;
     if (predicate.getFirst() instanceof ParseNode(String type, Object lensExpression) && type.equals("lens-expression")){
-      value = visitLensExpression(asSingleValueNode(value), lensExpression);
+      value = visitReadLensExpression(asSingleValueNode(value), lensExpression);
     }
     if (predicate.getLast() instanceof ParseNode(String sendType, ParseNode(String ignored, String message))
         && sendType.equals("message-send")){
@@ -397,7 +419,7 @@ public class NodeFactory {
     return value;
   }
 
-  private ValueNode visitLensExpression(ValueNode value, Object lensExpression) {
+  private ValueNode visitReadLensExpression(ValueNode value, Object lensExpression) {
     return switch (lensExpression) {
       case ParseNode(String type, ParseNode source) when type.equals("source")
           -> ArrayReadNode.create(value, asSingleValueNode(visitSource(source)));
