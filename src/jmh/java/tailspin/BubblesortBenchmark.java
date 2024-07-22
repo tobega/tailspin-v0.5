@@ -51,6 +51,45 @@ import tailspin.language.runtime.Templates;
 @SuppressWarnings("unused")
 public class BubblesortBenchmark extends TruffleBenchmark {
 
+  private static final String tailspinMain = """
+      [50..1:-1 -> templates $! 100 - $! end] -> sortedCopy !
+      """;
+
+  private static final String tailspinIterate = """
+      sortedCopy templates
+        @ set $;
+        $::length..2:-1 -> 2..$ -> !#
+        $@ !
+      
+        when <?($@($) <..~$@($ - 1)>)> do
+          temp is $@($);
+          @($) set $@($ - 1);
+          @($ - 1) set $temp;
+      end sortedCopy
+      """;
+
+  private static final String tailspinRecurse = """
+      sortedCopy templates
+        bubble templates
+          @ set 1;
+          1..$-1 -> !#
+          $@ !
+      
+          when <?($@bubblesort($+1) <..~$@bubblesort($)>)> do
+            @ set $;
+            temp is $@sortedCopy($@);
+            @sortedCopy($@) set $@sortedCopy($@ + 1);
+            $@sortedCopy($@ + 1) set $temp;
+        end bubble
+      
+        @ set $;
+        $::length -> !#
+        $@ !
+      
+        when <|2..> do $ -> bubble -> !#
+      end sortedCopy
+      """;
+
   private static final Supplier<TailspinArray> tailspinSortIterate = createTailspinCall(
       defineSortedCopy());
   private static final Supplier<TailspinArray> tailspinSortRecurse = createTailspinCall(
