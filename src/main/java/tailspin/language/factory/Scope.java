@@ -20,9 +20,11 @@ public class Scope {
 
   Map<String, Object> definitions = new HashMap<>();
 
+  private final String scopeId;
   private final Scope parent;
 
-  public Scope(Scope parent) {
+  public Scope(String scopeId, Scope parent) {
+    this.scopeId = scopeId;
     this.parent = parent;
   }
 
@@ -109,11 +111,16 @@ public class Scope {
     }
   }
 
-  public int accessState() {
+  public int accessState(String scopeId) {
     if (block != null) {
       matcherTemplates.setNeedsScope();
     }
-    return 0;
+    if (scopeId == null || scopeId.equals(this.scopeId)) {
+      return 0;
+    } else {
+      needsScope = true;
+      return 1 + parent.accessState(scopeId);
+    }
   }
 
   public int createBuildSlot() {

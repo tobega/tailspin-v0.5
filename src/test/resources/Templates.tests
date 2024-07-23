@@ -100,3 +100,13 @@ upper is 4;
   otherwise 0 !
 end !
 =5
+---read state from outer templates
+outer templates
+  @ set $;
+  1 -> templates
+    $ + $@outer !
+  end !
+end outer
+
+4 -> outer !
+=5

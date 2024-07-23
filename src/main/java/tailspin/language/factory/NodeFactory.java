@@ -67,8 +67,8 @@ public class NodeFactory {
   }
 
   List<Scope> scopes = new ArrayList<>();
-  private void enterNewScope() {
-    scopes.addLast(new Scope(scopes.isEmpty() ? null : scopes.getLast()));
+  private void enterNewScope(String scopeId) {
+    scopes.addLast(new Scope(scopeId, scopes.isEmpty() ? null : scopes.getLast()));
     pushCvSlot(CV_SLOT);
   }
 
@@ -86,7 +86,7 @@ public class NodeFactory {
   }
 
   public CallTarget createCallTarget(ParseNode program) {
-    enterNewScope();
+    enterNewScope(null);
     StatementNode programBody = visitBlock(program.content());
     Scope scope = exitScope();
     return scope.createProgramRootNode(language, programBody);
@@ -110,7 +110,7 @@ public class NodeFactory {
       case ParseNode(String type, List<?> content) when type.equals("templates") -> {
         String name = (String) content.getLast();
         String templateType = (String) content.getFirst();
-        enterNewScope();
+        enterNewScope(name);
         visitTemplatesBody((ParseNode) content.get(1));
         Scope scope = exitScope();
         Templates templates = scope.getTemplates();
@@ -124,8 +124,8 @@ public class NodeFactory {
   }
 
   private StatementNode visitSetState(Object expr) {
-    currentScope().accessState();
     TailspinNode value;
+    String scopeId = null;
     switch (expr) {
       case ParseNode valueChain -> value = visitValueChain(valueChain);
       case List<?> l -> {
@@ -137,6 +137,7 @@ public class NodeFactory {
       }
       default -> throw new IllegalStateException("Unexpected value: " + expr);
     }
+    currentScope().accessState(scopeId);
     return WriteContextValueNode.create(0, STATE_SLOT, asSingleValueNode(value));
   }
 
@@ -200,7 +201,7 @@ public class NodeFactory {
     return switch(transform) {
       case ParseNode(String name, ParseNode source) when name.equals("source") -> asTransformNode(visitSource(source));
       case ParseNode(String name, ParseNode body) when name.equals("inline-templates-call") -> {
-        enterNewScope();
+        enterNewScope(null);
         visitTemplatesBody(body);
         Scope scope = exitScope();
         Templates templates = scope.getTemplates();
@@ -400,7 +401,12 @@ public class NodeFactory {
       }
       case List<?> l when l.getFirst().equals("$") && l.get(1).equals("@") -> {
         predicate = l.subList(2, l.size());
-        yield ReadContextValueNode.create(currentScope().accessState(), STATE_SLOT);
+        String scopeId = null;
+        if (!predicate.isEmpty() && predicate.getFirst() instanceof ParseNode(String ignored, String identifier)) {
+          scopeId = identifier;
+          predicate = predicate.subList(1, predicate.size());
+        }
+        yield ReadContextValueNode.create(currentScope().accessState(scopeId), STATE_SLOT);
       }
       case List<?> l when l.getFirst().equals("$") -> {
         predicate = l.subList(1, l.size());
