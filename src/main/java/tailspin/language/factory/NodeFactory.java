@@ -126,19 +126,27 @@ public class NodeFactory {
   private StatementNode visitSetState(Object expr) {
     TailspinNode value;
     String scopeId = null;
+    int stateLevel;
     switch (expr) {
-      case ParseNode valueChain -> value = visitValueChain(valueChain);
+      case ParseNode valueChain -> {
+        value = visitValueChain(valueChain);
+        stateLevel = currentScope().accessState(scopeId);
+      }
       case List<?> l -> {
         value = visitValueChain((ParseNode) l.getLast());
-        ValueNode receiver = ReadContextValueNode.create(0, STATE_SLOT);
+        if (l.getFirst() instanceof ParseNode(String type, String identifier) && type.equals("ID")) {
+          scopeId = identifier;
+          l = l.subList(1, l.size());
+        }
+        stateLevel = currentScope().accessState(scopeId);
+        ValueNode receiver = ReadContextValueNode.create(stateLevel, STATE_SLOT);
         if (l.getFirst() instanceof ParseNode(String type, ParseNode lensExpr) && type.equals("lens-expression")) {
           value = visitWriteLensExpression(receiver, lensExpr, value);
         }
       }
       default -> throw new IllegalStateException("Unexpected value: " + expr);
     }
-    currentScope().accessState(scopeId);
-    return WriteContextValueNode.create(0, STATE_SLOT, asSingleValueNode(value));
+    return WriteContextValueNode.create(stateLevel, STATE_SLOT, asSingleValueNode(value));
   }
 
   private ValueNode visitWriteLensExpression(ValueNode receiver, Object lensExpression, TailspinNode value) {

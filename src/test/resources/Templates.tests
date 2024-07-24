@@ -110,3 +110,14 @@ end outer
 
 4 -> outer !
 =5
+---write state to outer templates
+outer templates
+  $ -> templates
+    @outer set $ + 1;
+    $ + 2!
+  end
+  -> $ * $@ !
+end outer
+
+1 -> outer !
+=6
