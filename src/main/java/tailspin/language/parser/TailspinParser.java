@@ -18,10 +18,11 @@ public class TailspinParser {
   static final String tailspinSyntax = """
      program rule (<|WS>?) <|statement>+ (<|WS>?)
      
-     statement rule <|emit|definition|set-state|templates> (<|WS>?)
+     statement rule <|emit|definition|set-state|templates|sink> (<|WS>?)
      emit rule <|value-chain> (<|WS>? <|='!'>)
      definition rule <|ID> (<|WS> <|='is'> <|WS>) <|value-chain> (<|=';'> <|WS>?)
      set-state rule (<|='@'>) <|ID>? <|lens-expression>? (<|WS>? <|='set'> <|WS>?) <|value-chain> (<|=';'> <|WS>?)
+     sink rule <|value-chain> (<|WS>? <|='->'> <|WS>? <|='!'> <|WS>?) <|='VOID'>
      
      value-chain rule <|source> <|transform>*
      source rule <|arithmetic-expression|reference|single-value-chain|array-literal> (<|WS>?)

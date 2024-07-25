@@ -17,3 +17,7 @@
 foo is 1;
 $foo + 2 !
 =3
+---sink to void
+1 + 2 -> ! VOID
+1 !
+=1

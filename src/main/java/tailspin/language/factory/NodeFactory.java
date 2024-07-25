@@ -40,6 +40,7 @@ import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
+import tailspin.language.nodes.transform.SinkNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
 import tailspin.language.nodes.value.VoidValue;
@@ -119,6 +120,21 @@ public class NodeFactory {
         currentScope().registerTemplates(name, templates);
         yield DoNothingNode.create();
       }
+      case ParseNode(String type, List<?> sinkChain) when type.equals("sink") -> {
+        ParseNode valueChain = (ParseNode) sinkChain.getFirst();
+        ArrayList<Object> transforms = new ArrayList<>();
+        if (valueChain.content() instanceof List<?> l) {
+          transforms.addAll(l);
+        } else {
+          transforms.add(valueChain.content());
+        }
+        if (sinkChain.getLast().equals("VOID")) {
+          transforms.addLast("VOID");
+        } else {
+          throw new IllegalStateException("Unexpected value: " + sinkChain.getLast());
+        }
+        yield SinkNode.create(asTransformNode(visitValueChain(new ParseNode(valueChain.name(), transforms))));
+      }
       default -> throw new IllegalStateException("Unexpected value: " + statement);
     };
   }
@@ -179,6 +195,7 @@ public class NodeFactory {
       for (Object stage : chain.subList(1, chain.size())) {
         TransformNode stageNode = switch (stage) {
           case ParseNode(String name, Object transform) when name.equals("transform") -> visitTransform(transform);
+          case String v when v.equals("VOID") -> asTransformNode(VoidValue.create());
           default -> throw new IllegalStateException("Unexpected value: " + stage);
         };
         stages.add(stageNode);
