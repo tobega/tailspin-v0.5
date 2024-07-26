@@ -132,6 +132,10 @@ public class NodeFactory {
           transforms.addLast("VOID");
         } else if (sinkChain.getLast().equals("#")) {
           transforms.addLast(new ParseNode("transform", "#"));
+        } else if (sinkChain.getLast() instanceof ParseNode(String call, ParseNode id) && call.equals("templates-call")) {
+          Templates sink = currentScope().findTemplates(id.content().toString());
+          if (!sink.getType().equals("sink")) throw new IllegalStateException("Can only sink to sink " + id.content());
+          transforms.addLast(new ParseNode("transform", sinkChain.getLast()));
         } else {
           throw new IllegalStateException("Unexpected value: " + sinkChain.getLast());
         }

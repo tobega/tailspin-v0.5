@@ -129,3 +129,14 @@ end outer
   otherwise @ set $;
 end !
 =3
+---sink templates
+foo templates
+  bar sink
+    @foo set $ + 1;
+  end bar
+  $ -> ! bar
+  $@ !
+end foo
+
+3 -> foo !
+=4

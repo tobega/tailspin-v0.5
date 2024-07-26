@@ -22,7 +22,7 @@ public class TailspinParser {
      emit rule <|value-chain> (<|WS>? <|='!'>)
      definition rule <|ID> (<|WS> <|='is'> <|WS>) <|value-chain> (<|=';'> <|WS>?)
      set-state rule (<|='@'>) <|ID>? <|lens-expression>? (<|WS>? <|='set'> <|WS>?) <|value-chain> (<|=';'> <|WS>?)
-     sink rule <|value-chain> (<|WS>? <|='->'> <|WS>? <|='!'> <|WS>?) <|='VOID'|='#'>
+     sink rule <|value-chain> (<|WS>? <|='->'> <|WS>? <|='!'> <|WS>?) <|='VOID'|='#'|templates-call>
      
      value-chain rule <|source> <|transform>*
      source rule <|arithmetic-expression|reference|single-value-chain|array-literal> (<|WS>?)
@@ -40,7 +40,7 @@ public class TailspinParser {
      transform rule (<|='->'> <|WS>?) <|source|inline-templates-call|='#'|templates-call> (<|WS>?)
      templates-call rule <|ID>
      inline-templates-call rule (<|='templates'> <|WS>) <|templates-body>  (<|='end'> <|WS>?)
-     templates rule (name is <|ID>; <|WS>) <|='templates'|='source'> (<|WS>) <|templates-body>  (<|='end'> <|WS>) <|=$name>
+     templates rule (name is <|ID>; <|WS>) <|='templates'|='source'|='sink'> (<|WS>) <|templates-body>  (<|='end'> <|WS>) <|=$name>
      
      templates-body rule <|with-block|matchers>
      with-block rule <|statement>+ <|matchers>?
