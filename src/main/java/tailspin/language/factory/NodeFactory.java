@@ -130,6 +130,8 @@ public class NodeFactory {
         }
         if (sinkChain.getLast().equals("VOID")) {
           transforms.addLast("VOID");
+        } else if (sinkChain.getLast().equals("#")) {
+          transforms.addLast(new ParseNode("transform", "#"));
         } else {
           throw new IllegalStateException("Unexpected value: " + sinkChain.getLast());
         }

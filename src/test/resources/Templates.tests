@@ -121,3 +121,11 @@ end outer
 
 1 -> outer !
 =6
+---sink matchers
+3 -> templates
+  @ set 0;
+  $ -> ! #
+  $@ !
+  otherwise @ set $;
+end !
+=3

@@ -22,7 +22,7 @@ public class TailspinParser {
      emit rule <|value-chain> (<|WS>? <|='!'>)
      definition rule <|ID> (<|WS> <|='is'> <|WS>) <|value-chain> (<|=';'> <|WS>?)
      set-state rule (<|='@'>) <|ID>? <|lens-expression>? (<|WS>? <|='set'> <|WS>?) <|value-chain> (<|=';'> <|WS>?)
-     sink rule <|value-chain> (<|WS>? <|='->'> <|WS>? <|='!'> <|WS>?) <|='VOID'>
+     sink rule <|value-chain> (<|WS>? <|='->'> <|WS>? <|='!'> <|WS>?) <|='VOID'|='#'>
      
      value-chain rule <|source> <|transform>*
      source rule <|arithmetic-expression|reference|single-value-chain|array-literal> (<|WS>?)
