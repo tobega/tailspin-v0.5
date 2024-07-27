@@ -1,0 +1,24 @@
+---range to matchers
+3 -> templates
+  @ set 0;
+  1..$ -> ! #
+  $@ !
+  otherwise @ set $@ + $;
+end !
+=6
+---backwards range to matchers
+3 -> templates
+  @ set 0;
+  $..1:-1 -> ! #
+  $@ !
+  otherwise @ set $@ + $;
+end !
+=6
+--- double range to matchers
+3 -> templates
+  @ set 0;
+  1..$ -> 1..$ -> ! #
+  $@ !
+  otherwise @ set $@ + $;
+end !
+=10

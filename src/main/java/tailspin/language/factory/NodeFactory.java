@@ -18,6 +18,7 @@ import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.array.ArrayReadNode;
 import tailspin.language.nodes.array.ArrayWriteNode;
 import tailspin.language.nodes.iterate.ChainNode;
+import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AllOfNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
@@ -196,15 +197,33 @@ public class NodeFactory {
         && chain.getFirst() instanceof ParseNode(String firstName, ParseNode source) && firstName.equals("source")) {
       ChainSlots chainSlots = currentScope().newChainSlots();
       List<TransformNode> stages = new ArrayList<>();
-      stages.add(asTransformNode(visitSource(source)));
-      pushCvSlot(chainSlots.cv());
-      for (Object stage : chain.subList(1, chain.size())) {
-        TransformNode stageNode = switch (stage) {
+      RangeIteration pendingIteration = null;
+      for (Object stage : chain) {
+        TailspinNode stageNode = switch (stage) {
           case ParseNode(String name, Object transform) when name.equals("transform") -> visitTransform(transform);
-          case String v when v.equals("VOID") -> asTransformNode(VoidValue.create());
+          case ParseNode(String name, ParseNode transform) when name.equals("source") -> visitSource(transform);
+          case String v when v.equals("VOID") -> VoidValue.create();
           default -> throw new IllegalStateException("Unexpected value: " + stage);
         };
-        stages.add(stageNode);
+        if (stages.isEmpty()) { // after the first
+          pushCvSlot(chainSlots.cv());
+        }
+        if (pendingIteration != null) {
+          pendingIteration.setStage(currentValueSlot(), asTransformNode(stageNode));
+          popCvSlot();
+          if (stageNode instanceof RangeIteration r) {
+            pendingIteration = r;
+            pushCvSlot(currentScope().newTempSlot());
+          } else {
+            pendingIteration = null;
+          }
+        } else if (stageNode instanceof RangeIteration r) {
+          stages.add(r);
+          pendingIteration = r;
+          pushCvSlot(currentScope().newTempSlot());
+        } else {
+          stages.add(asTransformNode(stageNode));
+        }
       }
       popCvSlot();
       return ChainNode.create(chainSlots.values(), chainSlots.cv(), chainSlots.result(), stages);
@@ -383,8 +402,37 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
       case ParseNode(String name, ParseNode vc) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc));
       case ParseNode(String name, Object contents) when name.equals("array-literal") -> visitArrayLiteral(contents);
+      case ParseNode(String name, List<?> bounds) when name.equals("range") -> visitRange(bounds);
       default -> throw new IllegalStateException("Unexpected value: " + source);
     };
+  }
+
+  private RangeIteration visitRange(List<?> bounds) {
+    ValueNode start = asSingleValueNode(visitSource(
+        (ParseNode) ((ParseNode) bounds.getFirst()).content()));
+    boolean inclusiveStart = true;
+    int index = 1;
+    if (bounds.get(index).equals("~")) {
+      inclusiveStart = false;
+      index++;
+    }
+    index++; // skip dots
+    boolean inclusiveEnd = true;
+    if (bounds.get(index).equals("~")) {
+      inclusiveEnd = false;
+      index++;
+    }
+    ValueNode end = asSingleValueNode(visitSource(
+        (ParseNode) ((ParseNode) bounds.get(index)).content()));
+    index++;
+    ValueNode stride;
+    if (index < bounds.size()) {
+      stride = asSingleValueNode(visitSource((ParseNode) (
+          (ParseNode) ((ParseNode) bounds.get(index)).content()).content()));
+    } else {
+      stride = IntegerLiteral.create(1L);
+    }
+    return RangeIteration.create(start, end, stride);
   }
 
   private ValueNode visitArrayLiteral(Object contents) {

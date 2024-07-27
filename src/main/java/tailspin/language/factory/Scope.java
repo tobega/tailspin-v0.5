@@ -32,6 +32,10 @@ public class Scope {
     return ChainSlots.on(rootFdb);
   }
 
+  public int newTempSlot() {
+    return  rootFdb.addSlot(FrameSlotKind.Illegal, null, null);
+  }
+
   StatementNode block;
   Builder blockRootFdb;
   public void setBlock(StatementNode blockNode) {

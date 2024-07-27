@@ -24,7 +24,7 @@ public abstract class RangeIteration extends TransformNode {
   @Child
   private LoopNode loop;
 
-  protected RangeIteration(int rangeCvSlot, TransformNode stage) {
+  public void setStage(int rangeCvSlot, TransformNode stage) {
     repeatingNode = new RangeRepeatingNode(rangeCvSlot, stage);
     loop = Truffle.getRuntime().createLoopNode(repeatingNode);
   }
@@ -36,7 +36,13 @@ public abstract class RangeIteration extends TransformNode {
   }
 
   public static RangeIteration create(int rangeCvSlot, TransformNode stage, ValueNode start, ValueNode end, ValueNode increment) {
-    return RangeIterationNodeGen.create(rangeCvSlot, stage, start, end, increment);
+    RangeIteration created = RangeIterationNodeGen.create(start, end, increment);
+    created.setStage(rangeCvSlot, stage);
+    return created;
+  }
+
+  public static RangeIteration create(ValueNode start, ValueNode end, ValueNode increment) {
+    return RangeIterationNodeGen.create(start, end, increment);
   }
 
   @Specialization

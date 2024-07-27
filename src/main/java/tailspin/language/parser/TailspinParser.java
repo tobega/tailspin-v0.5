@@ -25,9 +25,11 @@ public class TailspinParser {
      sink rule <|value-chain> (<|WS>? <|='->'> <|WS>? <|='!'> <|WS>?) <|='VOID'|='#'|templates-call>
      
      value-chain rule <|source> <|transform>*
-     source rule <|arithmetic-expression|reference|single-value-chain|array-literal> (<|WS>?)
+     source rule <|arithmetic-expression|reference|single-value-chain|array-literal|range> (<|WS>?)
      reference rule <|='$'> <|='@'>? <|ID>? <|lens-expression>? <|message-send>?
      single-value-chain rule (<|='('> <|WS>?) <|value-chain> (<|WS>? <|=')'>)
+     range rule <|range-bound> <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound> <|stride>?
+     stride rule (<|=':'> <|WS>?) <|range-bound> (<|WS>?)
      
      lens-expression rule (<|='('> <|WS>?) <|source> (<|=')'>)
      
