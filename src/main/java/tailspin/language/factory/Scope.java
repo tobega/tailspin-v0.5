@@ -137,6 +137,9 @@ public class Scope {
   }
 
   public Templates findTemplates(String name) {
+    if (block != null) {
+      matcherTemplates.setNeedsScope();
+    }
     if (definitions.containsKey(name)) return (Templates) definitions.get(name);
     else return parent.findTemplates(name);
   }

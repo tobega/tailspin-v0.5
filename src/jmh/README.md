@@ -52,3 +52,16 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 |PascalBenchmark.triangle_java              |avgt    |5  |12,024 |± 0,415  |us/op|
 |PascalBenchmark.triangle_tailspin          |avgt    |5  |19,085 |± 0,239  |us/op|
 |PascalBenchmark.triangle_tailspin_nodes    |avgt    |5  |18,932 |± 0,383  |us/op|
+
+2024-07-27 Running bubblesort from tailspin source. Range iteration now working as expected!
+|Benchmark                                        |Mode  |Cnt  | Score |  Error  |Units|
+|--------------------------------------------|------|-----|-------|---------|-----|
+|BubblesortBenchmark.sort_java                    |avgt  |  5  |19,685 |± 0,366  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate        |avgt  |  5  |34,536 |± 0,444  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate_nodes  |avgt  |  5  |42,123 |± 0,725  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse        |avgt  |  5  |39,349 |± 0,452  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse_nodes  |avgt  |  5  |39,318 |± 0,579  |us/op|
+|FibonacciBenchmark.recursive_java                |avgt  |  5  |36,193 |± 0,172  |us/op|
+|FibonacciBenchmark.recursive_tailspin            |avgt  |  5  |56,488 |± 1,288  |us/op|
+|PascalBenchmark.triangle_java                    |avgt  |  5  |14,126 |± 0,305  |us/op|
+|PascalBenchmark.triangle_tailspin                |avgt  |  5  |19,217 |± 0,238  |us/op|

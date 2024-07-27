@@ -140,3 +140,14 @@ end foo
 
 3 -> foo !
 =4
+---access defined templates needing scope from matcher
+bar templates
+  @ set 1;
+  foo templates
+    $ + $@bar !
+  end foo
+  $ -> #!
+  otherwise $ -> foo !
+end bar
+5 -> bar!
+=6
