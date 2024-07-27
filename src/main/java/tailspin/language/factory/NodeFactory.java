@@ -192,9 +192,14 @@ public class NodeFactory {
   private TailspinNode visitValueChain(ParseNode valueChain) {
     if (!valueChain.name().equals("value-chain")) throw new IllegalStateException("Unexpected value: " + valueChain);
     if (valueChain.content() instanceof ParseNode(String name, ParseNode source) && name.equals("source")) {
-      return visitSource(source);
-    } else if (valueChain.content() instanceof List<?> chain
-        && chain.getFirst() instanceof ParseNode(String firstName, ParseNode source) && firstName.equals("source")) {
+      TailspinNode sourceNode = visitSource(source);
+      if (sourceNode instanceof RangeIteration r) {
+        pushCvSlot(currentScope().newTempSlot());
+        r.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())));
+        popCvSlot();
+      }
+      return sourceNode;
+    } else if (valueChain.content() instanceof List<?> chain) {
       ChainSlots chainSlots = currentScope().newChainSlots();
       List<TransformNode> stages = new ArrayList<>();
       RangeIteration pendingIteration = null;
@@ -224,6 +229,10 @@ public class NodeFactory {
         } else {
           stages.add(asTransformNode(stageNode));
         }
+      }
+      if (pendingIteration != null) {
+        pendingIteration.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())));
+        popCvSlot();
       }
       popCvSlot();
       return ChainNode.create(chainSlots.values(), chainSlots.cv(), chainSlots.result(), stages);
