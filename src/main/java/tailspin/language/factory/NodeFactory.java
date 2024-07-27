@@ -335,6 +335,7 @@ public class NodeFactory {
   }
 
   private MatcherNode visitAlternativeMembranes(Object membranes) {
+    membranes = normalizeValues(membranes);
     return switch (membranes) {
       case ParseNode(String m, ParseNode single) when m.equals("membrane") -> visitMembrane(single);
       default -> throw new IllegalStateException("Unexpected value: " + membranes);
@@ -342,16 +343,24 @@ public class NodeFactory {
   }
 
   private MatcherNode visitMembrane(Object membranes) {
-    List<MatcherNode> conjunction = switch (membranes) {
-      case ParseNode(String type, ParseNode typeMatch) when type.equals("type-match") -> visitTypeMatch(typeMatch);
+    List<MatcherNode> conjunction = new ArrayList<>();
+    switch (membranes) {
+      case ParseNode(String type, ParseNode typeMatch) when type.equals("type-match") -> conjunction.addAll(visitTypeMatch(typeMatch));
       case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
-          -> List.of(EqualityMatcherNode.create(asSingleValueNode(visitSource(value))));
+          -> conjunction.add(EqualityMatcherNode.create(asSingleValueNode(visitSource(value))));
+      case ParseNode(String type, List<?> condition) when type.equals("condition") -> conjunction.add(visitCondition(condition));
       default -> throw new IllegalStateException("Unexpected value: " + membranes);
-    };
+    }
     if (conjunction.size() == 1) {
       return conjunction.getFirst();
     }
     return AllOfNode.create(conjunction);
+  }
+
+  private MatcherNode visitCondition(List<?> condition) {
+    ValueNode toMatch = asSingleValueNode(visitValueChain((ParseNode) condition.getFirst()));
+    MatcherNode matcher = visitAlternativeMembranes(condition.subList(1, condition.size()));
+    return ConditionNode.create(toMatch, matcher);
   }
 
   private List<MatcherNode> visitTypeMatch(ParseNode typeMatch) {

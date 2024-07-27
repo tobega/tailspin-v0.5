@@ -1,0 +1,6 @@
+---condition
+foo is 3;
+1 -> templates
+  when <|?($foo <|2..>)> do 2 !
+end !
+=2

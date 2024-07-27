@@ -51,13 +51,14 @@ public class TailspinParser {
      match-template rule <|when-do|otherwise> <|statement>+
      otherwise rule <|='otherwise'> (<|WS>?)
      when-do rule (<|='when'> <|WS>? <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|='do'> <|WS>?)
-     membrane rule (<|='|'>) <|literal-match|type-match> (<|WS>?)
+     membrane rule (<|='|'>) <|literal-match|type-match>? (<|WS>?) <|condition>*
      literal-match rule (<|='='> <|WS>?) <|source>
      type-match rule <|range-match|array-match>
      range-match rule <|range-bound>? <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound>?
      range-bound rule <|arithmetic-expression|reference>
      array-match rule <|='['> (<|WS>?) (<|=']'> <|WS>?) <|array-length-condition>?
      array-length-condition rule (<|='('> <|WS>?) <|literal-match|range-match> (<|WS>? <|=')'> <|WS>?)
+     condition rule (<|='?('> <|WS>?) <|value-chain> (<|WS>? <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|=')'> <|WS>?)
      
      arithmetic-expression rule <|addition|multiplication|numeric-literal>
      addition rule <|addition|multiplication|term> <|'[+-]'> (<|WS>?) <|multiplication|term> (<|WS>?)
