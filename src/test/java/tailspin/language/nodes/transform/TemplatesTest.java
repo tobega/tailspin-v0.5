@@ -84,7 +84,8 @@ public class TemplatesTest {
     // [100..1:-1
     RangeIteration backwards = RangeIteration.create(rangeSlot,
         CallDefinedTemplatesNode.create(ReadContextValueNode.create(-1, rangeSlot), ReadContextValueNode.create(0, flatMapSlot)),
-        IntegerLiteral.create(100L), IntegerLiteral.create(1L), IntegerLiteral.create(-1L));
+        IntegerLiteral.create(100L), true, IntegerLiteral.create(1L), IntegerLiteral.create(-1L),
+        true);
 
     // -> \($! 100 - $!\)
     BlockNode flatMapBlock = BlockNode.create(List.of(

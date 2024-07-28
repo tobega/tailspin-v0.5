@@ -24,8 +24,16 @@ public abstract class RangeIteration extends TransformNode {
   @Child
   private LoopNode loop;
 
+  private final boolean inclusiveStart;
+  private final boolean inclusiveEnd;
+
+  protected RangeIteration(boolean inclusiveStart, boolean inclusiveEnd) {
+    this.inclusiveStart = inclusiveStart;
+    this.inclusiveEnd = inclusiveEnd;
+  }
+
   public void setStage(int rangeCvSlot, TransformNode stage) {
-    repeatingNode = new RangeRepeatingNode(rangeCvSlot, stage);
+    repeatingNode = new RangeRepeatingNode(rangeCvSlot, stage, inclusiveStart, inclusiveEnd);
     loop = Truffle.getRuntime().createLoopNode(repeatingNode);
   }
 
@@ -35,14 +43,15 @@ public abstract class RangeIteration extends TransformNode {
     repeatingNode.setResultSlot(resultSlot);
   }
 
-  public static RangeIteration create(int rangeCvSlot, TransformNode stage, ValueNode start, ValueNode end, ValueNode increment) {
-    RangeIteration created = RangeIterationNodeGen.create(start, end, increment);
+  public static RangeIteration create(int rangeCvSlot, TransformNode stage, ValueNode start,
+      boolean inclusiveStart, ValueNode end, ValueNode increment, boolean inclusiveEnd) {
+    RangeIteration created = RangeIterationNodeGen.create(inclusiveStart, inclusiveEnd, start, end, increment);
     created.setStage(rangeCvSlot, stage);
     return created;
   }
 
-  public static RangeIteration create(ValueNode start, ValueNode end, ValueNode increment) {
-    return RangeIterationNodeGen.create(start, end, increment);
+  public static RangeIteration create(ValueNode start, boolean inclusiveStart, ValueNode end, boolean inclusiveEnd, ValueNode increment) {
+    return RangeIterationNodeGen.create(inclusiveStart, inclusiveEnd, start, end, increment);
   }
 
   @Specialization
@@ -56,7 +65,7 @@ public abstract class RangeIteration extends TransformNode {
     throw new UnsupportedOperationException(String.format("No range iterator for %s %s %s", start.getClass().getName(), end.getClass().getName(), increment.getClass().getName()));
   }
 
-  public static class RangeRepeatingNode extends Node implements RepeatingNode {
+  static class RangeRepeatingNode extends Node implements RepeatingNode {
     @SuppressWarnings("FieldMayBeFinal")
     @Child
     private RangeIteratorNode iterator;
@@ -69,13 +78,14 @@ public abstract class RangeIteration extends TransformNode {
     @Child
     TransformNode stage;
 
-    public RangeRepeatingNode(int rangeCvSlot, TransformNode stage) {
-      iterator = RangeIteratorNode.create();
+    RangeRepeatingNode(int rangeCvSlot, TransformNode stage, boolean inclusiveStart,
+        boolean inclusiveEnd) {
+      iterator = RangeIteratorNode.create(inclusiveStart, inclusiveEnd);
       setCurrentValue = SetChainCvNode.create(rangeCvSlot);
       this.stage = stage;
     }
 
-    public void initialize(long start, long end, long increment) {
+    void initialize(long start, long end, long increment) {
       this.iterator.initialize(start, end, increment);
     }
 
@@ -90,7 +100,7 @@ public abstract class RangeIteration extends TransformNode {
       return true;
     }
 
-    public void setResultSlot(int resultSlot) {
+    void setResultSlot(int resultSlot) {
       stage.setResultSlot(resultSlot);
     }
   }
@@ -100,19 +110,27 @@ public abstract class RangeIteration extends TransformNode {
     long end;
     long increment;
 
+    final boolean inclusiveStart;
+    final boolean inclusiveEnd;
+
+    RangeIteratorNode(boolean inclusiveStart, boolean inclusiveEnd) {
+      this.inclusiveStart = inclusiveStart;
+      this.inclusiveEnd = inclusiveEnd;
+    }
+
     public abstract Object execute(VirtualFrame frame);
 
     final CountingConditionProfile doneProfile = CountingConditionProfile.create();
 
     public void initialize(long start, long end, long increment) {
-      current = start;
+      current = start + (inclusiveStart ? 0 : increment);
       this.end = end;
       this.increment = increment;
     }
 
     @Specialization(guards = "increment > 0")
     long doIncreasingLong() {
-      if (doneProfile.profile(current > end)) {
+      if (doneProfile.profile(current > end || (!inclusiveEnd && current == end))) {
         throw new EndOfStreamException();
       }
       long result = current;
@@ -130,8 +148,8 @@ public abstract class RangeIteration extends TransformNode {
       return result;
     }
 
-    public static RangeIteratorNode create() {
-      return RangeIteratorNodeGen.create();
+    public static RangeIteratorNode create(boolean inclusiveStart, boolean inclusiveEnd) {
+      return RangeIteratorNodeGen.create(inclusiveStart, inclusiveEnd);
     }
   }
 }

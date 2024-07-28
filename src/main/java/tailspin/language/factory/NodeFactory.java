@@ -472,7 +472,7 @@ public class NodeFactory {
     } else {
       stride = IntegerLiteral.create(1L);
     }
-    return RangeIteration.create(start, end, stride);
+    return RangeIteration.create(start, inclusiveStart, end, inclusiveEnd, stride);
   }
 
   private ValueNode visitArrayLiteral(Object contents) {

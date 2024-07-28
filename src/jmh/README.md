@@ -65,3 +65,14 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 |FibonacciBenchmark.recursive_tailspin            |avgt  |  5  |56,488 |± 1,288  |us/op|
 |PascalBenchmark.triangle_java                    |avgt  |  5  |14,126 |± 0,305  |us/op|
 |PascalBenchmark.triangle_tailspin                |avgt  |  5  |19,217 |± 0,238  |us/op|
+
+2024-07-28 Exclusive range ends, and alternative matchers and several conditions changed nothing
+|Benchmark                                  |Mode  |Cnt  | Score |  Error  |Units|
+|-------------------------------------------|------|-----|-------|---------|-----|
+|BubblesortBenchmark.sort_java              |avgt  |  5  |19,680 |± 0,257  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate  |avgt  |  5  |34,431 |± 0,548  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse  |avgt  |  5  |40,209 |± 1,391  |us/op|
+|FibonacciBenchmark.recursive_java          |avgt  |  5  |36,228 |± 0,246  |us/op|
+|FibonacciBenchmark.recursive_tailspin      |avgt  |  5  |56,710 |± 0,575  |us/op|
+|PascalBenchmark.triangle_java              |avgt  |  5  |11,848 |± 0,231  |us/op|
+|PascalBenchmark.triangle_tailspin          |avgt  |  5  |19,411 |± 1,143  |us/op|
