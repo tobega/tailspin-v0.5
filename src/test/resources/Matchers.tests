@@ -4,3 +4,39 @@ foo is 3;
   when <|?($foo <|2..>)> do 2 !
 end !
 =2
+---condition false
+foo is 3;
+1 -> templates
+  when <|?($foo <|4..>)> do 4 !
+  otherwise 2 !
+end !
+=2
+---type and condition
+foo is 3;
+1 -> templates
+  when <|..1?($foo <|2..>)> do 2 !
+end !
+=2
+---type and condition false
+foo is 3;
+1 -> templates
+  when <|..1?($foo <|4..>)> do 4 !
+  otherwise 2 !
+end !
+=2
+---type and multiple condition
+foo is 3;
+bar is 5;
+1 -> templates
+  when <|..1?($foo <|2..>)?($bar <|..6>)> do 2 !
+end !
+=2
+---type and condition false
+foo is 3;
+bar is 5;
+1 -> templates
+  when <|..1?($foo <|4..>)?($bar <|..6>)> do 4 !
+  when <|..1?($foo <|2..>)?($bar <|..3>)> do 3 !
+  otherwise 2 !
+end !
+=2

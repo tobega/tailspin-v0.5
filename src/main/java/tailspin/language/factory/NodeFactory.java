@@ -337,19 +337,27 @@ public class NodeFactory {
   private MatcherNode visitAlternativeMembranes(Object membranes) {
     membranes = normalizeValues(membranes);
     return switch (membranes) {
-      case ParseNode(String m, ParseNode single) when m.equals("membrane") -> visitMembrane(single);
+      case ParseNode(String m, Object conditions) when m.equals("membrane") -> visitMembrane(conditions);
       default -> throw new IllegalStateException("Unexpected value: " + membranes);
     };
   }
 
-  private MatcherNode visitMembrane(Object membranes) {
+  private MatcherNode visitMembrane(Object conditions) {
     List<MatcherNode> conjunction = new ArrayList<>();
-    switch (membranes) {
-      case ParseNode(String type, ParseNode typeMatch) when type.equals("type-match") -> conjunction.addAll(visitTypeMatch(typeMatch));
-      case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
-          -> conjunction.add(EqualityMatcherNode.create(asSingleValueNode(visitSource(value))));
-      case ParseNode(String type, List<?> condition) when type.equals("condition") -> conjunction.add(visitCondition(condition));
-      default -> throw new IllegalStateException("Unexpected value: " + membranes);
+    List<?> conditionSpecs;
+    if (conditions instanceof List<?> l) {
+      conditionSpecs = l;
+    } else {
+      conditionSpecs = List.of(conditions);
+    }
+    for (Object conditionSpec : conditionSpecs) {
+      switch (conditionSpec) {
+        case ParseNode(String type, ParseNode typeMatch) when type.equals("type-match") -> conjunction.addAll(visitTypeMatch(typeMatch));
+        case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
+            -> conjunction.add(EqualityMatcherNode.create(asSingleValueNode(visitSource(value))));
+        case ParseNode(String type, List<?> condition) when type.equals("condition") -> conjunction.add(visitCondition(condition));
+        default -> throw new IllegalStateException("Unexpected value: " + conditionSpec);
+      }
     }
     if (conjunction.size() == 1) {
       return conjunction.getFirst();
