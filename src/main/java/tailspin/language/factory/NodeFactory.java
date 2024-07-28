@@ -22,6 +22,7 @@ import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.matchers.AllOfNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
+import tailspin.language.nodes.matchers.AnyOfNode;
 import tailspin.language.nodes.matchers.ArrayTypeMatcherNode;
 import tailspin.language.nodes.matchers.ConditionNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNode;
@@ -335,11 +336,24 @@ public class NodeFactory {
   }
 
   private MatcherNode visitAlternativeMembranes(Object membranes) {
-    membranes = normalizeValues(membranes);
-    return switch (membranes) {
-      case ParseNode(String m, Object conditions) when m.equals("membrane") -> visitMembrane(conditions);
-      default -> throw new IllegalStateException("Unexpected value: " + membranes);
-    };
+    List<MatcherNode> alternatives = new ArrayList<>();
+    List<?> membraneSpecs;
+    if (membranes instanceof List<?> l) {
+      membraneSpecs = l;
+    } else {
+      membraneSpecs = List.of(membranes);
+    }
+    for (Object membraneSpec : membraneSpecs) {
+      if (membraneSpec instanceof ParseNode(String m, Object conditions) && m.equals("membrane")) {
+        alternatives.add(visitMembrane(conditions));
+      } else {
+        throw new IllegalStateException("Unknown membrane " + membraneSpec);
+      }
+    }
+    if (alternatives.size() == 1) {
+      return alternatives.getFirst();
+    }
+    return AnyOfNode.create(alternatives);
   }
 
   private MatcherNode visitMembrane(Object conditions) {

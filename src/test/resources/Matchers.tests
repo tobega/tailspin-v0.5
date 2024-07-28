@@ -40,3 +40,14 @@ bar is 5;
   otherwise 2 !
 end !
 =2
+---alternative conditions
+1 -> templates
+  when <|2..|..3> do 2 !
+end !
+=2
+---alternative conditions false
+1 -> templates
+  when <|2..|..0> do 0 !
+  otherwise 2 !
+end !
+=2
