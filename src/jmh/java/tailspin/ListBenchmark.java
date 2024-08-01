@@ -13,9 +13,9 @@ public class ListBenchmark extends TruffleBenchmark {
       end makeList
 
       isShorterThan templates
-        when <|{x: <|{next: <{}>}>, y: <|{next: <{}>}>}> do
+        when <|{x: <|{next: <|{}>}>, y: <|{next: <|{}>}>}> do
           { x: $(x:; next:), y: $(y:; next:) } -> #
-        when <|{y: <|{next: <{}>}>}> do 1 !
+        when <|{y: <|{next: <|{}>}>}> do 1 !
         otherwise 0 !
       end isShorterThan
 
@@ -29,7 +29,12 @@ public class ListBenchmark extends TruffleBenchmark {
           $(c:) !
       end tail
       
-      { a: 15 -> makeList, b: 10 -> makeList, c: 6 -> makeList } -> tail -> $::length !
+      length templates
+        when <|{ next: <|{}>}> do 1 + ($(next:) -> #) !
+        otherwise 1 !
+      end length
+      
+      { a: 15 -> makeList, b: 10 -> makeList, c: 6 -> makeList } -> tail -> length !
       """;
 
 
@@ -42,10 +47,10 @@ public class ListBenchmark extends TruffleBenchmark {
   record Element(Object val, Element next){}
 
   int length(Element e) {
-    if (e.next == null) {
+    if (e.next() == null) {
       return 1;
     } else {
-      return 1 + length(e.next);
+      return 1 + length(e.next());
     }
   }
 
