@@ -21,4 +21,13 @@ public class StructureTest {
     Structure created = (Structure) TestUtil.evaluate(structureNode, fdb.build(), List.of());
     assertEquals("{ bar: 5, foo: 3 }", created.toDisplayString(false, DynamicObjectLibrary.getUncached()));
   }
+
+  @Test
+  void read() {
+    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    ValueNode structureNode = StructureLiteral.create(rootShape, List.of("foo", "bar"), List.of(IntegerLiteral.create(3L), IntegerLiteral.create(5L)));
+    ValueNode readNode = StructureReadNode.create(structureNode, "foo");
+    Long foo = (Long) TestUtil.evaluate(readNode, fdb.build(), List.of());
+    assertEquals(3, foo);
+  }
 }
