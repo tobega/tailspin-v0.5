@@ -57,13 +57,19 @@ public class TailspinParser {
      otherwise rule <|='otherwise'> (<|WS>?)
      when-do rule (<|='when'> <|WS>? <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|='do'> <|WS>?)
      membrane rule (<|='|'>) <|literal-match|type-match>? (<|WS>?) <|condition>*
+     condition rule (<|='?('> <|WS>?) <|value-chain> (<|='matches'> <|WS> <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|=')'> <|WS>?)
+
      literal-match rule (<|='='> <|WS>?) <|source>
-     type-match rule <|range-match|array-match>
+     type-match rule <|range-match|array-match|structure-match>
      range-match rule <|range-bound>? <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound>?
      range-bound rule <|arithmetic-expression|reference>
      array-match rule <|='['> (<|WS>?) (<|=']'> <|WS>?) <|array-length-condition>?
      array-length-condition rule (<|='('> <|WS>?) <|literal-match|range-match> (<|WS>? <|=')'> <|WS>?)
-     condition rule (<|='?('> <|WS>?) <|value-chain> (<|='matches'> <|WS> <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|=')'> <|WS>?)
+     structure-match rule <|='{'|key-matchers> (<|WS>? <|='}'> <|WS>?)
+     key-matchers rule (<|='{'> <|WS>?) <|key-matcher> <|additional-key-matcher>*
+     key-matcher rule <|ID> (<|WS>? <|=':'> <|WS>?) <|content-matcher>?
+     additional-key-matcher rule (<|=','> <|WS>?) <|key-matcher>
+     content-matcher rule (<|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>?)
      
      arithmetic-expression rule <|addition|multiplication|numeric-literal>
      addition rule <|addition|multiplication|term> <|'[+-]'> (<|WS>?) <|multiplication|term> (<|WS>?)

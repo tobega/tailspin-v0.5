@@ -29,6 +29,8 @@ import tailspin.language.nodes.matchers.ConditionNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNode;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
+import tailspin.language.nodes.matchers.StructureKeyMatcherNode;
+import tailspin.language.nodes.matchers.StructureTypeMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.BigIntegerLiteral;
 import tailspin.language.nodes.numeric.IntegerLiteral;
@@ -401,11 +403,41 @@ public class NodeFactory {
             conditionNodes.addLast(visitArrayLengthCondition(content));
             conditions = conditions.subList(0, conditions.size() - 1);
           }
+          if (!conditions.getFirst().equals("[")) throw new IllegalStateException("Unexpected array match: " + conditions.getFirst());
           if (conditions.size() > 1) throw new UnsupportedOperationException(conditions.toString());
+        } else if (!typeMatch.content().equals("[")) throw new IllegalStateException("Unexpected conditions: " + typeMatch.content());
+        yield conditionNodes;
+      }
+      case "structure-match" -> {
+        List<MatcherNode> conditionNodes = new ArrayList<>();
+        conditionNodes.addLast(StructureTypeMatcherNode.create());
+        List<Object> conditions;
+        if (typeMatch.content().equals("{")) conditions = List.of();
+        else if (typeMatch.content() instanceof ParseNode(String name, ParseNode keyMatcher) && name.equals("key-matchers")) {
+          conditions = List.of(keyMatcher.content());
+        } else if (typeMatch.content() instanceof ParseNode(String name, List<?> kms) && name.equals("key-matchers")) {
+          conditions = new ArrayList<>();
+          conditions.add(((ParseNode) kms.getFirst()).content());
+          for (Object akm : kms.subList(1, kms.size())) {
+            Object km = ((ParseNode) akm).content();
+            conditions.add(((ParseNode) km).content());
+          }
+        } else throw new IllegalStateException("Unexpected conditions: " + typeMatch.content());
+        for (Object condition : conditions) {
+          switch (condition) {
+            case ParseNode(String ignored, String key) -> conditionNodes.addLast(
+                StructureKeyMatcherNode.create(key, AlwaysTrueMatcherNode.create()));
+            case List<?> km -> {
+              String key = (String) ((ParseNode) km.getFirst()).content();
+              MatcherNode matcher = visitAlternativeMembranes(((ParseNode) km.getLast()).content());
+              conditionNodes.addLast(StructureKeyMatcherNode.create(key, matcher));
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + condition);
+          }
         }
         yield conditionNodes;
       }
-      default -> throw new IllegalStateException("Unexpected value: " + typeMatch.name());
+      default -> throw new IllegalStateException("Unexpected value: " + typeMatch);
     };
   }
 
