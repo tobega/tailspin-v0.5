@@ -31,7 +31,8 @@ public class TailspinParser {
      range rule <|range-bound> <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound> <|stride>?
      stride rule (<|=':'> <|WS>?) <|range-bound> (<|WS>?)
      
-     lens-expression rule (<|='('> <|WS>?) <|source> (<|=')'>)
+     lens-expression rule (<|='('> <|WS>?) <|source|key> (<|=')'>)
+     key rule <|ID> (<|=':'> <|WS>?)
      
      message-send rule (<|='::'>) <|ID>
 
@@ -41,7 +42,7 @@ public class TailspinParser {
      
      structure-literal rule <|='{'|key-values> (<|WS>? <|='}'> <|WS>?)
      key-values rule (<|='{'> <|WS>?) <|key-value> <|additional-key-value>*
-     key-value rule <|ID> (<|WS>? <|=':'> <|WS>?) <|value-chain>
+     key-value rule <|ID> (<|=':'> <|WS>?) <|value-chain>
      additional-key-value rule (<|=','> <|WS>?) <|key-value>
 
      transform rule (<|='->'> <|WS>?) <|source|inline-templates-call|='#'|templates-call> (<|WS>?)
@@ -67,7 +68,7 @@ public class TailspinParser {
      array-length-condition rule (<|='('> <|WS>?) <|literal-match|range-match> (<|WS>? <|=')'> <|WS>?)
      structure-match rule <|='{'|key-matchers> (<|WS>? <|='}'> <|WS>?)
      key-matchers rule (<|='{'> <|WS>?) <|key-matcher> <|additional-key-matcher>*
-     key-matcher rule <|ID> (<|WS>? <|=':'> <|WS>?) <|content-matcher>?
+     key-matcher rule <|ID> (<|=':'> <|WS>?) <|content-matcher>?
      additional-key-matcher rule (<|=','> <|WS>?) <|key-matcher>
      content-matcher rule (<|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>?)
      

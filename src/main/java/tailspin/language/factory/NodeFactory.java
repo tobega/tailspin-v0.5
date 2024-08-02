@@ -40,6 +40,7 @@ import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.structure.StructureLiteral;
+import tailspin.language.nodes.structure.StructureReadNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.DoNothingNode;
 import tailspin.language.nodes.transform.EmitNode;
@@ -608,6 +609,8 @@ public class NodeFactory {
     return switch (lensExpression) {
       case ParseNode(String type, ParseNode source) when type.equals("source")
           -> ArrayReadNode.create(value, asSingleValueNode(visitSource(source)));
+      case ParseNode(String type, ParseNode(String ignored, String key)) when type.equals("key")
+          -> StructureReadNode.create(value, key);
       default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };
   }
