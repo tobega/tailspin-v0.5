@@ -25,7 +25,7 @@ public class TailspinParser {
      sink rule <|value-chain> (<|WS>? <|='->'> <|WS>? <|='!'> <|WS>?) <|='VOID'|='#'|templates-call>
      
      value-chain rule <|source> <|transform>*
-     source rule <|arithmetic-expression|reference|single-value-chain|array-literal|range> (<|WS>?)
+     source rule <|arithmetic-expression|reference|single-value-chain|array-literal|range|structure-literal> (<|WS>?)
      reference rule <|='$'> <|='@'>? <|ID>? <|lens-expression>? <|message-send>?
      single-value-chain rule (<|='('> <|WS>?) <|value-chain> (<|WS>? <|=')'>)
      range rule <|range-bound> <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound> <|stride>?
@@ -38,6 +38,11 @@ public class TailspinParser {
      array-literal rule <|='['|array-contents>? (<|WS>? <|=']'> <|WS>?)
      array-contents rule (<|='['> <|WS>?) <|value-chain> (<|WS>?) <|more-array-contents>*
      more-array-contents rule (<|=','> <|WS>?) <|value-chain> (<|WS>?)
+     
+     structure-literal rule <|='{'|key-values> (<|WS>? <|='}'> <|WS>?)
+     key-values rule (<|='{'> <|WS>?) <|key-value> <|additional-key-value>*
+     key-value rule <|ID> (<|WS>? <|=':'> <|WS>?) <|value-chain>
+     additional-key-value rule (<|=','> <|WS>?) <|key-value>
 
      transform rule (<|='->'> <|WS>?) <|source|inline-templates-call|='#'|templates-call> (<|WS>?)
      templates-call rule <|ID>

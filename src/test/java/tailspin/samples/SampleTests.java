@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 public class SampleTests {
   private static final String[] SAMPLE_FILES = new String[] {
-      "Numbers.tests", "Chain.tests", "Templates.tests", "Array.tests", "Range.tests", "Matchers.tests"
+      "Numbers.tests", "Chain.tests", "Templates.tests", "Array.tests", "Range.tests", "Matchers.tests", "Structure.tests"
   };
 
   @Test

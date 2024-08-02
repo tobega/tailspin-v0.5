@@ -5,6 +5,7 @@ import static tailspin.language.runtime.Templates.CV_SLOT;
 import static tailspin.language.runtime.Templates.STATE_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.object.Shape;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,7 @@ import tailspin.language.nodes.numeric.MultiplyNode;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.processor.MessageNode;
+import tailspin.language.nodes.structure.StructureLiteral;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.DoNothingNode;
 import tailspin.language.nodes.transform.EmitNode;
@@ -54,6 +56,8 @@ import tailspin.language.runtime.Templates;
 public class NodeFactory {
 
   private final TailspinLanguage language;
+
+  private final Shape rootShape = Shape.newBuilder().build();
 
   List<Integer> cvSlot = new ArrayList<>();
   { cvSlot.add(CV_SLOT);}
@@ -443,8 +447,32 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode vc) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc));
       case ParseNode(String name, Object contents) when name.equals("array-literal") -> visitArrayLiteral(contents);
       case ParseNode(String name, List<?> bounds) when name.equals("range") -> visitRange(bounds);
+      case ParseNode(String name, Object contents) when name.equals("structure-literal") -> visitStructureLiteral(contents);
       default -> throw new IllegalStateException("Unexpected value: " + source);
     };
+  }
+
+  private ValueNode visitStructureLiteral(Object contents) {
+    List<List<?>> keyValues;
+    if (contents instanceof ParseNode(String ignored, ParseNode kv)) {
+      keyValues = List.of((List<?>) kv.content());
+    } else if (contents instanceof ParseNode(String ignored, List<?> kvs)) {
+      keyValues = new ArrayList<>();
+      keyValues.add((List<?>) ((ParseNode) kvs.getFirst()).content());
+      for (Object akv : kvs.subList(1, kvs.size())) {
+        Object kv = ((ParseNode) akv).content();
+        keyValues.add((List<?>) ((ParseNode) kv).content());
+      }
+    } else if (contents.equals("{")) {
+      keyValues = List.of();
+    } else throw new IllegalStateException("Unexpected value: " + contents);
+    List<String> keys = new ArrayList<>();
+    List<ValueNode> values = new ArrayList<>();
+    for (List<?> kv : keyValues) {
+      keys.add(((ParseNode) kv.getFirst()).content().toString());
+      values.add(asSingleValueNode(visitValueChain((ParseNode) kv.getLast())));
+    }
+    return StructureLiteral.create(rootShape, keys, values);
   }
 
   private RangeIteration visitRange(List<?> bounds) {
