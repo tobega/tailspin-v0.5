@@ -20,7 +20,7 @@ public class ListBenchmark extends TruffleBenchmark {
       end isShorterThan
 
       tail templates
-        when <?({x: $(b:), y: $(a:)} -> isShorterThan <|=1>)> do
+        when <?({x: $(b:), y: $(a:)} -> isShorterThan matches <|=1>)> do
           { a: {a: $(a:; next:), b: $(b:), c: $(c:)} -> #,
             b: {a: $(b:; next:), b: $(c:), c: $(a:)} -> #,
             c: {a: $(c:; next:), b: $(a:), c: $(b:)} -> #

@@ -58,7 +58,7 @@ public class TailspinParser {
      range-bound rule <|arithmetic-expression|reference>
      array-match rule <|='['> (<|WS>?) (<|=']'> <|WS>?) <|array-length-condition>?
      array-length-condition rule (<|='('> <|WS>?) <|literal-match|range-match> (<|WS>? <|=')'> <|WS>?)
-     condition rule (<|='?('> <|WS>?) <|value-chain> (<|WS>? <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|=')'> <|WS>?)
+     condition rule (<|='?('> <|WS>?) <|value-chain> (<|='matches'> <|WS> <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|=')'> <|WS>?)
      
      arithmetic-expression rule <|addition|multiplication|numeric-literal>
      addition rule <|addition|multiplication|term> <|'[+-]'> (<|WS>?) <|multiplication|term> (<|WS>?)

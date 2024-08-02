@@ -22,7 +22,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         $::length..2:-1 -> 2..$ -> !#
         $@ !
       
-        when <|?($@($) <|..~$@($ - 1)>)> do
+        when <|?($@($) matches <|..~$@($ - 1)>)> do
           temp is $@($);
           @($) set $@($ - 1);
           @($ - 1) set $temp;
@@ -36,7 +36,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
           1..$-1 -> !#
           $@ !
       
-          when <|?($@sortedCopy($+1) <|..~$@sortedCopy($)>)> do
+          when <|?($@sortedCopy($+1) matches <|..~$@sortedCopy($)>)> do
             @ set $;
             temp is $@sortedCopy($@);
             @sortedCopy($@) set $@sortedCopy($@ + 1);
