@@ -55,3 +55,12 @@ end !
 ---read property of property
 { foo: { bar: 3 }} -> $(foo:; bar:) !
 =3
+---include other structure
+{ bar: 2 } -> { foo: 5, $ } !
+={ bar: 2, foo: 5 }
+---put if absent
+{ bar: 2 } -> { bar: 5, $ } !
+={ bar: 2 }
+---overwrite
+{ bar: 2 } -> { $, bar: 5 } !
+={ bar: 5 }

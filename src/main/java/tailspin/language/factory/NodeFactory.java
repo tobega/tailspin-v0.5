@@ -50,6 +50,7 @@ import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.SinkNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
+import tailspin.language.nodes.value.TransformResultNode;
 import tailspin.language.nodes.value.VoidValue;
 import tailspin.language.nodes.value.WriteContextValueNode;
 import tailspin.language.parser.ParseNode;
@@ -486,24 +487,29 @@ public class NodeFactory {
   }
 
   private ValueNode visitStructureLiteral(Object contents) {
-    List<List<?>> keyValues;
+    List<Object> keyValues;
     if (contents instanceof ParseNode(String ignored, ParseNode kv)) {
-      keyValues = List.of((List<?>) kv.content());
+      keyValues = List.of(kv);
     } else if (contents instanceof ParseNode(String ignored, List<?> kvs)) {
       keyValues = new ArrayList<>();
-      keyValues.add((List<?>) ((ParseNode) kvs.getFirst()).content());
+      keyValues.add(kvs.getFirst());
       for (Object akv : kvs.subList(1, kvs.size())) {
         Object kv = ((ParseNode) akv).content();
-        keyValues.add((List<?>) ((ParseNode) kv).content());
+        keyValues.add(kv);
       }
     } else if (contents.equals("{")) {
       keyValues = List.of();
     } else throw new IllegalStateException("Unexpected value: " + contents);
     List<String> keys = new ArrayList<>();
     List<ValueNode> values = new ArrayList<>();
-    for (List<?> kv : keyValues) {
-      keys.add(((ParseNode) kv.getFirst()).content().toString());
-      values.add(asSingleValueNode(visitValueChain((ParseNode) kv.getLast())));
+    for (Object sc : keyValues) {
+      if (sc instanceof ParseNode(String name, List<?> kv) && name.equals("key-value")) {
+        keys.add(((ParseNode) kv.getFirst()).content().toString());
+        values.add(asSingleValueNode(visitValueChain((ParseNode) kv.getLast())));
+      } else if (sc instanceof ParseNode vc) {
+        keys.add(null);
+        values.add(new TransformResultNode(asTransformNode(visitValueChain(vc))));
+      } else throw new IllegalStateException("Unexpected " + sc);
     }
     return StructureLiteral.create(rootShape, keys, values);
   }

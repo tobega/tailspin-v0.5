@@ -5,6 +5,7 @@ import org.openjdk.jmh.annotations.Benchmark;
 /**
  * Modified List benchmark from "arewefastenoughyet" for SOM
  */
+@SuppressWarnings("unused")
 public class ListBenchmark extends TruffleBenchmark {
   private static final String tailspinProgram = """
       makeList templates
@@ -36,6 +37,12 @@ public class ListBenchmark extends TruffleBenchmark {
       
       { a: 15 -> makeList, b: 10 -> makeList, c: 6 -> makeList } -> tail -> length !
       """;
+
+  @Benchmark
+  public void list_tailspin() {
+    long length = truffleContext.eval("tt", tailspinProgram).asLong();
+    if (length != 10) throw new AssertionError("Bad length " + length);
+  }
 
 
   @Benchmark

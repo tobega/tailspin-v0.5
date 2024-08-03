@@ -42,9 +42,9 @@ public class TailspinParser {
      more-array-contents rule (<|=','> <|WS>?) <|value-chain> (<|WS>?)
      
      structure-literal rule <|='{'|key-values> (<|WS>? <|='}'> <|WS>?)
-     key-values rule (<|='{'> <|WS>?) <|key-value> <|additional-key-value>*
+     key-values rule (<|='{'> <|WS>?) <|key-value|value-chain> <|additional-key-value>*
      key-value rule <|ID> (<|=':'> <|WS>?) <|value-chain>
-     additional-key-value rule (<|=','> <|WS>?) <|key-value>
+     additional-key-value rule (<|=','> <|WS>?) <|key-value|value-chain>
 
      transform rule (<|='->'> <|WS>?) <|source|inline-templates-call|='#'|templates-call> (<|WS>?)
      templates-call rule <|ID>
