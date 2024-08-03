@@ -9,19 +9,19 @@ import org.openjdk.jmh.annotations.Benchmark;
 public class ListBenchmark extends TruffleBenchmark {
   private static final String tailspinProgram = """
       makeList templates
-        <|0~..>
-          { val: $, $ - 1 -> makeList -> { next: $ } } !
+        when <|0~..> do
+          { val: $, $ - 1 -> # -> { next: $ } } !
       end makeList
 
       isShorterThan templates
         when <|{x: <|{next: <|{}>}>, y: <|{next: <|{}>}>}> do
-          { x: $(x:; next:), y: $(y:; next:) } -> #
+          { x: $(x:; next:), y: $(y:; next:) } -> # !
         when <|{y: <|{next: <|{}>}>}> do 1 !
         otherwise 0 !
       end isShorterThan
 
       tail templates
-        when <?({x: $(b:), y: $(a:)} -> isShorterThan matches <|=1>)> do
+        when <|?({x: $(b:), y: $(a:)} -> isShorterThan matches <|=1>)> do
           { a: {a: $(a:; next:), b: $(b:), c: $(c:)} -> #,
             b: {a: $(b:; next:), b: $(c:), c: $(a:)} -> #,
             c: {a: $(c:; next:), b: $(a:), c: $(b:)} -> #

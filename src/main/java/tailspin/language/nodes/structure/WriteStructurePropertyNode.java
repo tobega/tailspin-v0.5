@@ -13,6 +13,11 @@ import tailspin.language.runtime.Structure;
 public abstract class WriteStructurePropertyNode extends Node {
   public abstract Structure executeWriteProperty(Node node, Structure target, String key, Object value);
 
+  @Specialization(guards = {"nokey == null", "novalue == null"})
+  protected Structure writeEmbedded(Structure target, @SuppressWarnings("unused") String nokey, @SuppressWarnings("unused") Object novalue) {
+    return target;
+  }
+
   @Specialization(guards = "nokey == null")
   protected Structure writeEmbedded(Structure target, @SuppressWarnings("unused") String nokey, Structure value,
       @CachedLibrary(limit = "2") @Shared DynamicObjectLibrary dynamicObjectLibrary) {

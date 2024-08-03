@@ -76,3 +76,16 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 |FibonacciBenchmark.recursive_tailspin      |avgt  |  5  |56,710 |± 0,575  |us/op|
 |PascalBenchmark.triangle_java              |avgt  |  5  |11,848 |± 0,231  |us/op|
 |PascalBenchmark.triangle_tailspin          |avgt  |  5  |19,411 |± 1,143  |us/op|
+
+2024-08-03 List benchmark is pretty disastrous
+|Benchmark                                  |Mode  |Cnt  |   Score |    Error  |Units|
+|-------------------------------------------|------|-----|-------|---------|-----|
+|BubblesortBenchmark.sort_java              |avgt  |  5  |  20,257 |±   0,111  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate  |avgt  |  5  |  34,862 |±   0,440  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse  |avgt  |  5  |  40,653 |±   0,536  |us/op|
+|FibonacciBenchmark.recursive_java          |avgt  |  5  |  36,468 |±   0,159  |us/op|
+|FibonacciBenchmark.recursive_tailspin      |avgt  |  5  |  57,899 |±   0,524  |us/op|
+|ListBenchmark.list_java                    |avgt  |  5  |  14,800 |±   0,774  |us/op|
+|ListBenchmark.list_tailspin                |avgt  |  5  |7956,805 |± 990,327  |us/op|
+|PascalBenchmark.triangle_java              |avgt  |  5  |  12,436 |±   1,824  |us/op|
+|PascalBenchmark.triangle_tailspin          |avgt  |  5  |  20,519 |±   2,822  |us/op|

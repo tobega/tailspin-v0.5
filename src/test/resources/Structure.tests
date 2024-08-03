@@ -64,3 +64,6 @@ end !
 ---overwrite
 { bar: 2 } -> { $, bar: 5 } !
 ={ bar: 5 }
+---no property
+{ bar: 2, 1 -> templates when <|=0> do { foo: 5 } ! end } !
+={ bar: 2 }
