@@ -611,6 +611,10 @@ public class NodeFactory {
           -> ArrayReadNode.create(value, asSingleValueNode(visitSource(source)));
       case ParseNode(String type, ParseNode(String ignored, String key)) when type.equals("key")
           -> StructureReadNode.create(value, key);
+      case List<?> dimension -> {
+        ValueNode thisDimension = visitReadLensExpression(value, dimension.getFirst());
+        yield visitReadLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content());
+      }
       default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };
   }

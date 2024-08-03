@@ -52,3 +52,6 @@ end !
 ---read property
 { foo: 1, bar: 3 } -> $(bar:) !
 =3
+---read property of property
+{ foo: { bar: 3 }} -> $(foo:; bar:) !
+=3

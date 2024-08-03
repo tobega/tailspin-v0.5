@@ -31,8 +31,9 @@ public class TailspinParser {
      range rule <|range-bound> <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound> <|stride>?
      stride rule (<|=':'> <|WS>?) <|range-bound> (<|WS>?)
      
-     lens-expression rule (<|='('> <|WS>?) <|source|key> (<|=')'>)
+     lens-expression rule (<|='('> <|WS>?) <|source|key> <|next-lens-dimension>? (<|WS>? <|=')'>)
      key rule <|ID> (<|=':'> <|WS>?)
+     next-lens-dimension rule (<|WS>? <|=';'> <|WS>?) <|source|key> <|next-lens-dimension>?
      
      message-send rule (<|='::'>) <|ID>
 
