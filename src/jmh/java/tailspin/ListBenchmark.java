@@ -7,6 +7,7 @@ import org.openjdk.jmh.annotations.Benchmark;
  */
 @SuppressWarnings("unused")
 public class ListBenchmark extends TruffleBenchmark {
+  // TODO: isShorterThan should be an operator
   private static final String tailspinProgram = """
       makeList templates
         when <|0~..> do
@@ -47,7 +48,7 @@ public class ListBenchmark extends TruffleBenchmark {
 
   @Benchmark
   public void list_java() {
-    Element result = tail(makeList(15), makeList(10), makeList(6));
+    Element result = tail(new Triple(makeList(15), makeList(10), makeList(6)));
     if (length(result) != 10) throw new AssertionError("Bad length " + result);
   }
 
@@ -81,13 +82,17 @@ public class ListBenchmark extends TruffleBenchmark {
     return false;
   }
 
-  Element tail(Element a, Element b, Element c) {
-    if (isShorterThan(b, a)) {
-      return tail(tail(a.next(), b, c),
-          tail(b.next(), c, a),
-          tail(c.next(), a, b));
+  record Triple(Element a, Element b, Element c) {}
+
+  Element tail(Triple t) {
+    if (isShorterThan(t.b, t.a)) {
+      return tail(
+          new Triple(
+              tail(new Triple(t.a.next(), t.b, t.c)),
+              tail(new Triple(t.b.next(), t.c, t.a)),
+              tail(new Triple(t.c.next(), t.a, t.b))));
     } else {
-      return c;
+      return t.c;
     }
   }
 }
