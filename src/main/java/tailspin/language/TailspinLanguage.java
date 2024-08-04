@@ -3,6 +3,7 @@ package tailspin.language;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.Shape;
 import tailspin.language.factory.NodeFactory;
 import tailspin.language.parser.ParseNode;
 import tailspin.language.parser.TailspinParser;
@@ -16,6 +17,8 @@ public class TailspinLanguage extends TruffleLanguage<TailspinLanguageContext> {
   public static TailspinLanguage get(Node node) {
     return REF.get(node);
   }
+
+  public final Shape rootShape = Shape.newBuilder().build();
 
   @Override
   protected CallTarget parse(ParsingRequest request) {

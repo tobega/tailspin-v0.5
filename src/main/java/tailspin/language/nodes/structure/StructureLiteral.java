@@ -1,36 +1,33 @@
 package tailspin.language.nodes.structure;
 
-import com.oracle.truffle.api.dsl.Cached;
-import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.Shape;
 import java.util.List;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.runtime.Structure;
 
-public abstract class StructureLiteral extends ValueNode {
-  final Shape rootShape;
-  final String[] keys;
-  @Children
-  final ValueNode[] values;
+public class StructureLiteral extends ValueNode {
+  @Child
+  @SuppressWarnings("FieldMayBeFinal")
+  ValueNode builder;
 
   protected StructureLiteral(Shape rootShape, List<String> keys, List<ValueNode> values) {
-    this.rootShape = rootShape;
-    this.keys = keys.toArray(String[]::new);
-    this.values = values.toArray(ValueNode[]::new);
-  }
-
-  @Specialization
-  public Structure createLiteral(VirtualFrame frame,
-      @Cached(inline = true) WriteStructurePropertyNode writeNode) {
-    Structure result = new Structure(rootShape);
-    for (int i = 0; i < keys.length; i++) {
-      writeNode.executeWriteProperty(this, result, keys[i], values[i].executeGeneric(frame));
+    ValueNode builder = NewEmptyStructureNode.create(rootShape);
+    for (int i = 0; i < keys.size(); i++) {
+      if (keys.get(i) == null) {
+        builder = WriteEmbeddedStructureNode.create(builder, values.get(i));
+      } else {
+        builder = WriteKeyValueNode.create(keys.get(i), builder, values.get(i));
+      }
     }
-    return result;
+    this.builder = builder;
   }
 
   public static StructureLiteral create(Shape rootShape, List<String> keys, List<ValueNode> values) {
-    return StructureLiteralNodeGen.create(rootShape, keys, values);
+    return new StructureLiteral(rootShape, keys, values);
+  }
+
+  @Override
+  public Object executeGeneric(VirtualFrame frame) {
+    return builder.executeGeneric(frame);
   }
 }

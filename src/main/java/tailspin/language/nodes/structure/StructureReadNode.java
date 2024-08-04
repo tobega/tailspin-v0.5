@@ -30,8 +30,8 @@ public abstract class StructureReadNode extends ValueNode {
   }
 
   @Specialization
-  protected Object doIllegal(Object receiver) {
-    throw new TypeError(String.format("Cannot read %s by %s", receiver.getClass(), key));
+  protected Object doIllegal(Object target) {
+    throw new TypeError(String.format("Cannot read %s by %s", target.getClass(), key));
   }
 
   public static StructureReadNode create(ValueNode target, String key) {

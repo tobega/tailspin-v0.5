@@ -67,3 +67,6 @@ end !
 ---no property
 { bar: 2, 1 -> templates when <|=0> do { foo: 5 } ! end } !
 ={ bar: 2 }
+---include multiple structures
+{ bar: 2, 1 -> templates { foo: 5 } ! { qux: 8 } ! end } !
+={ bar: 2, foo: 5, qux: 8 }

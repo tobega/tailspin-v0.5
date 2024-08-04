@@ -5,7 +5,6 @@ import static tailspin.language.runtime.Templates.CV_SLOT;
 import static tailspin.language.runtime.Templates.STATE_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.object.Shape;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,8 +59,6 @@ import tailspin.language.runtime.Templates;
 public class NodeFactory {
 
   private final TailspinLanguage language;
-
-  private final Shape rootShape = Shape.newBuilder().build();
 
   List<Integer> cvSlot = new ArrayList<>();
   { cvSlot.add(CV_SLOT);}
@@ -511,7 +508,7 @@ public class NodeFactory {
         values.add(new TransformResultNode(asTransformNode(visitValueChain(vc))));
       } else throw new IllegalStateException("Unexpected " + sc);
     }
-    return StructureLiteral.create(rootShape, keys, values);
+    return StructureLiteral.create(language.rootShape, keys, values);
   }
 
   private RangeIteration visitRange(List<?> bounds) {

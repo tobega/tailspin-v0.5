@@ -1,6 +1,7 @@
 package tailspin.language.runtime;
 
 import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
@@ -10,7 +11,7 @@ import com.oracle.truffle.api.object.Shape;
 import java.util.Arrays;
 
 @ExportLibrary(InteropLibrary.class)
-public class Structure extends DynamicObject {
+public class Structure extends DynamicObject implements TruffleObject {
   public Structure(Shape shape) {
     super(shape);
   }
