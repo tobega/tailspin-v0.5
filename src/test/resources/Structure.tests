@@ -7,24 +7,6 @@
 ---create two property structure
 { foo: 1, bar: 3 } !
 ={ bar: 3, foo: 1 }
----is a structure
-{ foo: 1 } -> templates
-  when <|{}> do 1!
-  otherwise 0!
-end !
-=1
----number is not a structure
-5 -> templates
-  when <|{}> do 1!
-  otherwise 0!
-end !
-=0
----array is not a structure
-[{foo: 5}] -> templates
-  when <|{}> do 1!
-  otherwise 0!
-end !
-=0
 ---has property
 { foo: 1 } -> templates
   when <|{foo:}> do 1!
@@ -82,3 +64,6 @@ end !
 ---include multiple structures
 { bar: 2, 1 -> templates { foo: 5 } ! { qux: 8 } ! end } !
 ={ bar: 2, foo: 5, qux: 8 }
+---structure in structure prints correctly
+{ foo: { bar: 5 } } !
+={ foo: { bar: 5 } }

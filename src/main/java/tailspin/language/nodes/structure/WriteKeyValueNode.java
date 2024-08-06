@@ -1,11 +1,12 @@
 package tailspin.language.nodes.structure;
 
-import com.oracle.truffle.api.dsl.Cached.Shared;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import tailspin.language.TypeError;
+import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.VocabularyType;
@@ -24,13 +25,12 @@ public abstract class WriteKeyValueNode extends ValueNode {
   }
 
   @Specialization
-  Structure doLong(Structure target, long value, @CachedLibrary(limit = "1") @Shared DynamicObjectLibrary dynamicObjectLibrary) {
-    dynamicObjectLibrary.putLong(target, type, value);
-    return target;
-  }
-
-  @Specialization
-  Structure doWrite(Structure target, Object value, @CachedLibrary(limit = "1") @Shared DynamicObjectLibrary dynamicObjectLibrary) {
+  Structure doWrite(Structure target, Object value,
+      @Cached(value = "type.getConstraint(value)", neverDefault = true) MatcherNode typeConstraint,
+      @CachedLibrary(limit = "1") DynamicObjectLibrary dynamicObjectLibrary) {
+    if (!typeConstraint.executeMatcherGeneric(null, value)) {
+      throw TypeError.at(this, type.toString(), value);
+    }
     dynamicObjectLibrary.put(target, type, value);
     return target;
   }

@@ -1,18 +1,20 @@
 package tailspin.samples;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.PolyglotException;
 import org.graalvm.polyglot.Value;
 import org.junit.jupiter.api.Test;
 
 public class SampleTests {
   private static final String[] SAMPLE_FILES = new String[] {
-      "Numbers.tests", "Chain.tests", "Templates.tests", "Array.tests", "Range.tests", "Matchers.tests", "Structure.tests"
+      "Numbers.tests", "Chain.tests", "Templates.tests", "Array.tests", "Range.tests", "Matchers.tests", "Structure.tests", "Types.tests"
   };
 
   @Test
@@ -32,10 +34,12 @@ public class SampleTests {
                 Value result;
                 try {
                   result = context.eval("tt", testProgram);
+                  assertEquals(line.substring(1), result.toString(), "Failed: " + testName);
+                } catch (PolyglotException e) {
+                  assertTrue(e.getMessage().contains(line.substring(1)), "Failed: " + testName + ": " + e);
                 } catch (Exception e) {
                   throw new AssertionError("Failed: " + testName, e);
                 }
-                assertEquals(line.substring(1), result.toString(), "Failed: " + testName);
               } else if (line.startsWith("---")) {
                 testName = line + " of " + filename;
                 testProgram = new StringBuilder();

@@ -24,9 +24,10 @@ public class Structure extends DynamicObject implements TruffleObject {
     Arrays.sort(ordered);
     StringBuilder result = new StringBuilder("{");
     for (Object key : ordered) {
+      Object value = thisObjectLibrary.getOrDefault(this, key, null);
       result.append(", ")
           .append(key).append(":").append(" ")
-          .append(thisObjectLibrary.getOrDefault(this, key, null));
+          .append(InteropLibrary.getUncached().toDisplayString(value));
     }
     result.append(" }").deleteCharAt(1);
     return result.toString();
