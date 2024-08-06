@@ -172,3 +172,27 @@ end !
 ---single value chain in expression
 1 + (1 -> templates 2 ! end) !
 =3
+---is a number
+5 -> templates
+  when <|..> do 1!
+  otherwise 0!
+end !
+=1
+---big number is a number
+20_000_000_000_000_000_000 -> templates
+  when <|..> do 1!
+  otherwise 0!
+end !
+=1
+---structure is not a number
+{} -> templates
+  when <|..> do 1!
+  otherwise 0!
+end !
+=0
+---array is not a number
+[1] -> templates
+  when <|..> do 1!
+  otherwise 0!
+end !
+=0

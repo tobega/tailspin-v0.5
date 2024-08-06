@@ -28,6 +28,7 @@ import tailspin.language.nodes.matchers.ConditionNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNode;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
+import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
 import tailspin.language.nodes.matchers.StructureKeyMatcherNode;
 import tailspin.language.nodes.matchers.StructureTypeMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
@@ -393,7 +394,11 @@ public class NodeFactory {
 
   private List<MatcherNode> visitTypeMatch(ParseNode typeMatch) {
     return switch (typeMatch.name()) {
-      case "range-match" -> visitRangeMatch((List<?>) typeMatch.content());
+      case "range-match" -> {
+        if (typeMatch.content() instanceof List<?> bounds)
+          yield visitRangeMatch(bounds);
+        else yield List.of(NumericTypeMatcherNode.create());
+      }
       case "array-match" -> {
         List<MatcherNode> conditionNodes = new ArrayList<>();
         conditionNodes.addLast(ArrayTypeMatcherNode.create());

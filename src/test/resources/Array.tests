@@ -12,14 +12,20 @@
   $ + 1 ! $ + 3 !
 end, 11 ] !
 =[2, 3, 5, 7, 11]
----test is array true
+---is an array
 [2, 3] -> templates
   when <|[]> do 1 !
   otherwise 0 !
 end !
 =1
----test is array false
+---number is not an array
 3 -> templates
+  when <|[]> do 1 !
+  otherwise 0 !
+end !
+=0
+---structure is not an array
+{} -> templates
   when <|[]> do 1 !
   otherwise 0 !
 end !
