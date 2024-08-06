@@ -55,6 +55,7 @@ import tailspin.language.nodes.value.WriteContextValueNode;
 import tailspin.language.parser.ParseNode;
 import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.Templates;
+import tailspin.language.runtime.VocabularyType;
 
 public class NodeFactory {
 
@@ -425,11 +426,11 @@ public class NodeFactory {
         for (Object condition : conditions) {
           switch (condition) {
             case ParseNode(String ignored, String key) -> conditionNodes.addLast(
-                StructureKeyMatcherNode.create(key, AlwaysTrueMatcherNode.create()));
+                StructureKeyMatcherNode.create(currentScope().getVocabularyType(key), AlwaysTrueMatcherNode.create()));
             case List<?> km -> {
               String key = (String) ((ParseNode) km.getFirst()).content();
               MatcherNode matcher = visitAlternativeMembranes(((ParseNode) km.getLast()).content());
-              conditionNodes.addLast(StructureKeyMatcherNode.create(key, matcher));
+              conditionNodes.addLast(StructureKeyMatcherNode.create(currentScope().getVocabularyType(key), matcher));
             }
             default -> throw new IllegalStateException("Unexpected value: " + condition);
           }
@@ -497,11 +498,12 @@ public class NodeFactory {
     } else if (contents.equals("{")) {
       keyValues = List.of();
     } else throw new IllegalStateException("Unexpected value: " + contents);
-    List<String> keys = new ArrayList<>();
+    List<VocabularyType> keys = new ArrayList<>();
     List<ValueNode> values = new ArrayList<>();
     for (Object sc : keyValues) {
       if (sc instanceof ParseNode(String name, List<?> kv) && name.equals("key-value")) {
-        keys.add(((ParseNode) kv.getFirst()).content().toString());
+        String key = ((ParseNode) kv.getFirst()).content().toString();
+        keys.add(currentScope().getVocabularyType(key));
         values.add(asSingleValueNode(visitValueChain((ParseNode) kv.getLast())));
       } else if (sc instanceof ParseNode vc) {
         keys.add(null);
@@ -613,7 +615,7 @@ public class NodeFactory {
       case ParseNode(String type, ParseNode source) when type.equals("source")
           -> ArrayReadNode.create(value, asSingleValueNode(visitSource(source)));
       case ParseNode(String type, ParseNode(String ignored, String key)) when type.equals("key")
-          -> StructureReadNode.create(value, key);
+          -> StructureReadNode.create(value, currentScope().getVocabularyType(key));
       case List<?> dimension -> {
         ValueNode thisDimension = visitReadLensExpression(value, dimension.getFirst());
         yield visitReadLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content());

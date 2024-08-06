@@ -4,13 +4,14 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.Shape;
 import java.util.List;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.VocabularyType;
 
 public class StructureLiteral extends ValueNode {
   @Child
   @SuppressWarnings("FieldMayBeFinal")
   ValueNode builder;
 
-  protected StructureLiteral(Shape rootShape, List<String> keys, List<ValueNode> values) {
+  protected StructureLiteral(Shape rootShape, List<VocabularyType> keys, List<ValueNode> values) {
     ValueNode builder = NewEmptyStructureNode.create(rootShape);
     for (int i = 0; i < keys.size(); i++) {
       if (keys.get(i) == null) {
@@ -22,7 +23,7 @@ public class StructureLiteral extends ValueNode {
     this.builder = builder;
   }
 
-  public static StructureLiteral create(Shape rootShape, List<String> keys, List<ValueNode> values) {
+  public static StructureLiteral create(Shape rootShape, List<VocabularyType> keys, List<ValueNode> values) {
     return new StructureLiteral(rootShape, keys, values);
   }
 

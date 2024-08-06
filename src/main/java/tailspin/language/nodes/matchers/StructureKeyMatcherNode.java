@@ -7,15 +7,16 @@ import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.runtime.Structure;
+import tailspin.language.runtime.VocabularyType;
 
 @GenerateInline(false)
 public abstract class StructureKeyMatcherNode extends MatcherNode {
-  final String key;
+  final VocabularyType key;
   @Child
   @SuppressWarnings("FieldMayBeFinal")
   MatcherNode matcher;
 
-  protected StructureKeyMatcherNode(String key, MatcherNode matcher) {
+  protected StructureKeyMatcherNode(VocabularyType key, MatcherNode matcher) {
     this.key = key;
     this.matcher = matcher;
   }
@@ -28,7 +29,7 @@ public abstract class StructureKeyMatcherNode extends MatcherNode {
     return matcher.executeMatcherGeneric(frame, value);
   }
 
-  public static StructureKeyMatcherNode create(String key, MatcherNode matcher) {
+  public static StructureKeyMatcherNode create(VocabularyType key, MatcherNode matcher) {
     return StructureKeyMatcherNodeGen.create(key, matcher);
   }
 }

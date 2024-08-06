@@ -13,12 +13,14 @@ import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.Reference.Slot;
 import tailspin.language.runtime.Templates;
+import tailspin.language.runtime.VocabularyType;
 
 public class Scope {
   Builder rootFdb = Templates.createBasicFdb();
   Builder scopeFdb = Templates.createScopeFdb();
 
   Map<String, Object> definitions = new HashMap<>();
+  Map<String, VocabularyType> vocabularyTypes = new HashMap<>();
 
   private final String scopeId;
   private final Scope parent;
@@ -142,5 +144,17 @@ public class Scope {
     }
     if (definitions.containsKey(name)) return (Templates) definitions.get(name);
     else return parent.findTemplates(name);
+  }
+
+  public VocabularyType getVocabularyType(String key) {
+    if (vocabularyTypes.containsKey(key)) {
+      return vocabularyTypes.get(key);
+    } else if (parent != null) {
+      return parent.getVocabularyType(key);
+    }
+    // new types only get default-created at the top level
+    VocabularyType type = new VocabularyType(key);
+    vocabularyTypes.put(key, type);
+    return type;
   }
 }
