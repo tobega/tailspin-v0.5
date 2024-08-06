@@ -414,8 +414,6 @@ public class NodeFactory {
         yield conditionNodes;
       }
       case "structure-match" -> {
-        List<MatcherNode> conditionNodes = new ArrayList<>();
-        conditionNodes.addLast(StructureTypeMatcherNode.create());
         List<Object> conditions;
         if (typeMatch.content().equals("{")) conditions = List.of();
         else if (typeMatch.content() instanceof ParseNode(String name, ParseNode keyMatcher) && name.equals("key-matchers")) {
@@ -428,10 +426,11 @@ public class NodeFactory {
             conditions.add(((ParseNode) km).content());
           }
         } else throw new IllegalStateException("Unexpected conditions: " + typeMatch.content());
+        List<MatcherNode> conditionNodes = new ArrayList<>();
+        List<VocabularyType> requiredKeys = new ArrayList<>();
         for (Object condition : conditions) {
           switch (condition) {
-            case ParseNode(String ignored, String key) -> conditionNodes.addLast(
-                StructureKeyMatcherNode.create(currentScope().getVocabularyType(key), AlwaysTrueMatcherNode.create()));
+            case ParseNode(String ignored, String key) -> requiredKeys.add(currentScope().getVocabularyType(key));
             case List<?> km -> {
               String key = (String) ((ParseNode) km.getFirst()).content();
               MatcherNode matcher = visitAlternativeMembranes(((ParseNode) km.getLast()).content());
@@ -440,6 +439,7 @@ public class NodeFactory {
             default -> throw new IllegalStateException("Unexpected value: " + condition);
           }
         }
+        conditionNodes.addFirst(StructureTypeMatcherNode.create(requiredKeys));
         yield conditionNodes;
       }
       default -> throw new IllegalStateException("Unexpected value: " + typeMatch);
