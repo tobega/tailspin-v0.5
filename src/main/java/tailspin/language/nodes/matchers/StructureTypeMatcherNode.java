@@ -6,7 +6,6 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
-import java.util.List;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.VocabularyType;
@@ -14,9 +13,11 @@ import tailspin.language.runtime.VocabularyType;
 @GenerateInline(false)
 public abstract class StructureTypeMatcherNode extends MatcherNode {
   final VocabularyType[] requiredKeys;
+  final boolean allowExtraFields;
 
-  protected StructureTypeMatcherNode(List<VocabularyType> requiredKeys) {
-    this.requiredKeys = requiredKeys.toArray(VocabularyType[]::new);
+  protected StructureTypeMatcherNode(VocabularyType[] requiredKeys, boolean allowExtraFields) {
+    this.requiredKeys = requiredKeys;
+    this.allowExtraFields = allowExtraFields;
   }
 
   @Specialization(guards = "requiredKeys.length == 0")
@@ -28,6 +29,7 @@ public abstract class StructureTypeMatcherNode extends MatcherNode {
   @ExplodeLoop
   protected boolean isStructure(Structure target,
       @CachedLibrary(limit = "2") DynamicObjectLibrary dynamicObjectLibrary) {
+    if (!allowExtraFields && dynamicObjectLibrary.getKeyArray(target).length != requiredKeys.length) return false;
     for (VocabularyType key : requiredKeys) {
       if (!dynamicObjectLibrary.containsKey(target, key)) return false;
     }
@@ -37,7 +39,7 @@ public abstract class StructureTypeMatcherNode extends MatcherNode {
   @Fallback
   protected boolean notStructure(Object ignored) { return false; }
 
-  public static StructureTypeMatcherNode create(List<VocabularyType> requiredKeys) {
-    return StructureTypeMatcherNodeGen.create(requiredKeys);
+  public static StructureTypeMatcherNode create(VocabularyType[] requiredKeys, boolean allowExtraFields) {
+    return StructureTypeMatcherNodeGen.create(requiredKeys, allowExtraFields);
   }
 }

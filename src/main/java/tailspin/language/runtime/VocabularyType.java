@@ -1,8 +1,11 @@
 package tailspin.language.runtime;
 
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import java.util.Arrays;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
+import tailspin.language.nodes.matchers.StructureTypeMatcherNode;
 
 public class VocabularyType implements Comparable<VocabularyType> {
   private final String key;
@@ -33,6 +36,11 @@ public class VocabularyType implements Comparable<VocabularyType> {
     constraint = switch (value) {
       case Long ignored -> NumericTypeMatcherNode.create();
       case BigNumber ignored -> NumericTypeMatcherNode.create();
+      case Structure s -> {
+        Object[] keyArray = DynamicObjectLibrary.getUncached().getKeyArray(s);
+        yield StructureTypeMatcherNode.create(
+            Arrays.copyOf(keyArray, keyArray.length, VocabularyType[].class), false);
+      }
       default -> AlwaysTrueMatcherNode.create();
     };
   }

@@ -16,6 +16,11 @@ public class Structure extends DynamicObject implements TruffleObject {
     super(shape);
   }
 
+  @Override
+  public String toString() {
+    return toDisplayString(false, DynamicObjectLibrary.getUncached()).toString();
+  }
+
   @ExportMessage
   public Object toDisplayString(@SuppressWarnings("unused") boolean allowSideEffects,
       @CachedLibrary("this") DynamicObjectLibrary thisObjectLibrary) {

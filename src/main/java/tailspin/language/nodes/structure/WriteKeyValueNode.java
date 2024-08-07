@@ -29,7 +29,7 @@ public abstract class WriteKeyValueNode extends ValueNode {
       @Cached(value = "type.getConstraint(value)", neverDefault = true) MatcherNode typeConstraint,
       @CachedLibrary(limit = "1") DynamicObjectLibrary dynamicObjectLibrary) {
     if (!typeConstraint.executeMatcherGeneric(null, value)) {
-      throw TypeError.at(this, type.toString(), value);
+      throw new TypeError(type.toString() + " cannot be " + value);
     }
     dynamicObjectLibrary.put(target, type, value);
     return target;

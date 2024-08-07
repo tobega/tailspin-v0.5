@@ -67,3 +67,15 @@ end !
 ---big numbers are also numbers
 { foo: 20_000_000_000_000_000_000 } -> { foo: 4 } !
 ={ foo: 4 }
+---autotype structure
+{ foo: { bar: 6 } } -> { foo: 4 } !
+=TypeError
+---autotype structure requires all members
+{ foo: { bar: 6 } } -> { foo: { qux: 8 } } !
+=TypeError
+---autotype structure requires no extra members
+{ foo: { bar: 6 } } -> { foo: { bar: 4, qux: 8 } } !
+=TypeError
+---autotype structure
+{ foo: { bar: 6 } } -> { foo: { bar: 4 } } !
+={ foo: { bar: 4 } }

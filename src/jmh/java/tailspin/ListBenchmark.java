@@ -9,6 +9,8 @@ import org.openjdk.jmh.annotations.Benchmark;
 public class ListBenchmark extends TruffleBenchmark {
   // TODO: isShorterThan should be an operator
   private static final String tailspinProgram = """
+      next requires <|{ val: <|..>, ?next: VOID}>
+      
       makeList templates
         when <|0~..> do
           { val: $, $ - 1 -> # -> { next: $ } } !

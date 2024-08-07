@@ -439,7 +439,7 @@ public class NodeFactory {
             default -> throw new IllegalStateException("Unexpected value: " + condition);
           }
         }
-        conditionNodes.addFirst(StructureTypeMatcherNode.create(requiredKeys));
+        conditionNodes.addFirst(StructureTypeMatcherNode.create(requiredKeys.toArray(VocabularyType[]::new), true));
         yield conditionNodes;
       }
       default -> throw new IllegalStateException("Unexpected value: " + typeMatch);
