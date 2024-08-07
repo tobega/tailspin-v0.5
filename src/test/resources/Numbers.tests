@@ -174,4 +174,4 @@ end !
 =3
 ---add non-number is type error
 1 + ({ foo: 1}) !
-=TypeError
+=*TypeError

@@ -35,7 +35,7 @@ public class SampleTests {
                   result = context.eval("tt", testProgram);
                   assertEquals(line.substring(1), result.toString(), "Failed: " + testName);
                 } catch (PolyglotException e) {
-                  if (!e.getMessage().contains(line.substring(1))) throw new AssertionError("Failed: " + testName, e);
+                  if (!line.startsWith("=*") || !e.getMessage().contains(line.substring(2))) throw new AssertionError("Failed: " + testName, e);
                 } catch (Exception e) {
                   throw new AssertionError("Failed: " + testName, e);
                 }

@@ -420,7 +420,12 @@ public class NodeFactory {
         yield conditionNodes;
       }
       case "structure-match" -> {
+        boolean allowExtraFields = true;
         List<Object> conditions;
+        if (typeMatch.content() instanceof List<?> l && "VOID".equals(l.getLast())) {
+          allowExtraFields = false;
+          typeMatch = new ParseNode(typeMatch.name(), ((List<?>) typeMatch.content()).getFirst());
+        }
         if (typeMatch.content().equals("{")) conditions = List.of();
         else if (typeMatch.content() instanceof ParseNode(String name, ParseNode keyMatcher) && name.equals("key-matchers")) {
           conditions = List.of(keyMatcher.content());
@@ -445,7 +450,7 @@ public class NodeFactory {
             default -> throw new IllegalStateException("Unexpected value: " + condition);
           }
         }
-        conditionNodes.addFirst(StructureTypeMatcherNode.create(requiredKeys.toArray(VocabularyType[]::new), true));
+        conditionNodes.addFirst(StructureTypeMatcherNode.create(requiredKeys.toArray(VocabularyType[]::new), allowExtraFields));
         yield conditionNodes;
       }
       default -> throw new IllegalStateException("Unexpected value: " + typeMatch);
