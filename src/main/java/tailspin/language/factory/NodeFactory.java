@@ -439,18 +439,33 @@ public class NodeFactory {
         } else throw new IllegalStateException("Unexpected conditions: " + typeMatch.content());
         List<MatcherNode> conditionNodes = new ArrayList<>();
         List<VocabularyType> requiredKeys = new ArrayList<>();
+        List<VocabularyType> optionalKeys = new ArrayList<>();
         for (Object condition : conditions) {
           switch (condition) {
             case ParseNode(String ignored, String key) -> requiredKeys.add(currentScope().getVocabularyType(key));
             case List<?> km -> {
+              boolean isOptional = false;
+              if (km.getFirst() instanceof String s && "?".equals(s)) {
+                isOptional = true;
+                km = km.subList(1, km.size());
+              }
               String key = (String) ((ParseNode) km.getFirst()).content();
-              MatcherNode matcher = visitAlternativeMembranes(((ParseNode) km.getLast()).content());
-              conditionNodes.addLast(StructureKeyMatcherNode.create(currentScope().getVocabularyType(key), matcher));
+              VocabularyType type = currentScope().getVocabularyType(key);
+              if (isOptional) {
+                optionalKeys.add(type);
+              } else {
+                requiredKeys.add(type);
+              }
+              if (km.size() > 1) {
+                MatcherNode matcher = visitAlternativeMembranes(
+                    ((ParseNode) km.getLast()).content());
+                conditionNodes.addLast(StructureKeyMatcherNode.create(type, matcher, isOptional));
+              }
             }
             default -> throw new IllegalStateException("Unexpected value: " + condition);
           }
         }
-        conditionNodes.addFirst(StructureTypeMatcherNode.create(requiredKeys.toArray(VocabularyType[]::new), allowExtraFields));
+        conditionNodes.addFirst(StructureTypeMatcherNode.create(requiredKeys.toArray(VocabularyType[]::new), allowExtraFields, optionalKeys.toArray(VocabularyType[]::new)));
         yield conditionNodes;
       }
       default -> throw new IllegalStateException("Unexpected value: " + typeMatch);

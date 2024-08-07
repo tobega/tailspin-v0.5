@@ -15,21 +15,23 @@ public abstract class StructureKeyMatcherNode extends MatcherNode {
   @Child
   @SuppressWarnings("FieldMayBeFinal")
   MatcherNode matcher;
+  final boolean isOptional;
 
-  protected StructureKeyMatcherNode(VocabularyType key, MatcherNode matcher) {
+  protected StructureKeyMatcherNode(VocabularyType key, MatcherNode matcher, boolean isOptional) {
     this.key = key;
     this.matcher = matcher;
+    this.isOptional = isOptional;
   }
 
   @Specialization
   protected boolean doKeyMatch(VirtualFrame frame, Structure structure,
       @CachedLibrary(limit = "2") DynamicObjectLibrary dynamicObjectLibrary) {
     Object value = dynamicObjectLibrary.getOrDefault(structure, key, null);
-    if (value == null) return false;
+    if (value == null) return isOptional;
     return matcher.executeMatcherGeneric(frame, value);
   }
 
-  public static StructureKeyMatcherNode create(VocabularyType key, MatcherNode matcher) {
-    return StructureKeyMatcherNodeGen.create(key, matcher);
+  public static StructureKeyMatcherNode create(VocabularyType key, MatcherNode matcher, boolean isOptional) {
+    return StructureKeyMatcherNodeGen.create(key, matcher, isOptional);
   }
 }

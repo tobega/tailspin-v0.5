@@ -14,10 +14,12 @@ import tailspin.language.runtime.VocabularyType;
 public abstract class StructureTypeMatcherNode extends MatcherNode {
   final VocabularyType[] requiredKeys;
   final boolean allowExtraFields;
+  final VocabularyType[] optionalKeys;
 
-  protected StructureTypeMatcherNode(VocabularyType[] requiredKeys, boolean allowExtraFields) {
+  protected StructureTypeMatcherNode(VocabularyType[] requiredKeys, boolean allowExtraFields, VocabularyType[] optionalKeys) {
     this.requiredKeys = requiredKeys;
     this.allowExtraFields = allowExtraFields;
+    this.optionalKeys = optionalKeys;
   }
 
   @Specialization(guards = "requiredKeys.length == 0")
@@ -29,9 +31,18 @@ public abstract class StructureTypeMatcherNode extends MatcherNode {
   @ExplodeLoop
   protected boolean isStructure(Structure target,
       @CachedLibrary(limit = "2") DynamicObjectLibrary dynamicObjectLibrary) {
-    if (!allowExtraFields && dynamicObjectLibrary.getKeyArray(target).length != requiredKeys.length) return false;
     for (VocabularyType key : requiredKeys) {
       if (!dynamicObjectLibrary.containsKey(target, key)) return false;
+    }
+    if (!allowExtraFields) {
+      int optionalKeysPresent = 0;
+      for (VocabularyType key : optionalKeys) {
+        if (dynamicObjectLibrary.containsKey(target, key))
+          optionalKeysPresent++;
+      }
+      if (dynamicObjectLibrary.getKeyArray(target).length
+          != requiredKeys.length + optionalKeysPresent)
+        return false;
     }
     return true;
   }
@@ -39,7 +50,7 @@ public abstract class StructureTypeMatcherNode extends MatcherNode {
   @Fallback
   protected boolean notStructure(Object ignored) { return false; }
 
-  public static StructureTypeMatcherNode create(VocabularyType[] requiredKeys, boolean allowExtraFields) {
-    return StructureTypeMatcherNodeGen.create(requiredKeys, allowExtraFields);
+  public static StructureTypeMatcherNode create(VocabularyType[] requiredKeys, boolean allowExtraFields, VocabularyType[] optionalKeys) {
+    return StructureTypeMatcherNodeGen.create(requiredKeys, allowExtraFields, optionalKeys);
   }
 }

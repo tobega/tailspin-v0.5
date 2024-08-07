@@ -85,3 +85,40 @@ end !
   otherwise 0!
 end !
 =1
+=1
+---has allowed properties and matched allowed properties
+{ foo: 1, bar: 3 } -> templates
+  when <|{foo:, bar: <|..4> VOID}> do 1!
+  otherwise 0!
+end !
+=1
+---may have optional property
+{ foo: 1, bar: 3 } -> templates
+  when <|{foo:, ?bar: VOID}> do 1!
+  otherwise 0!
+end !
+=1
+---may be without optional property
+{ foo: 1 } -> templates
+  when <|{foo:, ?bar: VOID}> do 1!
+  otherwise 0!
+end !
+=1
+---matches optional property
+{ foo: 1, bar: 3 } -> templates
+  when <|{foo:, ?bar: <|..4>}> do 1!
+  otherwise 0!
+end !
+=1
+---does not match optional property
+{ foo: 1, bar: 3 } -> templates
+  when <|{foo:, ?bar: <|4..>}> do 1!
+  otherwise 0!
+end !
+=0
+---does not have matched optional property
+{ foo: 1 } -> templates
+  when <|{foo:, ?bar: <|4..>}> do 1!
+  otherwise 0!
+end !
+=1

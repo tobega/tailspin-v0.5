@@ -70,7 +70,7 @@ public class TailspinParser {
      array-length-condition rule (<|='('> <|WS>?) <|literal-match|range-match> (<|WS>? <|=')'> <|WS>?)
      structure-match rule <|='{'|key-matchers> (<|WS>?) <|='VOID'>? (<|WS>? <|='}'> <|WS>?)
      key-matchers rule (<|='{'> <|WS>?) <|key-matcher> <|additional-key-matcher>*
-     key-matcher rule <|ID> (<|=':'> <|WS>?) <|content-matcher>?
+     key-matcher rule <|='?'>? <|ID> (<|=':'> <|WS>?) <|content-matcher>?
      additional-key-matcher rule (<|=','> <|WS>?) <|key-matcher>
      content-matcher rule (<|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>?)
      

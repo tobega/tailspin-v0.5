@@ -39,7 +39,7 @@ public class VocabularyType implements Comparable<VocabularyType> {
       case Structure s -> {
         Object[] keyArray = DynamicObjectLibrary.getUncached().getKeyArray(s);
         yield StructureTypeMatcherNode.create(
-            Arrays.copyOf(keyArray, keyArray.length, VocabularyType[].class), false);
+            Arrays.copyOf(keyArray, keyArray.length, VocabularyType[].class), false, new VocabularyType[0]);
       }
       default -> AlwaysTrueMatcherNode.create();
     };
