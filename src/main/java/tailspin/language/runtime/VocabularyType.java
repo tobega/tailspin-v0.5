@@ -44,4 +44,9 @@ public class VocabularyType implements Comparable<VocabularyType> {
       default -> AlwaysTrueMatcherNode.create();
     };
   }
+
+  public void setConstraint(MatcherNode constraint) {
+    if (this.constraint != null) throw new IllegalStateException("Cannot redefine type " + key);
+    this.constraint = constraint;
+  }
 }

@@ -1,7 +1,6 @@
 package tailspin.samples;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,7 +35,7 @@ public class SampleTests {
                   result = context.eval("tt", testProgram);
                   assertEquals(line.substring(1), result.toString(), "Failed: " + testName);
                 } catch (PolyglotException e) {
-                  assertTrue(e.getMessage().contains(line.substring(1)), "Failed: " + testName + ": " + e);
+                  if (!e.getMessage().contains(line.substring(1))) throw new AssertionError("Failed: " + testName, e);
                 } catch (Exception e) {
                   throw new AssertionError("Failed: " + testName, e);
                 }

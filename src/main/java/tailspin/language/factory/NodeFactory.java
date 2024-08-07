@@ -150,6 +150,12 @@ public class NodeFactory {
         }
         yield SinkNode.create(asTransformNode(visitValueChain(new ParseNode(valueChain.name(), transforms))));
       }
+      case ParseNode(String stmtType, List<?> def) when stmtType.equals("type-def") -> {
+        VocabularyType type = currentScope().getVocabularyType(((ParseNode) def.getFirst()).content().toString());
+        MatcherNode constraint = visitAlternativeMembranes(def.subList(1, def.size()));
+        type.setConstraint(constraint);
+        yield DoNothingNode.create();
+      }
       default -> throw new IllegalStateException("Unexpected value: " + statement);
     };
   }

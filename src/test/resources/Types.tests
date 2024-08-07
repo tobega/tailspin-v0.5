@@ -79,3 +79,15 @@ end !
 ---autotype structure
 { foo: { bar: 6 } } -> { foo: { bar: 4 } } !
 ={ foo: { bar: 4 } }
+---define type
+val requires <|..>
+4 -> { val: $ } !
+={ val: 4 }
+---may not redefine type
+val requires <|..>
+val requires <|{}>
+=IllegalState
+---define type is checked
+val requires <|..>
+{ val: { foo: 4 } } !
+=TypeError
