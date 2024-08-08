@@ -115,3 +115,16 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 |ListBenchmark.list_tailspin                |avgt  |  5  |187,940 |± 28,834  |us/op|
 |PascalBenchmark.triangle_java              |avgt  |  5  | 11,891 |±  0,221  |us/op|
 |PascalBenchmark.triangle_tailspin          |avgt  |  5  | 19,183 |±  0,200  |us/op|
+
+2024-08-08 Vocabulary type chack has a big cost
+|Benchmark                                  |Mode  |Cnt  |   Score |   Error  |Units|
+|-------------------------------------------|------|-----|---------|----------|-----|
+|BubblesortBenchmark.sort_java              |avgt  |  5  |  20,793 |±  1,060  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate  |avgt  |  5  |  36,726 |±  7,324  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse  |avgt  |  5  |  51,225 |± 44,453  |us/op|
+|FibonacciBenchmark.recursive_java          |avgt  |  5  |  41,301 |± 11,838  |us/op|
+|FibonacciBenchmark.recursive_tailspin      |avgt  |  5  |  58,936 |±  3,958  |us/op|
+|ListBenchmark.list_java                    |avgt  |  5  |  24,985 |±  4,224  |us/op|
+|ListBenchmark.list_tailspin                |avgt  |  5  |1012,466 |± 40,730  |us/op|
+|PascalBenchmark.triangle_java              |avgt  |  5  |  12,687 |±  0,568  |us/op|
+|PascalBenchmark.triangle_tailspin          |avgt  |  5  |  19,476 |±  0,172  |us/op|

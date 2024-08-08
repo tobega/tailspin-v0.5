@@ -8,8 +8,14 @@ import org.openjdk.jmh.annotations.Benchmark;
 @SuppressWarnings("unused")
 public class ListBenchmark extends TruffleBenchmark {
   // TODO: isShorterThan should be an operator
+  // TODO: x, y, a, b, c could be local types and could just refer to <|next>
   private static final String tailspinProgram = """
-      next requires <|{ val: <|..>, ?next: VOID}>
+      next requires <|{ val:, ?next: VOID}>
+      x requires <|{ val:, ?next: VOID}>
+      y requires <|{ val:, ?next: VOID}>
+      a requires <|{ val:, ?next: VOID}>
+      b requires <|{ val:, ?next: VOID}>
+      c requires <|{ val:, ?next: VOID}>
       
       makeList templates
         when <|0~..> do
