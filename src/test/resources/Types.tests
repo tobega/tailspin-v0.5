@@ -91,3 +91,13 @@ val requires <|{}>
 val requires <|..>
 { val: { foo: 4 } } !
 =*TypeError
+---defined type depends on value in defining scope
+top is 5;
+foo requires <|..$top>
+{ foo: 3 } !
+={ foo: 3 }
+---violation of defined type depending on value in defining scope
+top is 5;
+foo requires <|..$top>
+{ foo: 6 } !
+=*TypeError

@@ -24,6 +24,7 @@ import tailspin.language.nodes.matchers.AllOfNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.AnyOfNode;
 import tailspin.language.nodes.matchers.ArrayTypeMatcherNode;
+import tailspin.language.nodes.matchers.CallDefinedTypeMatcherNode;
 import tailspin.language.nodes.matchers.ConditionNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNode;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
@@ -42,6 +43,7 @@ import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.structure.StructureLiteral;
 import tailspin.language.nodes.structure.StructureReadNode;
 import tailspin.language.nodes.transform.BlockNode;
+import tailspin.language.nodes.transform.DefineTypeConstraintNode;
 import tailspin.language.nodes.transform.DoNothingNode;
 import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.MatchBlockNode;
@@ -56,6 +58,7 @@ import tailspin.language.nodes.value.WriteContextValueNode;
 import tailspin.language.parser.ParseNode;
 import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.Templates;
+import tailspin.language.runtime.TemplatesInstance;
 import tailspin.language.runtime.VocabularyType;
 
 public class NodeFactory {
@@ -152,7 +155,18 @@ public class NodeFactory {
       }
       case ParseNode(String stmtType, List<?> def) when stmtType.equals("type-def") -> {
         VocabularyType type = currentScope().getVocabularyType(((ParseNode) def.getFirst()).content().toString());
+        enterNewScope(null);
         MatcherNode constraint = visitAlternativeMembranes(def.subList(1, def.size()));
+        Scope definedScope = exitScope();
+        Templates templates = definedScope.getOrCreateMatcherTemplates();
+        if (templates.needsScope()) {
+          definedScope.makeMatcherCallTarget(MatchBlockNode.create(List.of(
+              MatchTemplateNode.create(constraint, EmitNode.create(asTransformNode(ReadContextValueNode.create(-1, CV_SLOT))))
+          )));
+          TemplatesInstance definedTemplates = new TemplatesInstance(null, templates.getCallTarget());
+          type.setConstraint(CallDefinedTypeMatcherNode.create(definedTemplates));
+          yield DefineTypeConstraintNode.create(definedTemplates);
+        }
         type.setConstraint(constraint);
         yield DoNothingNode.create();
       }
