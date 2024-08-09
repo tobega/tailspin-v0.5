@@ -42,6 +42,7 @@ import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.structure.StructureLiteral;
 import tailspin.language.nodes.structure.StructureReadNode;
+import tailspin.language.nodes.structure.WriteKeyValueNode;
 import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.DefineTypeConstraintNode;
 import tailspin.language.nodes.transform.DoNothingNode;
@@ -204,6 +205,8 @@ public class NodeFactory {
     return switch (lensExpression) {
       case ParseNode(String type, ParseNode source) when type.equals("source")
           -> ArrayWriteNode.create(receiver, asSingleValueNode(visitSource(source)), asSingleValueNode(value));
+      case ParseNode(String type, ParseNode id) when type.equals("key")
+          -> WriteKeyValueNode.create(currentScope().getVocabularyType((String) id.content()), receiver, asSingleValueNode(value));
       default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };
   }

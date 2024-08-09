@@ -122,3 +122,16 @@ end !
   otherwise 0!
 end !
 =1
+---read structure state
+{ foo: 3, bar: 4} -> templates
+  @ set $;
+  $@(foo:) !
+end !
+=3
+---set structure property
+{ foo: 3, bar: 4} -> templates
+  @ set $;
+  @(foo:) set 5;
+  $@ !
+end !
+={ bar: 4, foo: 5 }
