@@ -1,29 +1,26 @@
 package tailspin.language.nodes.state;
 
-import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
-import tailspin.language.nodes.ValueNode;
+import com.oracle.truffle.api.nodes.Node;
 import tailspin.language.runtime.TailspinArray;
 
-@NodeChild(value = "result", type = ValueNode.class)
-public abstract class FreezeNode extends ValueNode {
+@GenerateInline
+public abstract class FreezeNode extends Node {
+  public abstract void executeFreeze(Node node, Object value);
+
   @Specialization
-  long doLong(long number) {
-    return number;
+  void doArray(TailspinArray ta,
+      @Cached(inline = false) FreezeNode childFreezer) {
+    if (ta.needsFreeze()) {
+      long length = ta.getArraySize();
+      for (int i = 0; i < length; i++) {
+        childFreezer.executeFreeze(this, ta.getNative(i));
+      }
+    }
   }
 
   @Specialization
-  TailspinArray doArray(TailspinArray ta) {
-    ta.freeze();
-    return ta;
-  }
-
-  @Specialization
-  Object doObject(Object result) {
-    return result;
-  }
-
-  public static FreezeNode create(ValueNode result) {
-    return FreezeNodeGen.create(result);
-  }
+  void doObject(Object ignored) {}
 }

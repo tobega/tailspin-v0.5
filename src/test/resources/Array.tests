@@ -59,3 +59,29 @@ end !
   $@ !
 end !
 =[5, 2, 3]
+---set array element after output
+[1, 2, 3] -> templates
+  @ set $;
+  $@ !
+  @(1) set 5;
+end !
+=[1, 2, 3]
+---array values are immutable
+a is [1, 2, 3];
+$a -> templates
+  @ set $;
+  @(1) set 5;
+  $@ !
+end -> $(1) + $a(1) !
+=6
+---mutable array gets refrozen after modification
+[1, 2, 3] -> templates
+  @ set $;
+  @(1) set 5;
+  a is $@;
+  @(1) set 3;
+  b is $@;
+  @(1) set 79;
+  $a(1) + $b(1) !
+end !
+=8

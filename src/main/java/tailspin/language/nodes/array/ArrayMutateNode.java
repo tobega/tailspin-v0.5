@@ -10,10 +10,10 @@ import tailspin.language.runtime.TailspinArray;
 @NodeChild(value = "array", type = ValueNode.class)
 @NodeChild(value = "lens", type = ValueNode.class)
 @NodeChild(value = "value", type = ValueNode.class)
-public abstract class ArrayWriteNode extends ValueNode {
+public abstract class ArrayMutateNode extends ValueNode {
 
-  public static ArrayWriteNode create(ValueNode array, ValueNode index, ValueNode value) {
-    return ArrayWriteNodeGen.create(array, index, value);
+  public static ArrayMutateNode create(ValueNode array, ValueNode index, ValueNode value) {
+    return ArrayMutateNodeGen.create(array, index, value);
   }
 
   @Specialization

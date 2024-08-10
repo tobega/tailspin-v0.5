@@ -24,19 +24,18 @@ public class TailspinArray implements TruffleObject {
   public static TailspinArray value(Object[] arrayElements) {
     return new TailspinArray(arrayElements, arrayElements.length, false);
   }
+
   public TailspinArray getThawed() {
     if (isMutable) return this;
     return new TailspinArray(Arrays.copyOf(arrayElements, arrayElements.length), length, true);
   }
 
-  public void freeze() {
-    if (!isMutable) return;
-    isMutable = false;
-    for (int i = 0; i < length; i++) {
-      if (arrayElements[i] instanceof TailspinArray ta) {
-        ta.freeze();
-      }
+  public boolean needsFreeze() {
+    if (isMutable) {
+      isMutable = false;
+      return true;
     }
+    return false;
   }
 
   public Object getNative(int i) {

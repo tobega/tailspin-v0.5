@@ -45,7 +45,7 @@ public class ArrayTest {
             ResultAggregatingNode.create(IntegerLiteral.create(6)),
             RangeIteration.create(rangeSlot, ResultAggregatingNode.create(ReadContextValueNode.create(-1, rangeSlot)), IntegerLiteral.create(10L),
                 true, IntegerLiteral.create(15L), IntegerLiteral.create(5L), true)));
-    ValueNode writeNode = ArrayWriteNode.create(array, IntegerLiteral.create(4), IntegerLiteral.create(35));
+    ValueNode writeNode = ArrayMutateNode.create(array, IntegerLiteral.create(4), IntegerLiteral.create(35));
     ValueNode readNode = ArrayReadNode.create(writeNode, IntegerLiteral.create(4));
     assertEquals(35L, TestUtil.evaluate(readNode, fdb.build(), List.of()));
   }
