@@ -1,6 +1,7 @@
 package tailspin.language.nodes.structure;
 
 import com.oracle.truffle.api.dsl.Cached.Shared;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.library.CachedLibrary;
@@ -41,8 +42,12 @@ public abstract class WriteEmbeddedStructureNode extends ValueNode {
     return target;
   }
 
+  @Fallback
+  protected Structure writeIllegal(Object target, Object ignored) {
+    throw new IllegalStateException("Attempted structure write to " + target);
+  }
+
   public static WriteEmbeddedStructureNode create(ValueNode target, ValueNode value) {
     return WriteEmbeddedStructureNodeGen.create(target, value);
   }
-
 }

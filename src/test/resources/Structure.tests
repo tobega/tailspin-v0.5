@@ -135,3 +135,29 @@ end !
   $@ !
 end !
 ={ bar: 4, foo: 5 }
+---set structure property after output
+{ foo: 3, bar: 4} -> templates
+  @ set $;
+  $@ !
+  @(foo:) set 5;
+end !
+={ bar: 4, foo: 3 }
+---structure values are immutable
+a is { foo: 3, bar: 4};
+$a -> templates
+  @ set $;
+  @(foo:) set 5;
+  $@ !
+end -> $(foo:) + $a(foo:) !
+=8
+---mutable structure gets refrozen after modification
+{ foo: 1, bar: 4}  -> templates
+  @ set $;
+  @(foo:) set 5;
+  a is $@;
+  @(foo:) set 3;
+  b is $@;
+  @(foo:) set 79;
+  $a(foo:) + $b(foo:) !
+end !
+=8

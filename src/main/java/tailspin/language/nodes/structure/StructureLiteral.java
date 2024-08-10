@@ -4,6 +4,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.Shape;
 import java.util.List;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.VocabularyType;
 
 public class StructureLiteral extends ValueNode {
@@ -28,7 +29,9 @@ public class StructureLiteral extends ValueNode {
   }
 
   @Override
-  public Object executeGeneric(VirtualFrame frame) {
-    return builder.executeGeneric(frame);
+  public Structure executeGeneric(VirtualFrame frame) {
+    Structure s = (Structure) builder.executeGeneric(frame);
+    s.needsFreeze(); // Children already created frozen
+    return s;
   }
 }

@@ -12,8 +12,33 @@ import java.util.Arrays;
 
 @ExportLibrary(InteropLibrary.class)
 public class Structure extends DynamicObject implements TruffleObject {
+  private boolean isMutable = true;
+
   public Structure(Shape shape) {
     super(shape);
+  }
+
+  public boolean needsFreeze() {
+    if (isMutable) {
+      isMutable = false;
+      return true;
+    }
+    return false;
+  }
+
+  @SuppressWarnings("unused")
+  public boolean isMutable() {
+    return isMutable;
+  }
+
+  public Structure getThawed() {
+    if (isMutable) return this;
+    DynamicObjectLibrary dol = DynamicObjectLibrary.getUncached();
+    Structure thawed = new Structure(getShape().getRoot());
+    for (Object key : dol.getKeyArray(this)) {
+      dol.put(thawed, key, dol.getOrDefault(this, key, null));
+    }
+    return thawed;
   }
 
   @Override

@@ -1,9 +1,13 @@
 package tailspin.language.nodes.state;
 
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Exclusive;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.TailspinArray;
 
 @GenerateInline
@@ -12,11 +16,24 @@ public abstract class FreezeNode extends Node {
 
   @Specialization
   void doArray(TailspinArray ta,
-      @Cached(inline = false) FreezeNode childFreezer) {
+      @Cached(inline = false) @Exclusive FreezeNode childFreezer) {
     if (ta.needsFreeze()) {
       long length = ta.getArraySize();
       for (int i = 0; i < length; i++) {
         childFreezer.executeFreeze(this, ta.getNative(i));
+      }
+    }
+  }
+
+  // TODO: investigate caching array of freezers per key on shape
+  @Specialization
+  void doStructure(Structure s,
+      @CachedLibrary(limit = "2") DynamicObjectLibrary dol,
+      @Cached(inline = false) @Exclusive FreezeNode childFreezer) {
+    if (s.needsFreeze()) {
+      for (Object key : dol.getKeyArray(s)) {
+        Object child = dol.getOrDefault(s, key, null);
+        childFreezer.executeFreeze(this, child);
       }
     }
   }

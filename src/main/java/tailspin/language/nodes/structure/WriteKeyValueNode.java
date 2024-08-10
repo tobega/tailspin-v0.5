@@ -1,6 +1,7 @@
 package tailspin.language.nodes.structure;
 
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.library.CachedLibrary;
@@ -28,6 +29,7 @@ public abstract class WriteKeyValueNode extends ValueNode {
   Structure doWrite(Structure target, Object value,
       @Cached(value = "type.getConstraint(value)", neverDefault = true) MatcherNode typeConstraint,
       @CachedLibrary(limit = "1") DynamicObjectLibrary dynamicObjectLibrary) {
+    target = target.getThawed();
     if (!typeConstraint.executeMatcherGeneric(null, value)) {
       throw new TypeError(type.toString() + " cannot be " + value);
     }
@@ -35,7 +37,7 @@ public abstract class WriteKeyValueNode extends ValueNode {
     return target;
   }
 
-  @Specialization
+  @Fallback
   protected Object doIllegal(Object target, Object ignored) {
     throw new TypeError(String.format("Cannot write %s by %s", target.getClass(), type));
   }
