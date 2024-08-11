@@ -53,6 +53,7 @@ import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.SinkNode;
+import tailspin.language.nodes.iterate.StreamNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
 import tailspin.language.nodes.value.TransformResultNode;
@@ -250,6 +251,7 @@ public class NodeFactory {
         TailspinNode stageNode = switch (stage) {
           case ParseNode(String name, Object transform) when name.equals("transform") -> visitTransform(transform);
           case ParseNode(String name, ParseNode transform) when name.equals("source") -> visitSource(transform);
+          case ParseNode(String name, String ignored) when name.equals("stream") -> StreamNode.create(ReadContextValueNode.create(-1, currentValueSlot()));
           case String v when v.equals("VOID") -> VoidValue.create();
           default -> throw new IllegalStateException("Unexpected value: " + stage);
         };

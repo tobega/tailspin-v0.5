@@ -25,7 +25,7 @@ public class TailspinParser {
      sink rule <|value-chain> (<|WS>? <|='->'> <|WS>? <|='!'> <|WS>?) <|='VOID'|='#'|templates-call>
      type-def rule <|ID> (<|WS> <|='requires'> <|WS> <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>?)
      
-     value-chain rule <|source> <|transform>*
+     value-chain rule <|source> <|transform|stream>*
      source rule <|arithmetic-expression|reference|single-value-chain|array-literal|range|structure-literal> (<|WS>?)
      reference rule <|='$'> <|='@'>? <|ID>? <|lens-expression>? <|message-send>?
      single-value-chain rule (<|='('> <|WS>?) <|value-chain> (<|WS>? <|=')'>)
@@ -52,6 +52,7 @@ public class TailspinParser {
      inline-templates-call rule (<|='templates'> <|WS>) <|templates-body>  (<|='end'> <|WS>?)
      templates rule (name is <|ID>; <|WS>) <|='templates'|='source'|='sink'> (<|WS>) <|templates-body>  (<|='end'> <|WS>) <|=$name>
      filter rule (<|='if'> <|WS>? <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>?)
+     stream rule <|='...'> (<|WS>?)
      
      templates-body rule <|with-block|matchers>
      with-block rule <|statement>+ <|matchers>?

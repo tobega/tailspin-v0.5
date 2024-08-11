@@ -7,6 +7,7 @@ import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 @ExportLibrary(InteropLibrary.class)
@@ -47,6 +48,10 @@ public class TailspinArray implements TruffleObject {
     if (!isMutable) throw new IllegalStateException();
     if (!isArrayElementReadable(i)) throw new IndexOutOfBoundsException();
     arrayElements[i] = value;
+  }
+
+  public ArrayList<Object> stream() {
+    return new ArrayList<>(Arrays.asList(arrayElements).subList(0, (int) length));
   }
 
   @ExportMessage

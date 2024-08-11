@@ -46,3 +46,11 @@ $a(3) !
 ---send length message
 [2, 3, 4, 5] -> $::length !
 =4
+---stream values
+[3, 1, 9, 2, 7] -> templates
+  @ set $(1);
+  $... -> ! #
+  $@ !
+  when <|$@..> do @ set $;
+end !
+=9
