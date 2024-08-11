@@ -41,26 +41,6 @@ end !
   otherwise $ + $a !
 end !
 =10
----define and access state
-2 -> templates
-  @ set $;
-  $@ !
-end !
-=2
----access state from matcher
-2 -> templates
-  @ set $;
-  $@ -> # !
-  otherwise ($ + 1) * $@ !
-end !
-=6
----set state from matcher
-2 -> templates
-  $ -> # !
-  $@ !
-  otherwise @ set $ + 1;
-end !
-=3
 ---access defined value on many levels
 increment is 3;
 1 + $increment
@@ -100,27 +80,6 @@ upper is 4;
   otherwise 0 !
 end !
 =5
----read state from outer templates
-outer templates
-  @ set $;
-  1 -> templates
-    $ + $@outer !
-  end !
-end outer
-
-4 -> outer !
-=5
----write state to outer templates
-outer templates
-  $ -> templates
-    @outer set $ + 1;
-    $ + 2!
-  end
-  -> $ * $@ !
-end outer
-
-1 -> outer !
-=6
 ---sink matchers
 3 -> templates
   @ set 0;

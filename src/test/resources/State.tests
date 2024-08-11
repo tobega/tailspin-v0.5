@@ -1,0 +1,119 @@
+---define and access state
+2 -> templates
+  @ set $;
+  $@ !
+end !
+=2
+---access state from matcher
+2 -> templates
+  @ set $;
+  $@ -> # !
+  otherwise ($ + 1) * $@ !
+end !
+=6
+---set state from matcher
+2 -> templates
+  $ -> # !
+  $@ !
+  otherwise @ set $ + 1;
+end !
+=3
+---read state from outer templates
+outer templates
+  @ set $;
+  1 -> templates
+    $ + $@outer !
+  end !
+end outer
+
+4 -> outer !
+=5
+---write state to outer templates
+outer templates
+  $ -> templates
+    @outer set $ + 1;
+    $ + 2!
+  end
+  -> $ * $@ !
+end outer
+
+1 -> outer !
+=6
+---read single value index of state array
+[2, 3, 4, 5] -> templates
+  @ set $;
+  $@(3) !
+end !
+=4
+---set array element
+[1, 2, 3] -> templates
+  @ set $;
+  @(1) set 5;
+  $@ !
+end !
+=[5, 2, 3]
+---set array element after output
+[1, 2, 3] -> templates
+  @ set $;
+  $@ !
+  @(1) set 5;
+end !
+=[1, 2, 3]
+---array values are immutable
+a is [1, 2, 3];
+$a -> templates
+  @ set $;
+  @(1) set 5;
+  $@ !
+end -> $(1) + $a(1) !
+=6
+---mutable array gets refrozen after modification
+[1, 2, 3] -> templates
+  @ set $;
+  @(1) set 5;
+  a is $@;
+  @(1) set 3;
+  b is $@;
+  @(1) set 79;
+  $a(1) + $b(1) !
+end !
+=8
+---read structure state
+{ foo: 3, bar: 4} -> templates
+  @ set $;
+  $@(foo:) !
+end !
+=3
+---set structure property
+{ foo: 3, bar: 4} -> templates
+  @ set $;
+  @(foo:) set 5;
+  $@ !
+end !
+={ bar: 4, foo: 5 }
+---set structure property after output
+{ foo: 3, bar: 4} -> templates
+  @ set $;
+  $@ !
+  @(foo:) set 5;
+end !
+={ bar: 4, foo: 3 }
+---structure values are immutable
+a is { foo: 3, bar: 4};
+$a -> templates
+  @ set $;
+  @(foo:) set 5;
+  $@ !
+end -> $(foo:) + $a(foo:) !
+=8
+---mutable structure gets refrozen after modification
+{ foo: 1, bar: 4}  -> templates
+  @ set $;
+  @(foo:) set 5;
+  a is $@;
+  @(foo:) set 3;
+  b is $@;
+  @(foo:) set 79;
+  $a(foo:) + $b(foo:) !
+end !
+=8
