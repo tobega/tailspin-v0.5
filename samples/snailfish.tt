@@ -16,9 +16,9 @@ add (left operator right)
     $@::first -> #
     when <|$@::last~..> do $@!
     when <?($@($) matches <|{level: <=4>}>)> do --explode
-      $ -> when <|$@deepen::first~..> -> @($-1; value:) set $@($-1; value:) + $@($; value:);
+      $ -> if <|$@deepen::first~..> -> @($-1; value:) set $@($-1; value:) + $@($; value:);
       ^@($) -> !VOID
-      $ -> when <|..~$@deepen::last> -> @($+1; value:) set $@($+1; value:) + $@($; value:);
+      $ -> if <|..~$@deepen::last> -> @($+1; value:) set $@($+1; value:) + $@($; value:);
       @($; value:) set 0"1";
       $ + 1 -> #
     otherwise @($; level:) set $@($; level:)::raw + 1;
@@ -30,8 +30,8 @@ add (left operator right)
     when <|$@::last~..> do $@!
     when <|$@::first.. ?($@($) matches <|{value: <|10"1"..>, level: <|=4>}>)> do --explodes immediately
       toSplit is $@($; value:);
-      $ -> when <|$@::first~..> -> @($-1; value:) set $@($-1; value:) + $@($; value:) ~/ 2;
-      $ -> when <|..~$@::last> -> @($+1; value:) set  $@($+1; value:) + ($@($; value:) + 1"1") ~/ 2;
+      $ -> if <|$@::first~..> -> @($-1; value:) set $@($-1; value:) + $@($; value:) ~/ 2;
+      $ -> if <|..~$@::last> -> @($+1; value:) set  $@($+1; value:) + ($@($; value:) + 1"1") ~/ 2;
       @($; value:) set  0"1";
       $ - 1 -> #
     when <|$@::first.. ?($@($) matches <|{value: <|10"1"..>}>)> do

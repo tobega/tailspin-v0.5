@@ -48,6 +48,7 @@ import tailspin.language.nodes.transform.BlockNode;
 import tailspin.language.nodes.transform.DefineTypeConstraintNode;
 import tailspin.language.nodes.transform.DoNothingNode;
 import tailspin.language.nodes.transform.EmitNode;
+import tailspin.language.nodes.transform.FilterNode;
 import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
@@ -306,6 +307,8 @@ public class NodeFactory {
       case ParseNode(String type, ParseNode id) when type.equals("templates-call")
           -> SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(),
           currentScope().findTemplates((String) id.content()));
+      case ParseNode(String type, Object membranes) when type.equals("filter")
+          -> FilterNode.create(ReadContextValueNode.create(-1, currentValueSlot()), visitAlternativeMembranes(membranes));
       default -> throw new IllegalStateException("Unexpected value: " + transform);
     };
   }

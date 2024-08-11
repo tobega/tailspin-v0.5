@@ -40,7 +40,7 @@ Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.c
 - Key-values will have to be wrapped in a structure, so `{ foo: 1 }` instead of an independent `(foo:1)`, this just removes an unnecessary special case
 
 ## New features
-- Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `when <.....>`
+- Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `if <.....>`
 - Assert a single value from a chain by surrounding with parentheses, `($source -> filter)`, previously only for arithmetic value
 
 ## Performance check

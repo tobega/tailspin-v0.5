@@ -23,51 +23,51 @@ smokes is ['Pall Mall', 'Dunhill', 'Blend', 'Blue Master', 'Prince'];
 -- start with all permutations of colours
 $permutationsOf5... -> $colours($) -> [$... -> {colour: $}]
   -- 5. The green house is immediately to the left of the white house.
-  -> when <[(<{colour: <='green'>}>:<{colour: <='white'>}>)]>
+  -> if <[(<{colour: <='green'>}>:<{colour: <='white'>}>)]>
   -- zip with all permutations of nationalities
   -> [$, by $permutationsOf5... -> $nationalities($)] -> $(first; .. as i; -> {$, nationality: §(last;$i)})
   -- 10. The Norwegian lives in the first house.
-  -> when <?($(1) <{nationality: <='Norwegian'>}>)>
+  -> if <?($(1) <{nationality: <='Norwegian'>}>)>
   -- 2. The English man lives in the red house.
-  -> when <[<{nationality: <='Englishman'>, colour: <='red'>}>]>
+  -> if <[<{nationality: <='Englishman'>, colour: <='red'>}>]>
   -- 15. The Norwegian lives next to the blue house.
-  -> when <[(<{nationality: <='Norwegian'>}>:<{colour: <='blue'>}>)] | [(<{colour: <='blue'>}>:<{nationality: <='Norwegian'>}>)]>
+  -> if <[(<{nationality: <='Norwegian'>}>:<{colour: <='blue'>}>)] | [(<{colour: <='blue'>}>:<{nationality: <='Norwegian'>}>)]>
   -- zip with all permutations of drinks (alternative expression)
   -> templates
        current is $;
        $permutationsOf5... -> $drinks($) -> $(.. as i; -> {$current($i), drink: $}) !
      end
   -- 9. In the middle house they drink milk.
-  -> when <?($(3) <{drink: <='milk'>}>)>
+  -> if <?($(3) <{drink: <='milk'>}>)>
   -- 6. They drink coffee in the green house.
-  -> when <[<{drink: <='coffee'>, colour: <='green'>}>]>
+  -> if <[<{drink: <='coffee'>, colour: <='green'>}>]>
   -- 4. The Dane drinks tea.
-  -> when <[<{nationality: <='Dane'>, drink: <='tea'>}>]>
+  -> if <[<{nationality: <='Dane'>, drink: <='tea'>}>]>
   -- zip with all permutations of pets (yet another way to do it)
   -> [$, by $permutationsOf5... -> $pets($) -> $(..; -> {pet: $})] -> $(first; .. as i; -> {§(first;..)...})
   -- 3. The Swede has a dog.
-  -> when <[<{nationality: <='Swede'>, pet: <='dog'>}>]>
+  -> if <[<{nationality: <='Swede'>, pet: <='dog'>}>]>
   -- zip with all permutations of smokes (clearest?)
   -> templates
        current is $;
        $permutationsOf5... -> smokes($) -> $(.. as i; -> {$current($i), smoke: $}) !
      end
   -- 7. The man who smokes Pall Mall has a bird.
-  -> when <[<{smoke: <='Pall Mall'>, pet: <='bird'>}>]>
+  -> if <[<{smoke: <='Pall Mall'>, pet: <='bird'>}>]>
   -- 8. In the yellow house they smoke Dunhill.
-  -> when <[<{colour: <='yellow'>, smoke: <='Dunhill'>}>]>
+  -> if <[<{colour: <='yellow'>, smoke: <='Dunhill'>}>]>
   -- 11. The Blend-smoker lives in the house next to the house with a cat.
-  -> when <[(<{smoke: <='Blend'>}>:<{pet: <='cat'>}>)] | [(<{pet: <='cat'>}>:<{smoke: <='Blend'>}>)]>
+  -> if <[(<{smoke: <='Blend'>}>:<{pet: <='cat'>}>)] | [(<{pet: <='cat'>}>:<{smoke: <='Blend'>}>)]>
   -- 12. In a house next to the house with a horse, they smoke Dunhill.
-  -> when <[(<{smoke: <='Dunhill'>}>:<{pet: <='horse'>}>)] | [(<{pet: <='horse'>}>:<{smoke: <='Dunhill'>}>)]>
+  -> if <[(<{smoke: <='Dunhill'>}>:<{pet: <='horse'>}>)] | [(<{pet: <='horse'>}>:<{smoke: <='Dunhill'>}>)]>
   -- 13. The man who smokes Blue Master drinks beer.
-  -> when <[<{smoke: <='Blue Master'>, drink: <='beer'>}>]>
+  -> if <[<{smoke: <='Blue Master'>, drink: <='beer'>}>]>
   -- 14. The German smokes Prince.
-  -> when <[<{smoke: <='Prince'>, nationality: <='German'>}>]>
+  -> if <[<{smoke: <='Prince'>, nationality: <='German'>}>]>
   -- 16. They drink water in a house next to the house where they smoke Blend.
-  -> when <[(<{smoke: <='Blend'>}>:<{drink: <='water'>}>)] | [(<{drink: <='water'>}>:<{smoke: <='Blend'>}>)]>
+  -> if <[(<{smoke: <='Blend'>}>:<{drink: <='water'>}>)] | [(<{drink: <='water'>}>:<{smoke: <='Blend'>}>)]>
   -> !sink
-       $... -> when <{pet: <='zebra'>}> 'The $.nationality; owns the zebra.$#10;' -> !OUT::write $!
+       $... -> if <{pet: <='zebra'>}> -> 'The $.nationality; owns the zebra.$#10;' -> !OUT::write $!
        $(.. as i; -> '$i;: $;')... -> '$;$#10;' -> !OUT::write
        '$#10;' -> !OUT::write
       end
