@@ -188,14 +188,19 @@ public class NodeFactory {
       }
       case List<?> l -> {
         value = visitValueChain((ParseNode) l.getLast());
+        l = l.subList(0, l.size() - 1);
         if (l.getFirst() instanceof ParseNode(String type, String identifier) && type.equals("ID")) {
           scopeId = identifier;
           l = l.subList(1, l.size());
         }
         stateLevel = currentScope().accessState(scopeId);
-        ValueNode receiver = ReadContextValueNode.create(stateLevel, STATE_SLOT);
-        if (l.getFirst() instanceof ParseNode(String type, ParseNode lensExpr) && type.equals("lens-expression")) {
-          value = visitWriteLensExpression(receiver, lensExpr, value);
+        ValueNode target = ReadContextValueNode.create(stateLevel, STATE_SLOT);
+        if (!l.isEmpty()) {
+          if (l.getFirst() instanceof ParseNode(String type, Object lensExpr) && type.equals("lens-expression")) {
+            value = visitWriteLensExpression(target, lensExpr, value);
+          } else {
+            throw new IllegalStateException("Unexpected value: " + l);
+          }
         }
       }
       default -> throw new IllegalStateException("Unexpected value: " + expr);
@@ -203,12 +208,17 @@ public class NodeFactory {
     return WriteContextValueNode.create(stateLevel, STATE_SLOT, asSingleValueNode(value));
   }
 
-  private ValueNode visitWriteLensExpression(ValueNode receiver, Object lensExpression, TailspinNode value) {
+  private ValueNode visitWriteLensExpression(ValueNode target, Object lensExpression, TailspinNode value) {
     return switch (lensExpression) {
       case ParseNode(String type, ParseNode source) when type.equals("source")
-          -> ArrayMutateNode.create(receiver, asSingleValueNode(visitSource(source)), asSingleValueNode(value));
+          -> ArrayMutateNode.create(target, asSingleValueNode(visitSource(source)), asSingleValueNode(value));
       case ParseNode(String type, ParseNode id) when type.equals("key")
-          -> WriteKeyValueNode.create(currentScope().getVocabularyType((String) id.content()), receiver, asSingleValueNode(value));
+          -> WriteKeyValueNode.create(currentScope().getVocabularyType((String) id.content()), target, asSingleValueNode(value));
+      case List<?> dimension -> {
+        ValueNode thisDimension = visitReadLensExpression(target, dimension.getFirst());
+        ValueNode modifiedTarget = visitWriteLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content(), value);
+        yield visitWriteLensExpression(target, dimension.getFirst(), modifiedTarget);
+      }
       default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };
   }
@@ -662,14 +672,14 @@ public class NodeFactory {
     return value;
   }
 
-  private ValueNode visitReadLensExpression(ValueNode value, Object lensExpression) {
+  private ValueNode visitReadLensExpression(ValueNode target, Object lensExpression) {
     return switch (lensExpression) {
       case ParseNode(String type, ParseNode source) when type.equals("source")
-          -> ArrayReadNode.create(value, asSingleValueNode(visitSource(source)));
+          -> ArrayReadNode.create(target, asSingleValueNode(visitSource(source)));
       case ParseNode(String type, ParseNode(String ignored, String key)) when type.equals("key")
-          -> StructureReadNode.create(value, currentScope().getVocabularyType(key));
+          -> StructureReadNode.create(target, currentScope().getVocabularyType(key));
       case List<?> dimension -> {
-        ValueNode thisDimension = visitReadLensExpression(value, dimension.getFirst());
+        ValueNode thisDimension = visitReadLensExpression(target, dimension.getFirst());
         yield visitReadLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content());
       }
       default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
