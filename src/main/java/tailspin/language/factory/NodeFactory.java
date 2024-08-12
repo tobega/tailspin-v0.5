@@ -20,6 +20,7 @@ import tailspin.language.nodes.array.ArrayReadNode;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
+import tailspin.language.nodes.iterate.StreamNode;
 import tailspin.language.nodes.matchers.AllOfNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.AnyOfNode;
@@ -54,7 +55,6 @@ import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.SinkNode;
-import tailspin.language.nodes.iterate.StreamNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
 import tailspin.language.nodes.value.TransformResultNode;
@@ -656,6 +656,7 @@ public class NodeFactory {
   }
 
   private TailspinNode visitReference(Object ref) {
+    boolean readsState = false;
     List<?> predicate = List.of();
     TailspinNode value = switch (ref) {
       case String s when s.equals("$") -> ReadContextValueNode.create(-1, currentValueSlot());
@@ -672,13 +673,14 @@ public class NodeFactory {
         }
       }
       case List<?> l when l.getFirst().equals("$") && l.get(1).equals("@") -> {
+        readsState = true;
         predicate = l.subList(2, l.size());
         String scopeId = null;
         if (!predicate.isEmpty() && predicate.getFirst() instanceof ParseNode(String ignored, String identifier)) {
           scopeId = identifier;
           predicate = predicate.subList(1, predicate.size());
         }
-        yield ReadStateNode.create(currentScope().accessState(scopeId));
+        yield ReadContextValueNode.create(currentScope().accessState(scopeId), STATE_SLOT);
       }
       case List<?> l when l.getFirst().equals("$") -> {
         predicate = l.subList(1, l.size());
@@ -686,11 +688,13 @@ public class NodeFactory {
       }
       default -> throw new IllegalStateException("Unexpected value: " + ref);
     };
-    if (predicate.isEmpty()) return value;
-    if (predicate.getFirst() instanceof ParseNode(String type, Object lensExpression) && type.equals("lens-expression")){
+    if (!predicate.isEmpty() && predicate.getFirst() instanceof ParseNode(String type, Object lensExpression) && type.equals("lens-expression")){
       value = visitReadLensExpression(asSingleValueNode(value), lensExpression);
     }
-    if (predicate.getLast() instanceof ParseNode(String sendType, ParseNode(String ignored, String message))
+    if (readsState) {
+      value = ReadStateNode.create((ValueNode) value);
+    }
+    if (!predicate.isEmpty() && predicate.getLast() instanceof ParseNode(String sendType, ParseNode(String ignored, String message))
         && sendType.equals("message-send")){
       value = MessageNode.create(message, asSingleValueNode(value));
     }

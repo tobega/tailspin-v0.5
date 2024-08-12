@@ -116,7 +116,7 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 |PascalBenchmark.triangle_java              |avgt  |  5  | 11,891 |±  0,221  |us/op|
 |PascalBenchmark.triangle_tailspin          |avgt  |  5  | 19,183 |±  0,200  |us/op|
 
-2024-08-08 Vocabulary type chack has a big cost
+2024-08-08 Vocabulary type check has a big cost
 |Benchmark                                  |Mode  |Cnt  |   Score |   Error  |Units|
 |-------------------------------------------|------|-----|---------|----------|-----|
 |BubblesortBenchmark.sort_java              |avgt  |  5  |  20,793 |±  1,060  |us/op|
@@ -142,3 +142,17 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 |ListBenchmark.list_tailspin                    |avgt  |  5  | 991,094 |± 19,492  |us/op|
 |PascalBenchmark.triangle_java                  |avgt  |  5  |  11,780 |±  0,151  |us/op|
 |PascalBenchmark.triangle_tailspin              |avgt  |  5  |  19,038 |±  0,225  |us/op|
+
+2024-08-12 Only freeze the actual state value retrieved
+|Benchmark                                      |Mode  |Cnt  |   Score |   Error  |Units|
+|-----------------------------------------------|------|-----|---------|----------|-----|
+|BubblesortBenchmark.sort_java                  |avgt  |  5  |  20,327 |±  0,299  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate      |avgt  |  5  |  33,973 |±  1,896  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse      |avgt  |  5  |  38,560 |±  0,511  |us/op|
+|FibonacciBenchmark.recursive_java              |avgt  |  5  |  36,288 |±  0,276  |us/op|
+|FibonacciBenchmark.recursive_tailspin_measure  |avgt  |  5  |3743,421 |± 44,952  |us/op|
+|FibonacciBenchmark.recursive_tailspin_raw      |avgt  |  5  |  56,612 |±  0,909  |us/op|
+|ListBenchmark.list_java                        |avgt  |  5  |  23,433 |±  1,116  |us/op|
+|ListBenchmark.list_tailspin                    |avgt  |  5  | 985,685 |± 30,591  |us/op|
+|PascalBenchmark.triangle_java                  |avgt  |  5  |  11,765 |±  0,121  |us/op|
+|PascalBenchmark.triangle_tailspin              |avgt  |  5  |  19,210 |±  0,326  |us/op|
