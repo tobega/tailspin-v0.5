@@ -6,6 +6,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
+import tailspin.language.runtime.Measure;
 
 @NodeChild(value = "dummy", type = ValueNode.class)
 @NodeChild(value = "valueNode", type = ValueNode.class)
@@ -19,6 +20,16 @@ public abstract class EqualityMatcherNode extends MatcherNode {
   @TruffleBoundary
   protected boolean bigNumberEquals(BigNumber toMatch, BigNumber value) {
     return toMatch.equals(value);
+  }
+
+  @Specialization(guards = {"toMatch.unit().equals(value.unit())", "toMatch.isLong()", "value.isLong()"})
+  protected boolean doMeasureLong(Measure toMatch, Measure value) {
+    return longEquals((long) toMatch.value(), (long) value.value());
+  }
+
+  @Specialization(guards = "toMatch.unit().equals(value.unit())")
+  protected boolean doMeasureBigNumber(Measure toMatch, Measure value) {
+    return bigNumberEquals(toMatch.bigNumber(), value.bigNumber());
   }
 
   @Specialization

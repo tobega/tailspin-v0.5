@@ -10,7 +10,6 @@ import tailspin.language.runtime.Measure;
 
 @NodeChild("leftNode") @NodeChild("rightNode")
 public abstract class AddNode extends ValueNode {
-  public abstract Object executeAdd(Object left, Object right);
 
   @Specialization(rewriteOn = ArithmeticException.class)
   protected long doLong(long left, long right) {
@@ -23,9 +22,14 @@ public abstract class AddNode extends ValueNode {
     return left.add(right);
   }
 
+  @Specialization(guards = {"left.unit().equals(right.unit())", "left.isLong()", "right.isLong()"})
+  protected Measure doMeasureLong(Measure left, Measure right) {
+    return new Measure(doLong((long) left.value(), (long) right.value()), left.unit());
+  }
+
   @Specialization(guards = "left.unit().equals(right.unit())")
-  protected Measure doMeasure(Measure left, Measure right) {
-    return new Measure(executeAdd(left.value(), right.value()), left.unit());
+  protected Measure doMeasureBigNumber(Measure left, Measure right) {
+    return new Measure(doBigNumber(left.bigNumber(), right.bigNumber()), left.unit());
   }
 
   @Specialization
