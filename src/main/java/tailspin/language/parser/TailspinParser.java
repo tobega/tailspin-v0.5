@@ -79,8 +79,12 @@ public class TailspinParser {
      arithmetic-expression rule <|addition|multiplication|numeric-literal>
      addition rule <|addition|multiplication|term> <|'[+-]'> (<|WS>?) <|multiplication|term> (<|WS>?)
      multiplication rule <|multiplication|term> <|'\\*|~/|mod'> (<|WS>?) <|term> (<|WS>?)
-     numeric-literal rule <|INT>
+     numeric-literal rule <|INT> <|='"1"'|unit>?
      term rule <|numeric-literal|single-value-chain|reference> (<|WS>?)
+     
+     unit rule (<|='"'>) <|measure-product>+ <|measure-denominator>? (<|='"'> <|WS>?)
+     measure-product rule <|ID> (<|WS>?)
+     measure-denominator rule (<|='/'> <|WS>?) <|measure-product>+
      """;
 
   static final Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(tailspinSyntax);

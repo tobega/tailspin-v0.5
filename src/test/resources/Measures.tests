@@ -1,0 +1,15 @@
+---measure integer literal
+5"m" !
+=5"m"
+---unit scalar
+5"1" !
+=5"1"
+---unit product
+5"N m" !
+=5"N m"
+---unit quotient
+5"N m/s deg" !
+=5"N m/s deg"
+---unit only one division
+5"N m/s/deg" !
+=*Parse failed
