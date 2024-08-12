@@ -6,9 +6,12 @@ import com.oracle.truffle.api.dsl.Specialization;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
+import tailspin.language.runtime.Measure;
 
 @NodeChild("leftNode") @NodeChild("rightNode")
 public abstract class AddNode extends ValueNode {
+  public abstract Object executeAdd(Object left, Object right);
+
   @Specialization(rewriteOn = ArithmeticException.class)
   protected long doLong(long left, long right) {
     return Math.addExact(left, right);
@@ -18,6 +21,11 @@ public abstract class AddNode extends ValueNode {
   @TruffleBoundary
   protected BigNumber doBigNumber(BigNumber left, BigNumber right) {
     return left.add(right);
+  }
+
+  @Specialization(guards = "left.unit().equals(right.unit())")
+  protected Measure doMeasure(Measure left, Measure right) {
+    return new Measure(executeAdd(left.value(), right.value()), left.unit());
   }
 
   @Specialization

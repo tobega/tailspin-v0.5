@@ -13,3 +13,24 @@
 ---unit only one division
 5"N m/s/deg" !
 =*Parse failed
+---add equal measures
+5"apples" + 2"apples" !
+=7"apples"
+---adding different measures is error
+5"apples" + 2"oranges" !
+=*TypeError
+---subtract equal measures
+5"apples" - 2"apples" !
+=3"apples"
+---subtracting different measures is error
+5"apples" - 2"oranges" !
+=*TypeError
+---measure equality
+5"m" -> if <|=5"m"> !
+=5"m"
+---measure not equal
+5"m" -> templates
+ when <|=3"m"> do 0 !
+ otherwise 1 !
+end !
+=1
