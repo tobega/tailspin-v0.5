@@ -22,12 +22,12 @@ public abstract class AddNode extends ValueNode {
     return left.add(right);
   }
 
-  @Specialization(guards = {"left.unit().equals(right.unit())", "left.isLong()", "right.isLong()"})
+  @Specialization(guards = {"left.unit() == right.unit()", "left.isLong()", "right.isLong()"})
   protected Measure doMeasureLong(Measure left, Measure right) {
     return new Measure(doLong((long) left.value(), (long) right.value()), left.unit());
   }
 
-  @Specialization(guards = "left.unit().equals(right.unit())")
+  @Specialization(guards = "left.unit() == right.unit()")
   protected Measure doMeasureBigNumber(Measure left, Measure right) {
     return new Measure(doBigNumber(left.bigNumber(), right.bigNumber()), left.unit());
   }

@@ -7,6 +7,8 @@ import tailspin.language.nodes.TailspinTypes;
 @ValueType
 public record Measure(Object value, String unit) implements TruffleObject {
 
+  public static final String SCALAR = "1";
+
   @Override
   public String toString() {
     return value.toString() + "\"" + unit + "\"";

@@ -7,7 +7,9 @@ import static tailspin.language.runtime.Templates.STATE_SLOT;
 import com.oracle.truffle.api.CallTarget;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import tailspin.language.TailspinLanguage;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.StatementNode;
@@ -61,6 +63,7 @@ import tailspin.language.nodes.value.TransformResultNode;
 import tailspin.language.nodes.value.VoidValue;
 import tailspin.language.nodes.value.WriteContextValueNode;
 import tailspin.language.parser.ParseNode;
+import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.Templates;
 import tailspin.language.runtime.TemplatesInstance;
@@ -645,8 +648,10 @@ public class NodeFactory {
     };
   }
 
+  private final Map<String, String> units = new HashMap<>();
+
   private String visitUnit(Object unitSpec) {
-    if (unitSpec instanceof String ignored) return "1";
+    if (unitSpec instanceof String ignored) return Measure.SCALAR;
     if (!(unitSpec instanceof ParseNode p && p.name().equals("unit"))) throw new IllegalStateException("Unexpected value: " + unitSpec);
     List<?> items;
     if (p.content() instanceof List<?> l) items = l;
@@ -663,7 +668,9 @@ public class NodeFactory {
         else items = List.of(denominator);
       } else throw new IllegalStateException("Unexpected value: " + item);
     }
-    return unit.deleteCharAt(unit.length() - 1).toString();
+    String s = unit.deleteCharAt(unit.length() - 1).toString();
+    String result = units.putIfAbsent(s, s);
+    return result == null ? s : result;
   }
 
   private TailspinNode visitReference(Object ref) {

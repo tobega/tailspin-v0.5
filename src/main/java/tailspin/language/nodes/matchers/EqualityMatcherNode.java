@@ -22,12 +22,12 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     return toMatch.equals(value);
   }
 
-  @Specialization(guards = {"toMatch.unit().equals(value.unit())", "toMatch.isLong()", "value.isLong()"})
+  @Specialization(guards = {"toMatch.unit() == value.unit()", "toMatch.isLong()", "value.isLong()"})
   protected boolean doMeasureLong(Measure toMatch, Measure value) {
     return longEquals((long) toMatch.value(), (long) value.value());
   }
 
-  @Specialization(guards = "toMatch.unit().equals(value.unit())")
+  @Specialization(guards = "toMatch.unit() == value.unit()")
   protected boolean doMeasureBigNumber(Measure toMatch, Measure value) {
     return bigNumberEquals(toMatch.bigNumber(), value.bigNumber());
   }

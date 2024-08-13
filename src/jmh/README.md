@@ -188,7 +188,23 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 
 2024-08-13 Temporary addition of javascript list benchmark. Tailspin is significantly faster without typechecking and only 50% slower with vocabulary typing
 |Benchmark                             |Mode  |Cnt  |   Score |    Error  |Units|
+|-----------------------------------------------|------|-----|---------|-----------|-----|
 |ListBenchmark.list_java               |avgt  |  5  |  25,044 |±   2,175  |us/op|
 |ListBenchmark.list_javascript         |avgt  |  5  | 684,716 |±  73,494  |us/op|
 |ListBenchmark.list_tailspin_empty     |avgt  |  5  | 992,382 |±  42,454  |us/op|
 |ListBenchmark.list_tailspin_optional  |avgt  |  5  |1021,012 |± 153,130  |us/op|
+
+2024-08-13 intern measure units
+|Benchmark                                      |Mode  |Cnt  |  Score |   Error  |Units|
+|-----------------------------------------------|------|-----|---------|-----------|-----|
+|BubblesortBenchmark.sort_java                  |avgt  |  5  | 20,806 |±  1,329  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate      |avgt  |  5  | 33,971 |±  1,820  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse      |avgt  |  5  | 38,489 |±  1,126  |us/op|
+|FibonacciBenchmark.recursive_java              |avgt  |  5  | 36,232 |±  0,256  |us/op|
+|FibonacciBenchmark.recursive_tailspin_measure  |avgt  |  5  |124,074 |±  3,835  |us/op|
+|FibonacciBenchmark.recursive_tailspin_raw      |avgt  |  5  | 56,190 |±  0,522  |us/op|
+|ListBenchmark.list_java                        |avgt  |  5  | 23,174 |±  0,466  |us/op|
+|ListBenchmark.list_tailspin_empty              |avgt  |  5  |886,183 |± 12,564  |us/op|
+|ListBenchmark.list_tailspin_optional           |avgt  |  5  |935,029 |± 28,690  |us/op|
+|PascalBenchmark.triangle_java                  |avgt  |  5  | 11,819 |±  0,135  |us/op|
+|PascalBenchmark.triangle_tailspin              |avgt  |  5  | 19,180 |±  0,417  |us/op|
