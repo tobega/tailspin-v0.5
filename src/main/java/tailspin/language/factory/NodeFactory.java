@@ -404,6 +404,7 @@ public class NodeFactory {
   }
 
   private MatcherNode visitMembrane(Object conditions) {
+    Integer conditionSlot = null;
     List<MatcherNode> conjunction = new ArrayList<>();
     List<?> conditionSpecs;
     if (conditions instanceof List<?> l) {
@@ -416,20 +417,27 @@ public class NodeFactory {
         case ParseNode(String type, ParseNode typeMatch) when type.equals("type-match") -> conjunction.addAll(visitTypeMatch(typeMatch));
         case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
             -> conjunction.add(EqualityMatcherNode.create(asSingleValueNode(visitSource(value))));
-        case ParseNode(String type, List<?> condition) when type.equals("condition") -> conjunction.add(visitCondition(condition));
+        case ParseNode(String type, List<?> condition) when type.equals("condition") -> {
+          if (conditionSlot == null) {
+            conditionSlot = currentScope().newTempSlot();
+            pushCvSlot(conditionSlot);
+          }
+          conjunction.add(visitCondition(conditionSlot, condition));
+        }
         default -> throw new IllegalStateException("Unexpected value: " + conditionSpec);
       }
     }
+    if (conditionSlot != null) popCvSlot();
     if (conjunction.size() == 1) {
       return conjunction.getFirst();
     }
     return AllOfNode.create(conjunction);
   }
 
-  private MatcherNode visitCondition(List<?> condition) {
+  private MatcherNode visitCondition(Integer conditionSlot, List<?> condition) {
     ValueNode toMatch = asSingleValueNode(visitValueChain((ParseNode) condition.getFirst()));
     MatcherNode matcher = visitAlternativeMembranes(condition.subList(1, condition.size()));
-    return ConditionNode.create(toMatch, matcher);
+    return ConditionNode.create(conditionSlot, toMatch, matcher);
   }
 
   private List<MatcherNode> visitTypeMatch(ParseNode typeMatch) {
@@ -507,14 +515,17 @@ public class NodeFactory {
   }
 
   private MatcherNode visitArrayLengthCondition(ParseNode content) {
+    int conditionSlot = currentScope().newTempSlot();
+    pushCvSlot(conditionSlot);
     List<MatcherNode> lengthCondition = switch (content) {
       case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
           -> List.of(EqualityMatcherNode.create(asSingleValueNode(visitSource(value))));
       case ParseNode(String type, List<?> range) when type.equals("range-match") -> visitRangeMatch(range);
       default -> throw new IllegalStateException("Unexpected value: " + content);
     };
-    return ConditionNode.create(
-        MessageNode.create("length", ReadContextValueNode.create(-1, CV_SLOT)),
+    popCvSlot();
+    return ConditionNode.create(conditionSlot,
+        MessageNode.create("length", ReadContextValueNode.create(-1, conditionSlot)),
         lengthCondition.size() == 1 ? lengthCondition.getFirst() : AllOfNode.create(lengthCondition));
   }
 

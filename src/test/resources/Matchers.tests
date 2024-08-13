@@ -51,3 +51,13 @@ end !
   otherwise 2 !
 end !
 =2
+---match condition of property
+{ foo: 6 } -> templates
+  when <|{ foo: <|?($ mod 2 matches <|=0>)>}> do 1 !
+end !
+=1
+---match length of array property
+{ foo: [6] } -> templates
+  when <|{ foo: <|[](1..)>}> do 1 !
+end !
+=1

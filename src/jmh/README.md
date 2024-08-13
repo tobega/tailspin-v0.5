@@ -170,3 +170,18 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 |ListBenchmark.list_tailspin                    |avgt  |  5  |1159,714 |± 271,304  |us/op|
 |PascalBenchmark.triangle_java                  |avgt  |  5  |  12,705 |±   0,939  |us/op|
 |PascalBenchmark.triangle_tailspin              |avgt  |  5  |  20,295 |±   2,158  |us/op|
+
+2024-08-13 fix conditions and add alternative list benchmark with empty array instead of optional field
+|Benchmark                                      |Mode  |Cnt  |  Score |   Error  |Units|
+|-----------------------------------------------|------|-----|---------|-----------|-----|
+|BubblesortBenchmark.sort_java                  |avgt  |  5  | 19,823 |±  0,635  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate      |avgt  |  5  | 33,206 |±  0,256  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse      |avgt  |  5  | 38,493 |±  0,904  |us/op|
+|FibonacciBenchmark.recursive_java              |avgt  |  5  | 36,395 |±  1,171  |us/op|
+|FibonacciBenchmark.recursive_tailspin_measure  |avgt  |  5  |221,785 |±  4,664  |us/op|
+|FibonacciBenchmark.recursive_tailspin_raw      |avgt  |  5  | 56,249 |±  0,751  |us/op|
+|ListBenchmark.list_java                        |avgt  |  5  | 23,119 |±  0,508  |us/op|
+|ListBenchmark.list_tailspin_empty              |avgt  |  5  |882,169 |±  9,181  |us/op|
+|ListBenchmark.list_tailspin_optional           |avgt  |  5  |944,346 |± 26,222  |us/op|
+|PascalBenchmark.triangle_java                  |avgt  |  5  | 11,823 |±  0,302  |us/op|
+|PascalBenchmark.triangle_tailspin              |avgt  |  5  | 19,231 |±  0,423  |us/op|

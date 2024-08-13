@@ -1,21 +1,39 @@
 package tailspin.language.nodes.matchers;
 
-import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
 
-@NodeChild(value = "dummy", type = ValueNode.class)
-@NodeChild(value = "toMatchNode", type = ValueNode.class)
-@NodeChild(value = "matcherNode", type = MatcherNode.class, executeWith = "toMatchNode")
 public abstract class ConditionNode extends MatcherNode {
-  @Specialization
-  @SuppressWarnings("unused")
-  boolean doGeneric(Object dummyValue, Object toMatch, boolean result) {
-    return result;
+  private final int cvSlot;
+
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child
+  ValueNode toMatchNode;
+
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child
+  MatcherNode matcherNode;
+
+  protected ConditionNode(int cvSlot, ValueNode toMatchNode, MatcherNode matcherNode) {
+    this.cvSlot = cvSlot;
+    this.toMatchNode = toMatchNode;
+    this.matcherNode = matcherNode;
   }
 
-  public static ConditionNode create(ValueNode toMatchNode, MatcherNode matcherNode) {
-    return ConditionNodeGen.create(null, toMatchNode, matcherNode);
+  @Specialization
+  @SuppressWarnings("unused")
+  boolean doGeneric(VirtualFrame frame, Object outerToMatch,
+      @Cached(inline = true) WriteLocalValueNode writeCv) {
+    writeCv.executeGeneric(frame, this, cvSlot, outerToMatch);
+    Object toMatch = toMatchNode.executeGeneric(frame);
+    return matcherNode.executeMatcherGeneric(frame, toMatch);
+  }
+
+  public static ConditionNode create(int cvSlot, ValueNode toMatchNode, MatcherNode matcherNode) {
+    return ConditionNodeGen.create(cvSlot, toMatchNode, matcherNode);
   }
 }

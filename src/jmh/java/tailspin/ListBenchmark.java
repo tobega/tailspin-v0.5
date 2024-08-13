@@ -23,7 +23,7 @@ public class ListBenchmark extends TruffleBenchmark {
       end makeList
 
       isShorterThan templates
-        when <|{x: <|{next: <|{}>}>, y: <|{next: <|{}>}>}> do
+        when <|{x: <|{next:}>, y: <|{next:}>}> do
           { x: $(x:; next:), y: $(y:; next:) } -> # !
         when <|{y: <|{next: <|{}>}>}> do 1 !
         otherwise 0 !
@@ -40,7 +40,38 @@ public class ListBenchmark extends TruffleBenchmark {
       end tail
       
       length templates
-        when <|{ next: <|{}>}> do 1 + ($(next:) -> #) !
+        when <|{ next: }> do 1 + ($(next:) -> #) !
+        otherwise 1 !
+      end length
+      
+      { a: 15 -> makeList, b: 10 -> makeList, c: 6 -> makeList } -> tail -> length !
+      """;
+
+  private static final String tailspinProgramEmptyNext = """      
+      makeList templates
+        when <|0~..> do
+          { val: $, next: [$ - 1 -> #] } !
+      end makeList
+
+      isShorterThan templates
+        when <|{x: <|{next: <|[](1..)>}>, y: <|{next: <|[](1..)>}>}> do
+          { x: $(x:; next:; 1), y: $(y:; next:; 1) } -> # !
+        when <|{y: <|{next: <|[](1..)>}>}> do 1 !
+        otherwise 0 !
+      end isShorterThan
+
+      tail templates
+        when <|?({x: $(b:), y: $(a:)} -> isShorterThan matches <|=1>)> do
+          { a: {a: $(a:; next:; 1), b: $(b:), c: $(c:)} -> #,
+            b: {a: $(b:; next:; 1), b: $(c:), c: $(a:)} -> #,
+            c: {a: $(c:; next:; 1), b: $(a:), c: $(b:)} -> #
+          } -> # !
+        otherwise
+          $(c:) !
+      end tail
+      
+      length templates
+        when <|{ next: <|[](1..)>}> do 1 + ($(next:; 1) -> #) !
         otherwise 1 !
       end length
       
@@ -48,8 +79,14 @@ public class ListBenchmark extends TruffleBenchmark {
       """;
 
   @Benchmark
-  public void list_tailspin() {
+  public void list_tailspin_optional() {
     long length = truffleContext.eval("tt", tailspinProgram).asLong();
+    if (length != 10) throw new AssertionError("Bad length " + length);
+  }
+
+  @Benchmark
+  public void list_tailspin_empty() {
+    long length = truffleContext.eval("tt", tailspinProgramEmptyNext).asLong();
     if (length != 10) throw new AssertionError("Bad length " + length);
   }
 
