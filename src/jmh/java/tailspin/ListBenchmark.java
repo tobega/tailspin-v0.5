@@ -78,6 +78,74 @@ public class ListBenchmark extends TruffleBenchmark {
       { a: 15 -> makeList, b: 10 -> makeList, c: 6 -> makeList } -> tail -> length !
       """;
 
+  private static final String jsProgram = """
+function List() {}
+
+List.prototype.benchmark = function () {
+  var result = this.tail(this.makeList(15),
+                         this.makeList(10),
+                         this.makeList(6));
+  return result.length();
+};
+
+List.prototype.makeList = function (length) {
+  if (length === 0) {
+    return null;
+  } else {
+    var e = new Element(length);
+    e.next = this.makeList(length - 1);
+    return e;
+  }
+};
+
+List.prototype.isShorterThan = function (x, y) {
+  var xTail = x,
+    yTail   = y;
+
+  while (yTail !== null) {
+    if (xTail === null) { return true; }
+    xTail = xTail.next;
+    yTail = yTail.next;
+  }
+  return false;
+};
+
+List.prototype.tail = function (x, y, z) {
+  if (this.isShorterThan(y, x)) {
+    return this.tail(this.tail(x.next, y, z),
+      this.tail(y.next, z, x),
+      this.tail(z.next, x, y));
+  } else {
+    return z;
+  }
+};
+
+List.prototype.verifyResult = function (result) {
+  return 10 === result;
+};
+
+function Element(v) {
+  this.val  = v;
+  this.next = null;
+}
+
+Element.prototype.length = function () {
+  if (this.next === null) {
+    return 1;
+  } else {
+    return 1 + this.next.length();
+  }
+};
+
+new List().benchmark();
+      """;
+
+  @Benchmark
+  public void list_javascript() {
+    long length = truffleContext.eval("js", jsProgram).asLong();
+    if (length != 10) throw new AssertionError("Bad length " + length);
+  }
+
   @Benchmark
   public void list_tailspin_optional() {
     long length = truffleContext.eval("tt", tailspinProgram).asLong();

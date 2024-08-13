@@ -185,3 +185,10 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 |ListBenchmark.list_tailspin_optional           |avgt  |  5  |944,346 |± 26,222  |us/op|
 |PascalBenchmark.triangle_java                  |avgt  |  5  | 11,823 |±  0,302  |us/op|
 |PascalBenchmark.triangle_tailspin              |avgt  |  5  | 19,231 |±  0,423  |us/op|
+
+2024-08-13 Temporary addition of javascript list benchmark. Tailspin is significantly faster without typechecking and only 50% slower with vocabulary typing
+|Benchmark                             |Mode  |Cnt  |   Score |    Error  |Units|
+|ListBenchmark.list_java               |avgt  |  5  |  25,044 |±   2,175  |us/op|
+|ListBenchmark.list_javascript         |avgt  |  5  | 684,716 |±  73,494  |us/op|
+|ListBenchmark.list_tailspin_empty     |avgt  |  5  | 992,382 |±  42,454  |us/op|
+|ListBenchmark.list_tailspin_optional  |avgt  |  5  |1021,012 |± 153,130  |us/op|
