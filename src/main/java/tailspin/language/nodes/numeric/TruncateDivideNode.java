@@ -6,6 +6,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
+import tailspin.language.runtime.Measure;
 
 @NodeChild("leftNode") @NodeChild("rightNode")
 public abstract class TruncateDivideNode extends ValueNode {
@@ -20,11 +21,24 @@ public abstract class TruncateDivideNode extends ValueNode {
     return left.divide(right);
   }
 
+  @Specialization(guards = {"canMultiplyUnits(left.unit(), right.unit())", "left.isLong()", "right.isLong()"})
+  protected Measure doMeasureLong(Measure left, Measure right) {
+    return new Measure(doLong((long) left.value(), (long) right.value()), left.unit());
+  }
+
+  @Specialization(guards = "canMultiplyUnits(left.unit(), right.unit())")
+  protected Measure doMeasureBigNumber(Measure left, Measure right) {
+    return new Measure(doBigNumber(left.bigNumber(), right.bigNumber()), left.unit());
+  }
+
   @Specialization
   protected Object typeError(Object left, Object right) {
     throw TypeError.at(this, left, right);
   }
 
+  boolean canMultiplyUnits(Object leftUnit, Object rightUnit) {
+    return leftUnit == Measure.SCALAR || rightUnit == Measure.SCALAR;
+  }
   public static TruncateDivideNode create(ValueNode leftNode, ValueNode rightNode) {
     return TruncateDivideNodeGen.create(leftNode, rightNode);
   }

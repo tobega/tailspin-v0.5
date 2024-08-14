@@ -40,3 +40,21 @@ end !
 ---measures autotype is checked
 { foo: 5"m" } -> { foo: 3"s"} !
 =*TypeError
+---measure multiplies by scalar
+5"m" * 2"1" !
+=10"m"
+---measure does not multiply by measure
+5"m" * 2"s" !
+=*TypeError
+---measure divides by scalar
+5"m" ~/ 2"1" !
+=2"m"
+---measure does not divide by measure
+5"m" ~/ 2"s" !
+=*TypeError
+---modulo equal measures
+5"apples" mod 2"apples" !
+=1"apples"
+---modulo different measures is error
+5"apples" mod 2"oranges" !
+=*TypeError
