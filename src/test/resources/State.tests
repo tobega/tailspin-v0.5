@@ -133,3 +133,9 @@ end !
   $a + $b !
 end !
 =8
+---set is typechecked
+{ foo: 3 } -> templates
+  @ set $;
+  @(foo:) set [];
+end -> !VOID
+=*TypeError

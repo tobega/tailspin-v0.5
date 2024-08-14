@@ -32,6 +32,7 @@ import tailspin.language.nodes.matchers.ConditionNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNode;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
+import tailspin.language.nodes.matchers.MeasureTypeMatcher;
 import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
 import tailspin.language.nodes.matchers.StructureKeyMatcherNode;
 import tailspin.language.nodes.matchers.StructureTypeMatcherNode;
@@ -513,6 +514,12 @@ public class NodeFactory {
         conditionNodes.addFirst(StructureTypeMatcherNode.create(requiredKeys.toArray(VocabularyType[]::new), allowExtraFields, optionalKeys.toArray(VocabularyType[]::new)));
         yield conditionNodes;
       }
+      case "measure-type-match" -> {
+        if (typeMatch.content().equals("\"\"")) {
+          yield List.of(MeasureTypeMatcher.create(null));
+        }
+        yield List.of(MeasureTypeMatcher.create(visitUnit(typeMatch.content())));
+      }
       default -> throw new IllegalStateException("Unexpected value: " + typeMatch);
     };
   }
@@ -650,7 +657,7 @@ public class NodeFactory {
 
   private final Map<String, String> units = new HashMap<>();
 
-  private String visitUnit(Object unitSpec) {
+  private Object visitUnit(Object unitSpec) {
     if (unitSpec instanceof String ignored) return Measure.SCALAR;
     if (!(unitSpec instanceof ParseNode p && p.name().equals("unit"))) throw new IllegalStateException("Unexpected value: " + unitSpec);
     List<?> items;

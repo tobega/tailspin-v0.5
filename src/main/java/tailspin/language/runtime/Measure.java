@@ -5,9 +5,9 @@ import com.oracle.truffle.api.interop.TruffleObject;
 import tailspin.language.nodes.TailspinTypes;
 
 @ValueType
-public record Measure(Object value, String unit) implements TruffleObject {
+public record Measure(Object value, Object unit) implements TruffleObject {
 
-  public static final String SCALAR = "1";
+  public static final Object SCALAR = "1";
 
   @Override
   public String toString() {

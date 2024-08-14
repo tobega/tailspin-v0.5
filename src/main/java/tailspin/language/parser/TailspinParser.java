@@ -65,7 +65,7 @@ public class TailspinParser {
      condition rule (<|='?('> <|WS>?) <|value-chain> (<|='matches'> <|WS> <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|=')'> <|WS>?)
 
      literal-match rule (<|='='> <|WS>?) <|source>
-     type-match rule <|range-match|array-match|structure-match>
+     type-match rule <|range-match|array-match|structure-match|measure-type-match>
      range-match rule <|range-bound>? <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound>?
      range-bound rule <|arithmetic-expression|reference>
      array-match rule <|='['> (<|WS>?) (<|=']'> <|WS>?) <|array-length-condition>?
@@ -75,6 +75,7 @@ public class TailspinParser {
      key-matcher rule <|='?'>? <|ID> (<|=':'> <|WS>?) <|content-matcher>?
      additional-key-matcher rule (<|=','> <|WS>?) <|key-matcher>
      content-matcher rule (<|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>?)
+     measure-type-match rule <|='""'|unit> (<|WS>?)
      
      arithmetic-expression rule <|addition|multiplication|numeric-literal>
      addition rule <|addition|multiplication|term> <|'[+-]'> (<|WS>?) <|multiplication|term> (<|WS>?)

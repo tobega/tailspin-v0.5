@@ -101,3 +101,33 @@ top is 5;
 foo requires <|..$top>
 { foo: 6 } !
 =*TypeError
+---is any measure type
+1 -> templates
+  @ set $;
+  2"m" -> !#
+  3"s" -> !#
+  $@ !
+  when <|""> do @ set $@ + 1;
+end !
+=3
+---is not any measure type
+1 -> templates
+  @ set $;
+  2 -> !#
+  [5] -> !#
+  { foo: 7 } -> !#
+  $@ !
+  when <|""> do @ set $@ + 1;
+end !
+=1
+---is same measure type
+1"m" -> templates
+  when <|"m"> do $!
+end !
+=1"m"
+---is not same measure type
+1"s" -> templates
+  when <|"m"> do $!
+  otherwise 0 !
+end !
+=0

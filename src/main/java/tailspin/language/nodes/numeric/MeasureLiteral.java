@@ -7,13 +7,13 @@ import tailspin.language.runtime.Measure;
 
 @NodeChild(value = "value", type = ValueNode.class)
 public abstract class MeasureLiteral extends ValueNode {
-  private final String unit;
+  private final Object unit;
 
-  public MeasureLiteral(String unit) {
+  public MeasureLiteral(Object unit) {
     this.unit = unit;
   }
 
-  public static MeasureLiteral create(ValueNode value, String unit) {
+  public static MeasureLiteral create(ValueNode value, Object unit) {
     return MeasureLiteralNodeGen.create(unit, value);
   }
 
