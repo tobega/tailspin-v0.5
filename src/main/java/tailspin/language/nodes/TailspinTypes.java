@@ -4,8 +4,9 @@ import com.oracle.truffle.api.dsl.ImplicitCast;
 import com.oracle.truffle.api.dsl.TypeSystem;
 import java.math.BigInteger;
 import tailspin.language.runtime.BigNumber;
+import tailspin.language.runtime.SciNum;
 
-@TypeSystem({long.class, BigNumber.class})
+@TypeSystem({long.class, BigNumber.class, SciNum.class})
 public abstract class TailspinTypes {
   @ImplicitCast
   @TruffleBoundary

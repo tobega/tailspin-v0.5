@@ -1,0 +1,6 @@
+---SciNum literal
+1.5e0 !
+=1.5e0
+---standard output format
+1000e0 !
+=1.000e3

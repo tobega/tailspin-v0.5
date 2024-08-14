@@ -42,6 +42,7 @@ import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.MathModNode;
 import tailspin.language.nodes.numeric.MeasureLiteral;
 import tailspin.language.nodes.numeric.MultiplyNode;
+import tailspin.language.nodes.numeric.SciNumLiteral;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.processor.MessageNode;
@@ -66,6 +67,7 @@ import tailspin.language.nodes.value.WriteContextValueNode;
 import tailspin.language.parser.ParseNode;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Reference;
+import tailspin.language.runtime.SciNum;
 import tailspin.language.runtime.Templates;
 import tailspin.language.runtime.TemplatesInstance;
 import tailspin.language.runtime.VocabularyType;
@@ -650,6 +652,7 @@ public class NodeFactory {
     return switch (literal) {
       case ParseNode(String name, Long value) when name.equals("INT") -> IntegerLiteral.create(value);
       case ParseNode(String name, BigInteger value) when name.equals("INT") -> BigIntegerLiteral.create(value);
+      case ParseNode(String name, SciNum value) when name.equals("NUM") -> SciNumLiteral.create(value);
       case List<?> m when m.size() == 2 -> MeasureLiteral.create(visitNumericLiteral(m.getFirst()), visitUnit(m.getLast()));
       default -> throw new IllegalStateException("Unexpected value: " + literal);
     };
