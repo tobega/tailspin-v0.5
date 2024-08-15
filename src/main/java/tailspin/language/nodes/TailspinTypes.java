@@ -1,4 +1,5 @@
 package tailspin.language.nodes;
+
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.ImplicitCast;
 import com.oracle.truffle.api.dsl.TypeSystem;
@@ -12,5 +13,17 @@ public abstract class TailspinTypes {
   @TruffleBoundary
   public static BigNumber castBigNumber(long value) {
     return new BigNumber(BigInteger.valueOf(value));
+  }
+
+  @ImplicitCast
+  @TruffleBoundary
+  public static SciNum castSciNum(BigNumber value) {
+    return SciNum.fromBigNumber(value);
+  }
+
+  @ImplicitCast
+  @TruffleBoundary
+  public static SciNum castSciNum(long value) {
+    return SciNum.fromLong(value);
   }
 }

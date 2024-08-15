@@ -25,7 +25,7 @@ public abstract class AddNode extends ValueNode {
 
   @Specialization
   @TruffleBoundary
-  protected SciNum doBigNumber(SciNum left, SciNum right) {
+  protected SciNum doSciNum(SciNum left, SciNum right) {
     return left.add(right);
   }
 

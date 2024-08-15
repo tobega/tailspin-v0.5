@@ -2,7 +2,6 @@ package tailspin.language.parser.composer;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +58,7 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
       }
       String digits = parts[0].replace(".", "");
       BigInteger unscaled = new BigInteger(digits);
-      return new SciNum(new BigDecimal(unscaled, -exponent), new MathContext(digits.length()));
+      return new SciNum(new BigDecimal(unscaled, -exponent));
     });
   }
 

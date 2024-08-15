@@ -28,3 +28,24 @@
 ---digits outside addition precision are lost
 1.11 - 0.011 !
 =1.10e0
+---multiplication gives smallest precision
+1.11 * 2.0 !
+=2.2e0
+---big number multiply does not restrict precision
+20_000_000_000_000_000_000 * 1.11 !
+=2.22e19
+---long multiply does not restrict precision
+200_000 * 1.11 !
+=2.22e5
+---big number add does not restrict precision
+20_000_000_000_000_000_000 + 1.11 !
+=2.000000000000000000111e19
+---long add does not restrict precision
+20_000 + 1.11 !
+=2.000111e4
+---big number subtract does not restrict precision
+20_000_000_000_000_000_000 - 1.11 !
+=1.999999999999999999889e19
+---long subtract does not restrict precision
+20_000 - 1.11 !
+=1.999889e4
