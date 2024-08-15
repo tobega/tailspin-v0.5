@@ -7,6 +7,7 @@ import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
+import tailspin.language.runtime.SciNum;
 
 @NodeChild("leftNode") @NodeChild("rightNode")
 public abstract class AddNode extends ValueNode {
@@ -19,6 +20,12 @@ public abstract class AddNode extends ValueNode {
   @Specialization
   @TruffleBoundary
   protected BigNumber doBigNumber(BigNumber left, BigNumber right) {
+    return left.add(right);
+  }
+
+  @Specialization
+  @TruffleBoundary
+  protected SciNum doBigNumber(SciNum left, SciNum right) {
     return left.add(right);
   }
 

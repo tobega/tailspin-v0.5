@@ -4,3 +4,27 @@
 ---standard output format
 1000e0 !
 =1.000e3
+---trailing zeros are precision
+1500.00 !
+=1.50000e3
+---leading zeros are not precision
+0.00150 !
+=1.50e-3
+---addition rounds to rightmost common digit
+1.111 + 2.0 !
+=3.1e0
+---digits within addition precision remain
+1.111 + 0.20 !
+=1.31e0
+---digits outside addition precision are lost
+1.11 + 0.022 !
+=1.13e0
+---subtraction rounds to rightmost common digit
+1.111 - 1.00 !
+=1.1e-1
+---digits within addition precision remain
+1.111 - 0.10 !
+=1.01e0
+---digits outside addition precision are lost
+1.11 - 0.011 !
+=1.10e0

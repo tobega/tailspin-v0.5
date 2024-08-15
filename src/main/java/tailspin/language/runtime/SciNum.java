@@ -5,6 +5,7 @@ import com.oracle.truffle.api.CompilerDirectives.ValueType;
 import com.oracle.truffle.api.interop.TruffleObject;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 
 @ValueType
 public class SciNum implements TruffleObject {
@@ -26,5 +27,17 @@ public class SciNum implements TruffleObject {
     if (builder.length() > 1) builder.insert(1, '.');
     builder.append('e').append(exponent);
     return builder.toString();
+  }
+
+  public SciNum add(SciNum augend) {
+    BigDecimal added = value.add(augend.value);
+    BigDecimal result = added.setScale(Math.min(value.scale(), augend.value.scale()), RoundingMode.HALF_UP);
+    return new SciNum(result, new MathContext(6));
+  }
+
+  public SciNum subtract(SciNum augend) {
+    BigDecimal subtracted = value.subtract(augend.value);
+    BigDecimal result = subtracted.setScale(Math.min(value.scale(), augend.value.scale()), RoundingMode.HALF_UP);
+    return new SciNum(result, new MathContext(6));
   }
 }
