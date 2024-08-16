@@ -14,6 +14,7 @@ import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
+import tailspin.language.runtime.SciNum;
 
 @NodeChild("leftNode") @NodeChild("rightNode")
 public abstract class TruncateDivideNode extends ValueNode {
@@ -32,6 +33,12 @@ public abstract class TruncateDivideNode extends ValueNode {
     @TruffleBoundary
     protected BigNumber doBigNumber(BigNumber left, BigNumber right) {
       return left.divide(right);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object doSciNum(SciNum left, SciNum right) {
+      return left.truncateDivide(right);
     }
 
     @Specialization

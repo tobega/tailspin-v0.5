@@ -79,4 +79,13 @@ public class SciNum implements TruffleObject {
     }
     return new SciNum(remainder);
   }
+
+  public Object truncateDivide(SciNum divisor) {
+    BigDecimal result = value.divideToIntegralValue(divisor.value);
+    try {
+      return result.longValueExact();
+    } catch (ArithmeticException e) {
+      return new BigNumber(result.toBigInteger());
+    }
+  }
 }

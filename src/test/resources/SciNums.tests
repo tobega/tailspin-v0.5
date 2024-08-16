@@ -64,3 +64,9 @@
 ---mathematical modulo negative dividend and divisor
 -7.0 mod -4.0 !
 =1.0e0
+---truncate divide gives integer
+6e0 ~/ 3e0 !
+=2
+---truncate divide truncates
+8.0 ~/ 3.0 !
+=2
