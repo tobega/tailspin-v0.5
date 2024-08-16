@@ -4,6 +4,7 @@ import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import java.util.Arrays;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
+import tailspin.language.nodes.matchers.ArrayTypeMatcherNode;
 import tailspin.language.nodes.matchers.MeasureTypeMatcher;
 import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
 import tailspin.language.nodes.matchers.StructureTypeMatcherNode;
@@ -38,6 +39,7 @@ public class VocabularyType implements Comparable<VocabularyType> {
       case Long ignored -> NumericTypeMatcherNode.create();
       case BigNumber ignored -> NumericTypeMatcherNode.create();
       case Measure(Object ignored, Object unit) -> MeasureTypeMatcher.create(unit);
+      case TailspinArray ignored -> ArrayTypeMatcherNode.create();
       case Structure s -> {
         Object[] keyArray = DynamicObjectLibrary.getUncached().getKeyArray(s);
         yield StructureTypeMatcherNode.create(
