@@ -40,3 +40,6 @@ end !
 ---exclusive non-included end
 [2..~7:2]!
 =[2, 4, 6]
+---empty range if end less than start
+[1..~1] !
+=[]
