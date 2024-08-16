@@ -34,12 +34,18 @@
 ---multiplication gives smallest precision
 1.11 * 2.0 !
 =2.2e0
----big number multiply does not restrict precision
+---multiplication does not reduce precision beyond smallest
+1.00 * 2.0 !
+=2.0e0
+---big number multiply
 20_000_000_000_000_000_000 * 1.11 !
 =2.22e19
----long multiply does not restrict precision
+---long multiply
 200_000 * 1.11 !
 =2.22e5
+---long multiply does not restrict precision
+2 * 1.11 !
+=2.22e0
 ---big number add does not restrict precision
 20_000_000_000_000_000_000 + 1.11 !
 =2.000000000000000000111e19
@@ -70,3 +76,15 @@
 ---truncate divide truncates
 8.0 ~/ 3.0 !
 =2
+---division gives smallest precision
+3.3333 / 3.0 !
+=1.1e0
+---big number divide does not restrict precision
+20_000_000_000_000_000_000 / 1.11 !
+=1.80e19
+---long divide does not restrict precision
+200_000 / 1.11 !
+=1.80e5
+---exact division does not reduce precision
+14.0 / 7.0 !
+=2.0e0

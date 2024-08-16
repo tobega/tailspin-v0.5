@@ -38,6 +38,7 @@ import tailspin.language.nodes.matchers.StructureKeyMatcherNode;
 import tailspin.language.nodes.matchers.StructureTypeMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.BigIntegerLiteral;
+import tailspin.language.nodes.numeric.DivideNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.MathModNode;
 import tailspin.language.nodes.numeric.MeasureLiteral;
@@ -770,6 +771,8 @@ public class NodeFactory {
     ValueNode right = visitArithmeticExpression((ParseNode) multiplication.getLast());
     if(multiplication.get(1).equals("*")) {
       return MultiplyNode.create(left, right);
+    } else if(multiplication.get(1).equals("/")) {
+      return DivideNode.create(left, right);
     } else if(multiplication.get(1).equals("~/")) {
       return TruncateDivideNode.create(left, right);
     } else if(multiplication.get(1).equals("mod")) {

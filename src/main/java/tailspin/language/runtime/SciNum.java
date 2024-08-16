@@ -10,7 +10,6 @@ import java.math.RoundingMode;
 
 @ValueType
 public class SciNum implements TruffleObject {
-
   private final BigDecimal value;
   private final boolean isExact;
 
@@ -67,8 +66,7 @@ public class SciNum implements TruffleObject {
   }
 
   public SciNum multiply(SciNum multiplicand) {
-    int resultPrecision = Math.min(value.precision(), multiplicand.value.precision());
-    MathContext context = new MathContext(resultPrecision);
+    MathContext context = new MathContext(multiplicativePrecision(multiplicand));
     return new SciNum(value.multiply(multiplicand.value, context));
   }
 
@@ -87,5 +85,28 @@ public class SciNum implements TruffleObject {
     } catch (ArithmeticException e) {
       return new BigNumber(result.toBigInteger());
     }
+  }
+
+  public SciNum divide(SciNum divisor) {
+    int precision = multiplicativePrecision(divisor);
+    MathContext context = new MathContext(precision);
+    BigDecimal quotient = value.divide(divisor.value, context);
+    if (quotient.precision() < precision) {
+      int expand = precision - quotient.precision();
+      BigInteger unscaled = quotient.movePointRight(expand + quotient.scale()).unscaledValue();
+      quotient = new BigDecimal(unscaled, quotient.scale() + expand);
+    }
+    return new SciNum(quotient);
+  }
+
+  private int multiplicativePrecision(SciNum other) {
+    if (isExact && other.isExact) {
+      return  6;
+    } else if (isExact) {
+      return  other.value.precision();
+    } else if (other.isExact) {
+      return  value.precision();
+    }
+    return Math.min(value.precision(), other.value.precision());
   }
 }

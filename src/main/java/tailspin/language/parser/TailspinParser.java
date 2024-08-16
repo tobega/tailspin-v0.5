@@ -79,7 +79,7 @@ public class TailspinParser {
      
      arithmetic-expression rule <|addition|multiplication|numeric-literal>
      addition rule <|addition|multiplication|term> <|'[+-]'> (<|WS>?) <|multiplication|term> (<|WS>?)
-     multiplication rule <|multiplication|term> <|'\\*|~/|mod'> (<|WS>?) <|term> (<|WS>?)
+     multiplication rule <|multiplication|term> <|'\\*|/|~/|mod'> (<|WS>?) <|term> (<|WS>?)
      numeric-literal rule <|INT|NUM> <|='"1"'|unit>?
      term rule <|numeric-literal|single-value-chain|reference> (<|WS>?)
      
