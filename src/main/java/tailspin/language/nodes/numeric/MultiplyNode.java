@@ -47,20 +47,26 @@ public abstract class MultiplyNode extends ValueNode {
     }
   }
 
-  @Specialization(guards = "canMultiplyUnits(left.unit(), right.unit())")
-  protected Measure doMeasure(VirtualFrame frame, Measure left, Measure right,
+  @Specialization(guards = "isScalar(right.unit())")
+  protected Measure doMeasureLeft(VirtualFrame frame, Measure left, Measure right,
       @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
     return new Measure(doMultiplyNode.executeMultiply(frame, this, left.value(), right.value()), left.unit());
+  }
+
+  boolean isScalar(Object unit) {
+    return unit == Measure.SCALAR;
+  }
+
+  @Specialization(guards = "isScalar(left.unit())")
+  protected Measure doMeasureRight(VirtualFrame frame, Measure left, Measure right,
+      @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
+    return new Measure(doMultiplyNode.executeMultiply(frame, this, left.value(), right.value()), right.unit());
   }
 
   @Specialization
   protected Object doUntyped(VirtualFrame frame, Object left, Object right,
       @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
     return doMultiplyNode.executeMultiply(frame, this, left, right);
-  }
-
-  boolean canMultiplyUnits(Object leftUnit, Object rightUnit) {
-    return leftUnit == Measure.SCALAR || rightUnit == Measure.SCALAR;
   }
 
   public static MultiplyNode create(ValueNode leftNode, ValueNode rightNode) {

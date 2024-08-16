@@ -43,6 +43,9 @@ end !
 ---measure multiplies by scalar
 5"m" * 2"1" !
 =10"m"
+---scalar multiplies by measure
+5"1" * 2"m" !
+=10"m"
 ---measure does not multiply by measure
 5"m" * 2"s" !
 =*TypeError
@@ -52,9 +55,21 @@ end !
 ---measure does not divide by measure
 5"m" ~/ 2"s" !
 =*TypeError
+---Scalar does not divide by measure
+5"1" ~/ 2"s" !
+=*TypeError
 ---modulo equal measures
 5"apples" mod 2"apples" !
 =1"apples"
 ---modulo different measures is error
 5"apples" mod 2"oranges" !
 =*TypeError
+---SciNum measure add
+20_000"m" + 1.11"m" !
+=2.000111e4"m"
+---SciNum measure subtract
+20_000"m" - 1.11"m" !
+=1.999889e4"m"
+---SciNum measure multiply
+200_000"1" * 1.11"m" !
+=2.22e5"m"

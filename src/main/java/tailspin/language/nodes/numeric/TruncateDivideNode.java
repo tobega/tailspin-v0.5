@@ -40,10 +40,14 @@ public abstract class TruncateDivideNode extends ValueNode {
     }
   }
 
-  @Specialization(guards = "canMultiplyUnits(left.unit(), right.unit())")
+  @Specialization(guards = "isScalar(right.unit())")
   protected Measure doMeasure(VirtualFrame frame, Measure left, Measure right,
       @Cached(inline = true) @Shared DoTruncateDivideNode doTruncateDivideNode) {
     return new Measure(doTruncateDivideNode.executeTruncateDivide(frame, this, left.value(), right.value()), left.unit());
+  }
+
+  boolean isScalar(Object unit) {
+    return unit == Measure.SCALAR;
   }
 
   @Specialization
@@ -52,9 +56,6 @@ public abstract class TruncateDivideNode extends ValueNode {
     return doTruncateDivideNode.executeTruncateDivide(frame, this, left, right);
   }
 
-  boolean canMultiplyUnits(Object leftUnit, Object rightUnit) {
-    return leftUnit == Measure.SCALAR || rightUnit == Measure.SCALAR;
-  }
   public static TruncateDivideNode create(ValueNode leftNode, ValueNode rightNode) {
     return TruncateDivideNodeGen.create(leftNode, rightNode);
   }
