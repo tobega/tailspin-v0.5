@@ -36,8 +36,11 @@ public class SciNum implements TruffleObject {
   public String toString() {
     StringBuilder builder = new StringBuilder();
     builder.append(value.unscaledValue());
-    int exponent = builder.length() - 1 - value.scale();
-    if (builder.length() > 1) builder.insert(1, '.');
+    int offset = builder.charAt(0) == '-' ? 2 : 1;
+    int exponent = builder.length() - offset - value.scale();
+    if (builder.length() > 1) {
+      builder.insert(offset, '.');
+    }
     builder.append('e').append(exponent);
     return builder.toString();
   }
@@ -67,5 +70,13 @@ public class SciNum implements TruffleObject {
     int resultPrecision = Math.min(value.precision(), multiplicand.value.precision());
     MathContext context = new MathContext(resultPrecision);
     return new SciNum(value.multiply(multiplicand.value, context));
+  }
+
+  public SciNum mod(SciNum modulus) {
+    BigDecimal remainder = value.remainder(modulus.value);
+    if (remainder.signum() < 0) {
+      remainder = remainder.add(modulus.value.abs());
+    }
+    return new SciNum(remainder);
   }
 }

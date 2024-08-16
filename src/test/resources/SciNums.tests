@@ -1,6 +1,9 @@
 ---SciNum literal
 1.5e0 !
 =1.5e0
+---negative SciNum literal
+-1.5e0 !
+=-1.5e0
 ---standard output format
 1000e0 !
 =1.000e3
@@ -49,3 +52,15 @@
 ---long subtract does not restrict precision
 20_000 - 1.11 !
 =1.999889e4
+---mathematical modulo
+7.0 mod 4.0 !
+=3.0e0
+---mathematical modulo negative dividend
+-7.0 mod 4.0 !
+=1.0e0
+---mathematical modulo negative divisor
+7.0 mod -4.0 !
+=3.0e0
+---mathematical modulo negative dividend and divisor
+-7.0 mod -4.0 !
+=1.0e0
