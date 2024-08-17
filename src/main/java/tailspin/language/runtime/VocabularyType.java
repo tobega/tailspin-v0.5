@@ -38,6 +38,7 @@ public class VocabularyType implements Comparable<VocabularyType> {
     return switch (value) {
       case Long ignored -> NumericTypeMatcherNode.create();
       case BigNumber ignored -> NumericTypeMatcherNode.create();
+      case SciNum ignored -> NumericTypeMatcherNode.create();
       case Measure(Object ignored, Object unit) -> MeasureTypeMatcher.create(unit);
       case TailspinArray ignored -> ArrayTypeMatcherNode.create();
       case Structure s -> {

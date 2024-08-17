@@ -91,3 +91,12 @@
 ---simple equality
 3.0 -> if <|=3.0> !
 =3.0e0
+---SciNums autotype numeric
+{ foo: 1.0 } -> { foo: 3 } !
+={ foo: 3 }
+---autotyped numeric accepts SciNum
+{ foo: 1 } -> { foo: 3.0 } !
+={ foo: 3.0e0 }
+---SciNums autotype numeric checked
+{ foo: 1.0 } -> { foo: [3] } !
+=*TypeError
