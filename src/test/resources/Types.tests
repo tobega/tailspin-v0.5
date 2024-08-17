@@ -131,3 +131,9 @@ end !
   otherwise 0 !
 end !
 =0
+---SciNum is a number
+2.0 -> templates
+  when <|..> do 1!
+  otherwise 0!
+end !
+=1
