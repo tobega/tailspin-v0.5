@@ -12,4 +12,8 @@ public abstract class ValueNode extends TailspinNode {
   }
 
   public abstract Object executeGeneric(VirtualFrame frame);
+
+  public MatcherNode getTypeMatcher() {
+    return null;
+  }
 }

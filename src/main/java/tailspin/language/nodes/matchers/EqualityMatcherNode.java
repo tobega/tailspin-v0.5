@@ -4,6 +4,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.GenerateInline;
+import com.oracle.truffle.api.dsl.Idempotent;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
@@ -16,13 +17,17 @@ import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.VocabularyType;
 
 @NodeChild(value = "dummy", type = ValueNode.class)
 @NodeChild(value = "valueNode", type = ValueNode.class)
 public abstract class EqualityMatcherNode extends MatcherNode {
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child
+  private MatcherNode typeBound;
 
-  public EqualityMatcherNode(MatcherNode typeBound) {
-    super(typeBound);
+  protected EqualityMatcherNode(MatcherNode typeBound) {
+    this.typeBound = typeBound;
   }
 
   @GenerateInline
@@ -59,16 +64,30 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     return doEqualityNode.executeEquals(frame, this, toMatch.value(), value.value());
   }
 
-  @Specialization
-  protected boolean doGeneric(VirtualFrame frame, Object toMatch, Object value,
+  @Specialization(guards = "hasStaticTypeBound()")
+  protected boolean doStaticBound(VirtualFrame frame, Object toMatch, Object value,
       @Cached(inline = true) @Shared DoEqualityNode doEqualityNode) {
     if (doEqualityNode.executeEquals(frame, this, toMatch, value)) return true;
-    MatcherNode typeBound = getTypeBound(value);
     if (typeBound.executeMatcherGeneric(frame, toMatch)) return false;
     throw new TypeError("Incompatible type comparison " + toMatch + " = " + value);
   }
 
+  @Idempotent
+  boolean hasStaticTypeBound() {
+    return typeBound != null;
+  }
+
+  @Specialization
+  protected boolean doDynamicBound(VirtualFrame frame, Object toMatch, Object value,
+      @Cached(inline = true) @Shared DoEqualityNode doEqualityNode) {
+    if (doEqualityNode.executeEquals(frame, this, toMatch, value)) return true;
+    MatcherNode dynamicBound = VocabularyType.autoType(value);
+    if (dynamicBound.executeMatcherGeneric(frame, toMatch)) return false;
+    throw new TypeError("Incompatible type comparison " + toMatch + " = " + value);
+  }
+
   public static EqualityMatcherNode create(MatcherNode typeBound, ValueNode valueNode) {
+    if (typeBound == null) typeBound = valueNode.getTypeMatcher();
     return EqualityMatcherNodeGen.create(typeBound, null, valueNode);
   }
 }

@@ -10,7 +10,6 @@ public abstract class CallDefinedTypeMatcherNode extends MatcherNode {
   final TemplatesInstance templates;
 
   protected CallDefinedTypeMatcherNode(TemplatesInstance templates) {
-    super(null);
     this.templates = templates;
   }
 

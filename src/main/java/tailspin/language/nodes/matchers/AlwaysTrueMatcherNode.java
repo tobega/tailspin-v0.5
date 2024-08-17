@@ -5,10 +5,6 @@ import tailspin.language.nodes.MatcherNode;
 
 public class AlwaysTrueMatcherNode extends MatcherNode {
 
-  public AlwaysTrueMatcherNode() {
-    super(null);
-  }
-
   @Override
   @SuppressWarnings("unused")
   public boolean executeMatcherLong(VirtualFrame frame, long toMatch) {

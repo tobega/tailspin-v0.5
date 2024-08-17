@@ -18,7 +18,6 @@ public abstract class StructureKeyMatcherNode extends MatcherNode {
   final boolean isOptional;
 
   protected StructureKeyMatcherNode(VocabularyType key, MatcherNode matcher, boolean isOptional) {
-    super(null);
     this.key = key;
     this.matcher = matcher;
     this.isOptional = isOptional;

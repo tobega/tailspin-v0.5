@@ -17,7 +17,6 @@ public abstract class StructureTypeMatcherNode extends MatcherNode {
   final VocabularyType[] optionalKeys;
 
   protected StructureTypeMatcherNode(VocabularyType[] requiredKeys, boolean allowExtraFields, VocabularyType[] optionalKeys) {
-    super(null);
     this.requiredKeys = requiredKeys;
     this.allowExtraFields = allowExtraFields;
     this.optionalKeys = optionalKeys;

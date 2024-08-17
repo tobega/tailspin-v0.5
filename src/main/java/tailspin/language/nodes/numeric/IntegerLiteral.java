@@ -2,7 +2,9 @@ package tailspin.language.nodes.numeric;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
 
 public class IntegerLiteral extends ValueNode {
   private final long value;
@@ -23,5 +25,10 @@ public class IntegerLiteral extends ValueNode {
   @Override
   public Object executeGeneric(VirtualFrame frame) {
     return value;
+  }
+
+  @Override
+  public MatcherNode getTypeMatcher() {
+    return NumericTypeMatcherNode.create();
   }
 }
