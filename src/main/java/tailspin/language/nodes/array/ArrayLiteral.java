@@ -4,8 +4,10 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import java.util.ArrayList;
 import java.util.List;
+import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.matchers.ArrayTypeMatcherNode;
 import tailspin.language.runtime.TailspinArray;
 
 public class ArrayLiteral extends ValueNode {
@@ -35,5 +37,10 @@ public class ArrayLiteral extends ValueNode {
     ArrayList<?> collector = (ArrayList<?>) frame.getObjectStatic(buildSlot);
     frame.setObjectStatic(buildSlot, null);
     return TailspinArray.value(collector.toArray());
+  }
+
+  @Override
+  public MatcherNode getTypeMatcher() {
+    return ArrayTypeMatcherNode.create();
   }
 }

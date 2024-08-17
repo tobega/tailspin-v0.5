@@ -3,7 +3,9 @@ package tailspin.language.nodes.numeric;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import java.math.BigInteger;
+import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
 import tailspin.language.runtime.BigNumber;
 
 public class BigIntegerLiteral extends ValueNode {
@@ -25,5 +27,10 @@ public class BigIntegerLiteral extends ValueNode {
   @Override
   public Object executeGeneric(VirtualFrame frame) {
     return new BigNumber(value);
+  }
+
+  @Override
+  public MatcherNode getTypeMatcher() {
+    return NumericTypeMatcherNode.create();
   }
 }

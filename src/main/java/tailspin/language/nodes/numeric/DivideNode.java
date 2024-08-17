@@ -3,20 +3,32 @@ package tailspin.language.nodes.numeric;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
+import com.oracle.truffle.api.dsl.Executed;
 import com.oracle.truffle.api.dsl.GenerateInline;
-import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import tailspin.language.TypeError;
+import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.SciNum;
 
-@NodeChild("leftNode") @NodeChild("rightNode")
 public abstract class DivideNode extends ValueNode {
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child @Executed
+  protected ValueNode leftNode;
+
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child @Executed
+  protected ValueNode rightNode;
+
+  DivideNode(ValueNode leftNode, ValueNode rightNode) {
+    this.leftNode = leftNode;
+    this.rightNode = rightNode;
+  }
 
   @GenerateInline
   @TypeSystemReference(TailspinTypes.class)
@@ -53,5 +65,12 @@ public abstract class DivideNode extends ValueNode {
 
   public static DivideNode create(ValueNode leftNode, ValueNode rightNode) {
     return DivideNodeGen.create(leftNode, rightNode);
+  }
+
+  @Override
+  public MatcherNode getTypeMatcher() {
+    MatcherNode typeMatcher = leftNode.getTypeMatcher();
+    if (typeMatcher == null) typeMatcher = rightNode.getTypeMatcher();
+    return typeMatcher;
   }
 }

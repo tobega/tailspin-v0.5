@@ -2,7 +2,9 @@ package tailspin.language.nodes.numeric;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
 import tailspin.language.runtime.SciNum;
 
 public class SciNumLiteral extends ValueNode {
@@ -25,5 +27,10 @@ public class SciNumLiteral extends ValueNode {
 
   public static ValueNode create(SciNum value) {
     return new SciNumLiteral(value);
+  }
+
+  @Override
+  public MatcherNode getTypeMatcher() {
+    return NumericTypeMatcherNode.create();
   }
 }
