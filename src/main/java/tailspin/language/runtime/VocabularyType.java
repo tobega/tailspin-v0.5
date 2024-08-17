@@ -29,13 +29,13 @@ public class VocabularyType implements Comparable<VocabularyType> {
 
   public MatcherNode getConstraint(Object value) {
     if (constraint == null) {
-      autoType(value);
+      constraint = autoType(value);
     }
     return constraint;
   }
 
-  private void autoType(Object value) {
-    constraint = switch (value) {
+  public static MatcherNode autoType(Object value) {
+    return switch (value) {
       case Long ignored -> NumericTypeMatcherNode.create();
       case BigNumber ignored -> NumericTypeMatcherNode.create();
       case Measure(Object ignored, Object unit) -> MeasureTypeMatcher.create(unit);

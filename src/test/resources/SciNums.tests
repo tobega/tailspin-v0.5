@@ -88,3 +88,6 @@
 ---exact division does not reduce precision
 14.0 / 7.0 !
 =2.0e0
+---simple equality
+3.0 -> if <|=3.0> !
+=3.0e0

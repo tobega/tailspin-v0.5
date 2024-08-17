@@ -1,0 +1,3 @@
+---measures not equal-comparable
+5"m" -> if <|=5"s"> !
+=*TypeError

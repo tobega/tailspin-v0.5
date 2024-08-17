@@ -2,7 +2,6 @@ package tailspin.language.runtime;
 
 import com.oracle.truffle.api.CompilerDirectives.ValueType;
 import com.oracle.truffle.api.interop.TruffleObject;
-import tailspin.language.nodes.TailspinTypes;
 
 @ValueType
 public record Measure(Object value, Object unit) implements TruffleObject {
@@ -12,15 +11,5 @@ public record Measure(Object value, Object unit) implements TruffleObject {
   @Override
   public String toString() {
     return value.toString() + "\"" + unit + "\"";
-  }
-
-  public boolean isLong() {
-    return value instanceof Long;
-  }
-
-  public BigNumber bigNumber() {
-    if (isLong())
-      return TailspinTypes.castBigNumber((Long) value);
-    return (BigNumber) value;
   }
 }

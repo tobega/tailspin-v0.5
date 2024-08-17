@@ -109,4 +109,8 @@ public class SciNum implements TruffleObject {
     }
     return Math.min(value.precision(), other.value.precision());
   }
+
+  public int compareTo(SciNum right) {
+    return value.compareTo(right.value);
+  }
 }
