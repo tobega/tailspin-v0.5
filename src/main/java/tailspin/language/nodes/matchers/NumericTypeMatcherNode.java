@@ -10,6 +10,10 @@ import tailspin.language.runtime.SciNum;
 @GenerateInline(false)
 public abstract class NumericTypeMatcherNode extends MatcherNode {
 
+  public NumericTypeMatcherNode() {
+    super(null);
+  }
+
   @Specialization
   protected boolean isLong(long ignored) {
     return true;

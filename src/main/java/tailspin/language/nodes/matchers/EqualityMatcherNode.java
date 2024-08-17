@@ -21,6 +21,10 @@ import tailspin.language.runtime.SciNum;
 @NodeChild(value = "valueNode", type = ValueNode.class)
 public abstract class EqualityMatcherNode extends MatcherNode {
 
+  public EqualityMatcherNode(MatcherNode typeBound) {
+    super(typeBound);
+  }
+
   @GenerateInline
   @TypeSystemReference(TailspinTypes.class)
   public static abstract class DoEqualityNode extends Node {
@@ -64,7 +68,7 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     throw new TypeError("Incompatible type comparison " + toMatch + " = " + value);
   }
 
-  public static EqualityMatcherNode create(ValueNode valueNode) {
-    return EqualityMatcherNodeGen.create(null, valueNode);
+  public static EqualityMatcherNode create(MatcherNode typeBound, ValueNode valueNode) {
+    return EqualityMatcherNodeGen.create(typeBound, null, valueNode);
   }
 }

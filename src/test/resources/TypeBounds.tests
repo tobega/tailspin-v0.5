@@ -1,3 +1,18 @@
 ---measures not equal-comparable
-5"m" -> if <|=5"s"> !
+5"m" -> templates
+  when <|=5"s"> do 1 !
+  otherwise 0 !
+end !
+=*TypeError
+---type-bounded equal check works
+5"m" -> templates
+  when ´|""´<|=5"s"> do 1 !
+  otherwise 0 !
+end !
+=0
+---outside type-bound is error
+5"m" -> templates
+  when ´|"s"|..´<|=5"s"> do 1 !
+  otherwise 0 !
+end !
 =*TypeError

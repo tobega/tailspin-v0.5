@@ -54,7 +54,7 @@ public class TemplatesTest {
   void simple_matcher() {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
 
-    MatcherNode eq3 = EqualityMatcherNode.create(IntegerLiteral.create(3));
+    MatcherNode eq3 = EqualityMatcherNode.create(null, IntegerLiteral.create(3));
     StatementNode whenEq3 = EmitNode.create(ResultAggregatingNode.create(IntegerLiteral.create(0)));
 
     MatcherNode alwaysTrue = new AlwaysTrueMatcherNode();

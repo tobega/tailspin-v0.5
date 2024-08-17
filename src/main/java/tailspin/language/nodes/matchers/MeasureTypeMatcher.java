@@ -10,6 +10,7 @@ public abstract class MeasureTypeMatcher extends MatcherNode {
   final Object unit;
 
   protected MeasureTypeMatcher(Object unit) {
+    super(null);
     this.unit = unit;
   }
 

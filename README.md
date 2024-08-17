@@ -38,6 +38,7 @@ Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.c
 ### Miscellaneous
 - Line comments will start with `--` instead of `//` because it just looks lighter and cleaner
 - Key-values will have to be wrapped in a structure, so `{ foo: 1 }` instead of an independent `(foo:1)`, this just removes an unnecessary special case
+- Type bounds are listed outside the angle brackets, e.g. `´|""´<|=5"s">`
 
 ## New features
 - Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `if <.....>`

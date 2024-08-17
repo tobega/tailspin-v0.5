@@ -19,6 +19,7 @@ public abstract class ConditionNode extends MatcherNode {
   MatcherNode matcherNode;
 
   protected ConditionNode(int cvSlot, ValueNode toMatchNode, MatcherNode matcherNode) {
+    super(null);
     this.cvSlot = cvSlot;
     this.toMatchNode = toMatchNode;
     this.matcherNode = matcherNode;

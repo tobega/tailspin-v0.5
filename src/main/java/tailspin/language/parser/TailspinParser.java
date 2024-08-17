@@ -60,9 +60,10 @@ public class TailspinParser {
      matchers rule <|match-template>+
      match-template rule <|when-do|otherwise> <|statement>+
      otherwise rule <|='otherwise'> (<|WS>?)
-     when-do rule (<|='when'> <|WS>? <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|='do'> <|WS>?)
+     when-do rule (<|='when'> <|WS>?) <|type-bound>? (<|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|='do'> <|WS>?)
      membrane rule (<|='|'>) <|literal-match|type-match>? (<|WS>?) <|condition>*
      condition rule (<|='?('> <|WS>?) <|value-chain> (<|='matches'> <|WS> <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|=')'> <|WS>?)
+     type-bound rule (<|='´'>) <|membrane>+ (<|='´'> <|WS>?)
 
      literal-match rule (<|='='> <|WS>?) <|source>
      type-match rule <|range-match|array-match|structure-match|measure-type-match>

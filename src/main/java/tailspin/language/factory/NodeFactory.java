@@ -168,7 +168,7 @@ public class NodeFactory {
       case ParseNode(String stmtType, List<?> def) when stmtType.equals("type-def") -> {
         VocabularyType type = currentScope().getVocabularyType(((ParseNode) def.getFirst()).content().toString());
         enterNewScope(null);
-        MatcherNode constraint = visitAlternativeMembranes(def.subList(1, def.size()));
+        MatcherNode constraint = visitAlternativeMembranes(null, def.subList(1, def.size()));
         Scope definedScope = exitScope();
         Templates templates = definedScope.getOrCreateMatcherTemplates();
         if (templates.needsScope()) {
@@ -328,7 +328,8 @@ public class NodeFactory {
           -> SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(),
           currentScope().findTemplates((String) id.content()));
       case ParseNode(String type, Object membranes) when type.equals("filter")
-          -> FilterNode.create(ReadContextValueNode.create(-1, currentValueSlot()), visitAlternativeMembranes(membranes));
+          -> FilterNode.create(ReadContextValueNode.create(-1, currentValueSlot()), visitAlternativeMembranes(
+          null, membranes));
       default -> throw new IllegalStateException("Unexpected value: " + transform);
     };
   }
@@ -383,13 +384,20 @@ public class NodeFactory {
     return switch (matcher) {
       case ParseNode(String name, @SuppressWarnings("unused") Object c)
           when name.equals("otherwise") -> AlwaysTrueMatcherNode.create();
+      case ParseNode(String name, List<?> membranes)
+          when name.equals("when-do")
+          && membranes.getFirst() instanceof ParseNode(String tb, Object types)
+          && tb.equals("type-bound") -> {
+        MatcherNode typeBound = visitAlternativeMembranes(null, types);
+        yield visitAlternativeMembranes(typeBound, membranes.subList(1, membranes.size()));
+      }
       case ParseNode(String name, Object membranes)
-          when name.equals("when-do") -> visitAlternativeMembranes(membranes);
+          when name.equals("when-do") -> visitAlternativeMembranes(null, membranes);
       default -> throw new IllegalStateException("Unexpected value: " + matcher);
     };
   }
 
-  private MatcherNode visitAlternativeMembranes(Object membranes) {
+  private MatcherNode visitAlternativeMembranes(MatcherNode typeBound, Object membranes) {
     List<MatcherNode> alternatives = new ArrayList<>();
     List<?> membraneSpecs;
     if (membranes instanceof List<?> l) {
@@ -399,7 +407,7 @@ public class NodeFactory {
     }
     for (Object membraneSpec : membraneSpecs) {
       if (membraneSpec instanceof ParseNode(String m, Object conditions) && m.equals("membrane")) {
-        alternatives.add(visitMembrane(conditions));
+        alternatives.add(visitMembrane(typeBound, conditions));
       } else {
         throw new IllegalStateException("Unknown membrane " + membraneSpec);
       }
@@ -410,7 +418,7 @@ public class NodeFactory {
     return AnyOfNode.create(alternatives);
   }
 
-  private MatcherNode visitMembrane(Object conditions) {
+  private MatcherNode visitMembrane(MatcherNode typeBound, Object conditions) {
     Integer conditionSlot = null;
     List<MatcherNode> conjunction = new ArrayList<>();
     List<?> conditionSpecs;
@@ -423,7 +431,7 @@ public class NodeFactory {
       switch (conditionSpec) {
         case ParseNode(String type, ParseNode typeMatch) when type.equals("type-match") -> conjunction.addAll(visitTypeMatch(typeMatch));
         case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
-            -> conjunction.add(EqualityMatcherNode.create(asSingleValueNode(visitSource(value))));
+            -> conjunction.add(EqualityMatcherNode.create(typeBound, asSingleValueNode(visitSource(value))));
         case ParseNode(String type, List<?> condition) when type.equals("condition") -> {
           if (conditionSlot == null) {
             conditionSlot = currentScope().newTempSlot();
@@ -443,7 +451,7 @@ public class NodeFactory {
 
   private MatcherNode visitCondition(Integer conditionSlot, List<?> condition) {
     ValueNode toMatch = asSingleValueNode(visitValueChain((ParseNode) condition.getFirst()));
-    MatcherNode matcher = visitAlternativeMembranes(condition.subList(1, condition.size()));
+    MatcherNode matcher = visitAlternativeMembranes(null, condition.subList(1, condition.size()));
     return ConditionNode.create(conditionSlot, toMatch, matcher);
   }
 
@@ -507,7 +515,7 @@ public class NodeFactory {
               }
               if (km.size() > 1) {
                 MatcherNode matcher = visitAlternativeMembranes(
-                    ((ParseNode) km.getLast()).content());
+                    null, ((ParseNode) km.getLast()).content());
                 conditionNodes.addLast(StructureKeyMatcherNode.create(type, matcher, isOptional));
               }
             }
@@ -532,7 +540,7 @@ public class NodeFactory {
     pushCvSlot(conditionSlot);
     List<MatcherNode> lengthCondition = switch (content) {
       case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
-          -> List.of(EqualityMatcherNode.create(asSingleValueNode(visitSource(value))));
+          -> List.of(EqualityMatcherNode.create(NumericTypeMatcherNode.create(), asSingleValueNode(visitSource(value))));
       case ParseNode(String type, List<?> range) when type.equals("range-match") -> visitRangeMatch(range);
       default -> throw new IllegalStateException("Unexpected value: " + content);
     };

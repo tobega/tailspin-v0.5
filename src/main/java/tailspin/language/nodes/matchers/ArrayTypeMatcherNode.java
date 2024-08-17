@@ -9,6 +9,10 @@ import tailspin.language.runtime.TailspinArray;
 @GenerateInline(false)
 public abstract class ArrayTypeMatcherNode extends MatcherNode {
 
+  public ArrayTypeMatcherNode() {
+    super(null);
+  }
+
   @Specialization
   protected boolean isArray(TailspinArray ignored) {
     return true;

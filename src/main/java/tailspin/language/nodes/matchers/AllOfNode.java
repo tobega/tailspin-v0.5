@@ -10,6 +10,7 @@ public class AllOfNode extends MatcherNode {
   private final MatcherNode[] conditions;
 
   private AllOfNode(List<MatcherNode> conditions) {
+    super(null);
     this.conditions = conditions.toArray(new MatcherNode[0]);
   }
 

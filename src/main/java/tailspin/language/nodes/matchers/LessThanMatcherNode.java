@@ -15,6 +15,7 @@ public abstract class LessThanMatcherNode extends MatcherNode {
   private final boolean inclusive;
 
   protected LessThanMatcherNode(boolean inclusive) {
+    super(null);
     this.inclusive = inclusive;
   }
 
