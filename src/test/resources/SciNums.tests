@@ -118,3 +118,6 @@ end !
 ---exact square root is still SciNum
 √4 !
 =2.00000e0
+---allow redundant + and zero
+3e+00 !
+=3e0
