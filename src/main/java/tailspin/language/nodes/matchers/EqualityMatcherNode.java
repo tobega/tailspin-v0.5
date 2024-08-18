@@ -77,11 +77,24 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     return typeBound != null;
   }
 
-  @Specialization
+  @Specialization(guards = {"!hasStaticTypeBound()", "dynamicBound.executeMatcherGeneric(frame, value)"}, limit = "3")
+  protected boolean doDynamicCachedBound(VirtualFrame frame, Object toMatch, Object value,
+      @Cached(inline = true) @Shared DoEqualityNode doEqualityNode,
+      @Cached("autoType(value)") MatcherNode dynamicBound) {
+    if (doEqualityNode.executeEquals(frame, this, toMatch, value)) return true;
+    if (dynamicBound.executeMatcherGeneric(frame, toMatch)) return false;
+    throw new TypeError("Incompatible type comparison " + toMatch + " = " + value);
+  }
+
+  MatcherNode autoType(Object value) {
+    return VocabularyType.autoType(value);
+  }
+
+  @Specialization(guards = "!hasStaticTypeBound()")
   protected boolean doDynamicBound(VirtualFrame frame, Object toMatch, Object value,
       @Cached(inline = true) @Shared DoEqualityNode doEqualityNode) {
     if (doEqualityNode.executeEquals(frame, this, toMatch, value)) return true;
-    MatcherNode dynamicBound = VocabularyType.autoType(value);
+    MatcherNode dynamicBound = autoType(value);
     if (dynamicBound.executeMatcherGeneric(frame, toMatch)) return false;
     throw new TypeError("Incompatible type comparison " + toMatch + " = " + value);
   }
