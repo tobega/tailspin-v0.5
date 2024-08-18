@@ -78,11 +78,12 @@ public class TailspinParser {
      content-matcher rule (<|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>?)
      measure-type-match rule <|='""'|unit> (<|WS>?)
      
-     arithmetic-expression rule <|addition|multiplication|numeric-literal>
+     arithmetic-expression rule <|addition|multiplication|numeric-literal|square-root>
      addition rule <|addition|multiplication|term> <|'[+-]'> (<|WS>?) <|multiplication|term> (<|WS>?)
      multiplication rule <|multiplication|term> <|'\\*|/|~/|mod'> (<|WS>?) <|term> (<|WS>?)
+     square-root rule (<|='√'>) <|term>
      numeric-literal rule <|INT|NUM> <|='"1"'|unit>?
-     term rule <|numeric-literal|single-value-chain|reference> (<|WS>?)
+     term rule <|numeric-literal|single-value-chain|reference|square-root> (<|WS>?)
      
      unit rule (<|='"'>) <|measure-product>+ <|measure-denominator>? (<|='"'> <|WS>?)
      measure-product rule <|ID> (<|WS>?)

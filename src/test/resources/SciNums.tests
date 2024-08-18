@@ -112,3 +112,9 @@ end !
   otherwise 0!
 end !
 =0
+---square root operator
+√3 !
+=1.73205e0
+---exact square root is still SciNum
+√4 !
+=2.00000e0

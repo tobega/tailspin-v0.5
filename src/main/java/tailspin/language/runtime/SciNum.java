@@ -91,12 +91,17 @@ public class SciNum implements TruffleObject {
     int precision = multiplicativePrecision(divisor);
     MathContext context = new MathContext(precision);
     BigDecimal quotient = value.divide(divisor.value, context);
-    if (quotient.precision() < precision) {
-      int expand = precision - quotient.precision();
-      BigInteger unscaled = quotient.movePointRight(expand + quotient.scale()).unscaledValue();
-      quotient = new BigDecimal(unscaled, quotient.scale() + expand);
-    }
+    quotient = fixPrecision(quotient, precision);
     return new SciNum(quotient);
+  }
+
+  private static BigDecimal fixPrecision(BigDecimal result, int precision) {
+    if (result.precision() < precision) {
+      int expand = precision - result.precision();
+      BigInteger unscaled = result.movePointRight(expand + result.scale()).unscaledValue();
+      result = new BigDecimal(unscaled, result.scale() + expand);
+    }
+    return result;
   }
 
   private int multiplicativePrecision(SciNum other) {
@@ -112,5 +117,11 @@ public class SciNum implements TruffleObject {
 
   public int compareTo(SciNum right) {
     return value.compareTo(right.value);
+  }
+
+  public SciNum squareRoot() {
+    int precision = isExact ? 6 : value.precision();
+    BigDecimal sqrt = value.sqrt(new MathContext(precision));
+    return new SciNum(fixPrecision(sqrt, precision));
   }
 }
