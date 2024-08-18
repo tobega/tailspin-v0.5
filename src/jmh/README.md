@@ -253,3 +253,18 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 |ListBenchmark.list_tailspin_optional           |avgt  |  5  |1033,012 |± 16,249  |us/op|
 |PascalBenchmark.triangle_java                  |avgt  |  5  |  11,427 |±  0,400  |us/op|
 |PascalBenchmark.triangle_tailspin              |avgt  |  5  |  20,548 |±  2,583  |us/op|
+
+2024-08-18 dynamic range type bounds are costly
+|Benchmark                                      |Mode  |Cnt  |   Score |   Error  |Units|
+|-----------------------------------------------|------|-----|---------|----------|-----|
+|BubblesortBenchmark.sort_java                  |avgt  |  5  |  19,303 |±  0,379  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate      |avgt  |  5  | 919,857 |± 22,963  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse      |avgt  |  5  |1143,652 |± 25,431  |us/op|
+|FibonacciBenchmark.recursive_java              |avgt  |  5  |  36,840 |±  0,902  |us/op|
+|FibonacciBenchmark.recursive_tailspin_measure  |avgt  |  5  | 125,336 |± 21,682  |us/op|
+|FibonacciBenchmark.recursive_tailspin_raw      |avgt  |  5  |  55,826 |±  1,323  |us/op|
+|ListBenchmark.list_java                        |avgt  |  5  |  24,152 |±  2,993  |us/op|
+|ListBenchmark.list_tailspin_empty              |avgt  |  5  | 877,485 |± 38,974  |us/op|
+|ListBenchmark.list_tailspin_optional           |avgt  |  5  | 929,849 |± 21,578  |us/op|
+|PascalBenchmark.triangle_java                  |avgt  |  5  |  11,514 |±  0,738  |us/op|
+|PascalBenchmark.triangle_tailspin              |avgt  |  5  | 364,272 |±  7,661  |us/op|
