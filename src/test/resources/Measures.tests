@@ -73,3 +73,27 @@ end !
 ---SciNum measure multiply
 200_000"1" * 1.11"m" !
 =2.22e5"m"
+---measure greater than
+3"s" -> templates
+  when <|2"s"..> do 1 !
+  otherwise 0 !
+end !
+=1
+---measure greater than checks
+3"s" -> templates
+  when <|5"s"..> do 1 !
+  otherwise 0 !
+end !
+=0
+---measure less than
+3"s" -> templates
+  when <|..5"s"> do 1 !
+  otherwise 0 !
+end !
+=1
+---measure less than checks
+3"s" -> templates
+  when <|..2"s"> do 1 !
+  otherwise 0 !
+end !
+=0

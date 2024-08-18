@@ -16,3 +16,39 @@ end !
   otherwise 0 !
 end !
 =*TypeError
+---range lower bound checks type
+5"m" -> templates
+  when <|3..> do 1 !
+  otherwise 0 !
+end !
+=*TypeError
+---range lower bound type bound works
+5"m" -> templates
+  when ´|""|..´<|3..> do 1 !
+  otherwise 0 !
+end !
+=0
+---range lower bound type bound checked
+5"m" -> templates
+  when ´|"s"|..´<|3..> do 1 !
+  otherwise 0 !
+end !
+=*TypeError
+---range upper bound checks type
+5"m" -> templates
+  when <|..7> do 1 !
+  otherwise 0 !
+end !
+=*TypeError
+---range upper bound type bound works
+5"m" -> templates
+  when ´|""|..´<|..7> do 1 !
+  otherwise 0 !
+end !
+=0
+---range upper bound type bound checked
+5"m" -> templates
+  when ´|"s"|..´<|..7> do 1 !
+  otherwise 0 !
+end !
+=*TypeError

@@ -429,7 +429,8 @@ public class NodeFactory {
     }
     for (Object conditionSpec : conditionSpecs) {
       switch (conditionSpec) {
-        case ParseNode(String type, ParseNode typeMatch) when type.equals("type-match") -> conjunction.addAll(visitTypeMatch(typeMatch));
+        case ParseNode(String type, ParseNode typeMatch) when type.equals("type-match")
+            -> conjunction.addAll(visitTypeMatch(typeBound, typeMatch));
         case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
             -> conjunction.add(EqualityMatcherNode.create(typeBound, asSingleValueNode(visitSource(value))));
         case ParseNode(String type, List<?> condition) when type.equals("condition") -> {
@@ -455,11 +456,11 @@ public class NodeFactory {
     return ConditionNode.create(conditionSlot, toMatch, matcher);
   }
 
-  private List<MatcherNode> visitTypeMatch(ParseNode typeMatch) {
+  private List<MatcherNode> visitTypeMatch(MatcherNode typeBound, ParseNode typeMatch) {
     return switch (typeMatch.name()) {
       case "range-match" -> {
         if (typeMatch.content() instanceof List<?> bounds)
-          yield visitRangeMatch(bounds);
+          yield visitRangeMatch(typeBound, bounds);
         else yield List.of(NumericTypeMatcherNode.create());
       }
       case "array-match" -> {
@@ -541,7 +542,7 @@ public class NodeFactory {
     List<MatcherNode> lengthCondition = switch (content) {
       case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
           -> List.of(EqualityMatcherNode.create(NumericTypeMatcherNode.create(), asSingleValueNode(visitSource(value))));
-      case ParseNode(String type, List<?> range) when type.equals("range-match") -> visitRangeMatch(range);
+      case ParseNode(String type, List<?> range) when type.equals("range-match") -> visitRangeMatch(NumericTypeMatcherNode.create(), range);
       default -> throw new IllegalStateException("Unexpected value: " + content);
     };
     popCvSlot();
@@ -550,20 +551,20 @@ public class NodeFactory {
         lengthCondition.size() == 1 ? lengthCondition.getFirst() : AllOfNode.create(lengthCondition));
   }
 
-  private List<MatcherNode> visitRangeMatch(List<?> content) {
+  private List<MatcherNode> visitRangeMatch(MatcherNode typeBound, List<?> content) {
     List<MatcherNode> bounds = new ArrayList<>();
     int separator = content.indexOf("..");
     if (separator > 0) {
       boolean inclusive = separator == 1;
       ValueNode low = asSingleValueNode(visitSource(
           (ParseNode) ((ParseNode) content.getFirst()).content()));
-      bounds.add(GreaterThanMatcherNode.create(inclusive, low));
+      bounds.add(GreaterThanMatcherNode.create(inclusive, typeBound, low));
     }
     if (separator + 1 < content.size()) {
       boolean inclusive = separator + 2 == content.size();
       ValueNode high = asSingleValueNode(visitSource(
           (ParseNode) ((ParseNode) content.getLast()).content()));
-      bounds.add(LessThanMatcherNode.create(inclusive, high));
+      bounds.add(LessThanMatcherNode.create(inclusive, typeBound, high));
     }
     return bounds;
   }
