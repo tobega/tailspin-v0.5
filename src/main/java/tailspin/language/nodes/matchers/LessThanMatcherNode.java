@@ -3,6 +3,7 @@ package tailspin.language.nodes.matchers;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Idempotent;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -16,6 +17,7 @@ import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
+import tailspin.language.runtime.SciNum;
 import tailspin.language.runtime.VocabularyType;
 
 @NodeChild(value = "dummy", type = ValueNode.class)
@@ -49,6 +51,12 @@ public abstract class LessThanMatcherNode extends MatcherNode {
     }
 
     @Specialization
+    @TruffleBoundary
+    protected boolean sciNumLess(SciNum toMatch, SciNum value, boolean inclusive) {
+      return toMatch.compareTo(value) <= (inclusive ? 0 : -1);
+    }
+
+    @Fallback
     @SuppressWarnings("unused")
     protected boolean objectLess(Object toMatch, Object value, boolean ignored) {
       return false;

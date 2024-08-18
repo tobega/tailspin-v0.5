@@ -3,6 +3,7 @@ package tailspin.language.nodes.matchers;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Idempotent;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -52,7 +53,7 @@ public abstract class EqualityMatcherNode extends MatcherNode {
       return left.compareTo(right) == 0;
     }
 
-    @Specialization
+    @Fallback
     protected boolean objectEquals(Object toMatch, Object value) {
       return toMatch.equals(value);
     }
