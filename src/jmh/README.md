@@ -283,3 +283,18 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 |ListBenchmark.list_tailspin_optional           |avgt  |  5  | 965,548 |± 237,757  |us/op|
 |PascalBenchmark.triangle_java                  |avgt  |  5  |  13,795 |±   0,834  |us/op|
 |PascalBenchmark.triangle_tailspin              |avgt  |  5  |  18,532 |±   0,189  |us/op|
+
+2024-08-19 the nbody benchmark is quite slow. Seems parsing broke on Fibonacci
+|Benchmark                                  |Mode  |Cnt  |    Score |     Error  |Units|
+|-----------------------------------------------|------|-----|---------|-----------|-----|
+|BubblesortBenchmark.sort_java              |avgt  |  5  |   20,254 |±    0,619  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate  |avgt  |  5  |   34,097 |±    0,419  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse  |avgt  |  5  |   40,558 |±    2,400  |us/op|
+|FibonacciBenchmark.recursive_java          |avgt  |  5  |   38,552 |±    0,966  |us/op|
+|ListBenchmark.list_java                    |avgt  |  5  |   24,478 |±    1,058  |us/op|
+|ListBenchmark.list_tailspin_empty          |avgt  |  5  |  974,952 |±   50,405  |us/op|
+|ListBenchmark.list_tailspin_optional       |avgt  |  5  | 1502,678 |±  157,128  |us/op|
+|NBodyBenchmark.nbody_java                  |avgt  |  5  |   16,462 |±    0,258  |us/op|
+|NBodyBenchmark.nbody_tailspin              |avgt  |  5  |15918,030 |± 1730,642  |us/op|
+|PascalBenchmark.triangle_java              |avgt  |  5  |   12,369 |±    0,356  |us/op|
+|PascalBenchmark.triangle_tailspin          |avgt  |  5  |   20,221 |±    0,950  |us/op|
