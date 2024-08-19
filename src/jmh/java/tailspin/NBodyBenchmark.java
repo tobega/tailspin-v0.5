@@ -1,6 +1,7 @@
 package tailspin;
 
 import java.math.BigDecimal;
+import org.openjdk.jmh.annotations.Benchmark;
 import tailspin.impl.nbody.NBodySystem;
 import tailspin.language.runtime.SciNum;
 
@@ -103,6 +104,12 @@ public class NBodyBenchmark extends TruffleBenchmark {
           @n-body-system($j; vz:) set $@n-body-system($j; vz:) + $dz * $@n-body-system($i; mass:) * $mag;
         end -> !VOID
       end -> !VOID
+
+      1..$@n-body-system::length -> templates
+          @n-body-system($; x:) set $@n-body-system($; x:) + $dt * $@n-body-system($; vx:);
+          @n-body-system($; y:) set $@n-body-system($; y:) + $dt * $@n-body-system($; vy:);
+          @n-body-system($; z:) set $@n-body-system($; z:) + $dt * $@n-body-system($; vz:);
+      end -> !VOID
     end advance
 
     energy source
@@ -122,7 +129,7 @@ public class NBodyBenchmark extends TruffleBenchmark {
           dy is $iBody(y:) - $jBody(y:);
           dz is $iBody(z:) - $jBody(z:);
 
-          distance is √(dx * dx + dy * dy + dz * dz);
+          distance is √($dx * $dx + $dy * $dy + $dz * $dz);
           @energy set $@energy - ($iBody(mass:) * $jBody(mass:)) / $distance;
         end -> !VOID
       end -> !VOID
@@ -137,13 +144,13 @@ public class NBodyBenchmark extends TruffleBenchmark {
   250 -> n-body-system !
   """;
 
-  //@Benchmark
+  @Benchmark
   public void nbody_tailspin() {
     SciNum energy = truffleContext.eval("tt", tailspinProgram).as(SciNum.class);
-    if (energy.compareTo(new SciNum(BigDecimal.valueOf(-0.16901847485766353))) != 0) throw new AssertionError("Wrong result " + energy);
+    if (energy.compareTo(new SciNum(BigDecimal.valueOf(-0.1690184748576636))) != 0) throw new AssertionError("Wrong result " + energy);
   }
 
-  //@Benchmark
+  @Benchmark
   public void nbody_java() {
     NBodySystem system = new NBodySystem();
     for (int i = 0; i < 250; i++) {
