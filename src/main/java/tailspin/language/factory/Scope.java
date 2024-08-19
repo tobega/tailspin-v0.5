@@ -105,6 +105,7 @@ public class Scope {
         needsScope = true;
         if (level == -1)
           level = 0;
+        if (parent == null) throw new IllegalStateException("Cannot find " + identifier);
         return parent.getSource(identifier, level + 1);
       }
       case Slot slot -> {
@@ -143,6 +144,7 @@ public class Scope {
       matcherTemplates.setNeedsScope();
     }
     if (definitions.containsKey(name)) return (Templates) definitions.get(name);
+    else if (parent == null) throw new IllegalStateException("Cannot find templates " + name);
     else return parent.findTemplates(name);
   }
 

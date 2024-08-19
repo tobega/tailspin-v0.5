@@ -18,12 +18,15 @@ public class TailspinParser {
   static final String tailspinSyntax = """
      program rule (<|WS>?) <|statement>+ (<|WS>?)
      
-     statement rule <|emit|definition|set-state|templates|sink|type-def> (<|WS>?)
-     emit rule <|value-chain> (<|WS>? <|='!'>)
+     statement rule <|definition|set-state|templates|type-def|terminated-chain> (<|WS>?)
      definition rule <|ID> (<|WS> <|='is'> <|WS>) <|value-chain> (<|=';'> <|WS>?)
-     set-state rule (<|='@'>) <|ID>? <|lens-expression>? (<|WS>? <|='set'> <|WS>?) <|value-chain> (<|=';'> <|WS>?)
-     sink rule <|value-chain> (<|WS>? <|='->'> <|WS>? <|='!'> <|WS>?) <|='VOID'|='#'|templates-call>
      type-def rule <|ID> (<|WS> <|='requires'> <|WS> <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>?)
+     set-state rule (<|='@'>) <|ID>? <|lens-expression>? (<|WS>? <|='set'> <|WS>?) <|value-chain> (<|=';'> <|WS>?)
+     
+     terminated-chain rule <|value-chain> <|emit|sink|accumulator-state>
+     emit rule (<|WS>? <|='!'>)
+     sink rule (<|WS>? <|='->'> <|WS>? <|='!'> <|WS>?) <|='VOID'|='#'|templates-call>
+     accumulator-state rule (<|WS>? <|='->'> <|WS>?) <|set-state>
      
      value-chain rule <|source> <|transform|stream>*
      source rule <|arithmetic-expression|reference|single-value-chain|array-literal|range|structure-literal> (<|WS>?)

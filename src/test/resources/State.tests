@@ -139,3 +139,10 @@ end !
   @(foo:) set [];
 end -> !VOID
 =*TypeError
+---accumulator
+4 -> templates
+  @ set 0;
+  1..$ -> @ set $@ + $;
+  $@ !
+end !
+=10

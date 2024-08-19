@@ -22,6 +22,7 @@ import tailspin.language.nodes.array.ArrayReadNode;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
+import tailspin.language.nodes.iterate.StatementTransformNode;
 import tailspin.language.nodes.iterate.StreamNode;
 import tailspin.language.nodes.matchers.AllOfNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
@@ -130,7 +131,7 @@ public class NodeFactory {
   private StatementNode visitStatement(ParseNode statement) {
     return switch (statement) {
       case ParseNode(String name, ParseNode stmt) when name.equals("statement") -> visitStatement(stmt);
-      case ParseNode(String name, ParseNode valueChain) when name.equals("emit") -> EmitNode.create(asTransformNode(visitValueChain(valueChain)));
+      case ParseNode(String name, Object stmt) when name.equals("terminated-chain") -> visitTerminatedChain(stmt);
       case ParseNode(String name, List<?> def) when name.equals("definition") -> visitDefinition(def);
       case ParseNode(String name, Object setExpr) when name.equals("set-state") -> visitSetState(setExpr);
       case ParseNode(String type, List<?> content) when type.equals("templates") -> {
@@ -144,27 +145,6 @@ public class NodeFactory {
         templates.setDefinitionLevel(scopes.size());
         currentScope().registerTemplates(name, templates);
         yield DoNothingNode.create();
-      }
-      case ParseNode(String type, List<?> sinkChain) when type.equals("sink") -> {
-        ParseNode valueChain = (ParseNode) sinkChain.getFirst();
-        ArrayList<Object> transforms = new ArrayList<>();
-        if (valueChain.content() instanceof List<?> l) {
-          transforms.addAll(l);
-        } else {
-          transforms.add(valueChain.content());
-        }
-        if (sinkChain.getLast().equals("VOID")) {
-          transforms.addLast("VOID");
-        } else if (sinkChain.getLast().equals("#")) {
-          transforms.addLast(new ParseNode("transform", "#"));
-        } else if (sinkChain.getLast() instanceof ParseNode(String call, ParseNode id) && call.equals("templates-call")) {
-          Templates sink = currentScope().findTemplates(id.content().toString());
-          if (!sink.getType().equals("sink")) throw new IllegalStateException("Can only sink to sink " + id.content());
-          transforms.addLast(new ParseNode("transform", sinkChain.getLast()));
-        } else {
-          throw new IllegalStateException("Unexpected value: " + sinkChain.getLast());
-        }
-        yield SinkNode.create(asTransformNode(visitValueChain(new ParseNode(valueChain.name(), transforms))));
       }
       case ParseNode(String stmtType, List<?> def) when stmtType.equals("type-def") -> {
         VocabularyType type = currentScope().getVocabularyType(((ParseNode) def.getFirst()).content().toString());
@@ -184,6 +164,45 @@ public class NodeFactory {
         yield DoNothingNode.create();
       }
       default -> throw new IllegalStateException("Unexpected value: " + statement);
+    };
+  }
+
+  private StatementNode visitTerminatedChain(Object stmt) {
+    return switch(stmt) {
+      case ParseNode valueChain -> EmitNode.create(asTransformNode(visitValueChain(valueChain)));
+      case List<?> parts when parts.getLast() instanceof ParseNode(String name, Object sinkType) && name.equals("sink") -> {
+        ParseNode valueChain = (ParseNode) parts.getFirst();
+        ArrayList<Object> transforms = new ArrayList<>();
+        if (valueChain.content() instanceof List<?> l) {
+          transforms.addAll(l);
+        } else {
+          transforms.add(valueChain.content());
+        }
+        if (sinkType.equals("VOID")) {
+          transforms.addLast("VOID");
+        } else if (sinkType.equals("#")) {
+          transforms.addLast(new ParseNode("transform", "#"));
+        } else if (sinkType instanceof ParseNode(String call, ParseNode id) && call.equals("templates-call")) {
+          Templates sink = currentScope().findTemplates(id.content().toString());
+          if (!sink.getType().equals("sink")) throw new IllegalStateException("Can only sink to sink " + id.content());
+          transforms.addLast(new ParseNode("transform", sinkType));
+        } else {
+          throw new IllegalStateException("Unexpected value: " + sinkType);
+        }
+        yield SinkNode.create(asTransformNode(visitValueChain(new ParseNode(valueChain.name(), transforms))));
+      }
+      case List<?> parts when parts.getLast() instanceof ParseNode(String name, ParseNode setState) && name.equals("accumulator-state") -> {
+        ParseNode valueChain = (ParseNode) parts.getFirst();
+        ArrayList<Object> transforms = new ArrayList<>();
+        if (valueChain.content() instanceof List<?> l) {
+          transforms.addAll(l);
+        } else {
+          transforms.add(valueChain.content());
+        }
+        transforms.add(setState);
+        yield SinkNode.create(asTransformNode(visitValueChain(new ParseNode(valueChain.name(), transforms))));
+      }
+      default -> throw new IllegalStateException("Unexpected value: " + stmt);
     };
   }
 
@@ -261,6 +280,7 @@ public class NodeFactory {
           case ParseNode(String name, Object transform) when name.equals("transform") -> visitTransform(transform);
           case ParseNode(String name, ParseNode transform) when name.equals("source") -> visitSource(transform);
           case ParseNode(String name, String ignored) when name.equals("stream") -> StreamNode.create(ReadContextValueNode.create(-1, currentValueSlot()));
+          case ParseNode(String name, ParseNode setState) when name.equals("set-state") -> visitSetState(setState);
           case String v when v.equals("VOID") -> VoidValue.create();
           default -> throw new IllegalStateException("Unexpected value: " + stage);
         };
@@ -299,6 +319,8 @@ public class NodeFactory {
       return ResultAggregatingNode.create(v);
     if (node instanceof TransformNode t)
       return t;
+    if (node instanceof StatementNode s)
+      return StatementTransformNode.create(s);
     throw new IllegalStateException("Unknown source node " + node);
   }
 
