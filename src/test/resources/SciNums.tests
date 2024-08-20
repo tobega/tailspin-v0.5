@@ -124,3 +124,6 @@ end !
 ---regression test parser left recursion bug backtracking choice
 1.5 + 3 + 4 !
 =8.5e0
+---math mod precision
+7.55 mod 2.30 !
+=6.50e-1

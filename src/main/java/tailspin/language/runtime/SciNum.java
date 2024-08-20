@@ -75,6 +75,7 @@ public class SciNum implements TruffleObject {
     if (remainder.signum() < 0) {
       remainder = remainder.add(modulus.value.abs());
     }
+    remainder = fixPrecision(remainder, multiplicativePrecision(modulus));
     return new SciNum(remainder);
   }
 
