@@ -315,3 +315,7 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 |NBodyBenchmark.nbody_tailspin                  |avgt  |  5  |20975,904 |± 2530,225  |us/op|
 |PascalBenchmark.triangle_java                  |avgt  |  5  |   16,403 |±    1,445  |us/op|
 |PascalBenchmark.triangle_tailspin              |avgt  |  5  |   25,603 |±    0,800  |us/op|
+
+2024-08-20 Running nbody java with BigDecimal takes about the same time as the Tailspin version (although it gives the wrong answer)
+NBodyBenchmark.nbody_java                      avgt    5  11220,231 ± 321,714  us/op
+NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  us/op
