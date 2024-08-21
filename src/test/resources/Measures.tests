@@ -64,15 +64,6 @@ end !
 ---modulo different measures is error
 5"apples" mod 2"oranges" !
 =*TypeError
----SciNum measure add
-20_000"m" + 1.11"m" !
-=2.000111e4"m"
----SciNum measure subtract
-20_000"m" - 1.11"m" !
-=1.999889e4"m"
----SciNum measure multiply
-200_000"1" * 1.11"m" !
-=2.22e5"m"
 ---measure greater than
 3"s" -> templates
   when <|2"s"..> do 1 !

@@ -1,6 +1,5 @@
 package tailspin;
 
-import java.math.BigDecimal;
 import org.openjdk.jmh.annotations.Benchmark;
 import tailspin.impl.nbody.NBodySystem;
 import tailspin.language.runtime.SciNum;
@@ -11,48 +10,48 @@ import tailspin.language.runtime.SciNum;
 @SuppressWarnings("unused")
 public class NBodyBenchmark extends TruffleBenchmark {
   private static final String tailspinProgram = """
-  PI is 3.141592653589793;
-  SOLAR_MASS is 4 * $PI * $PI;
-  DAYS_PER_YEAR is 365.2400000000000;
+  PI is 3.14159265358979;
+  SOLAR_MASS is 4.00000000000000 * $PI * $PI;
+  DAYS_PER_YEAR is 365.240000000000;
 
   jupiter is {
-    x: 4.84143144246472090e+00,
-    y: -1.16032004402742839e+00,
-    z: -1.03622044471123109e-01,
-    vx: 1.66007664274403694e-03 * $DAYS_PER_YEAR,
-    vy: 7.69901118419740425e-03 * $DAYS_PER_YEAR,
-    vz: -6.90460016972063023e-05 * $DAYS_PER_YEAR,
-    mass: 9.54791938424326609e-04 * $SOLAR_MASS
+    x: 4.84143144246472e+00,
+    y: -1.16032004402743e+00,
+    z: -1.03622044471123e-01,
+    vx: 1.66007664274404e-03 * $DAYS_PER_YEAR,
+    vy: 7.69901118419740e-03 * $DAYS_PER_YEAR,
+    vz: -6.90460016972063e-05 * $DAYS_PER_YEAR,
+    mass: 9.54791938424327e-04 * $SOLAR_MASS
   };
 
   saturn is {
-    x: 8.34336671824457987e+00,
-    y: 4.12479856412430479e+00,
-    z: -4.03523417114321381e-01,
-    vx: -2.76742510726862411e-03 * $DAYS_PER_YEAR,
-    vy: 4.99852801234917238e-03 * $DAYS_PER_YEAR,
-    vz: 2.30417297573763929e-05 * $DAYS_PER_YEAR,
-    mass:2.85885980666130812e-04 * $SOLAR_MASS
+    x: 8.34336671824458e+00,
+    y: 4.12479856412430e+00,
+    z: -4.03523417114321e-01,
+    vx: -2.76742510726862e-03 * $DAYS_PER_YEAR,
+    vy: 4.99852801234917e-03 * $DAYS_PER_YEAR,
+    vz: 2.30417297573764e-05 * $DAYS_PER_YEAR,
+    mass:2.85885980666131e-04 * $SOLAR_MASS
   };
 
   uranus is {
-    x: 1.28943695621391310e+01,
-    y: -1.51111514016986312e+01,
-    z: -2.23307578892655734e-01,
-    vx: 2.96460137564761618e-03 * $DAYS_PER_YEAR,
-    vy: 2.37847173959480950e-03 * $DAYS_PER_YEAR,
-    vz: -2.96589568540237556e-05 * $DAYS_PER_YEAR,
-    mass: 4.36624404335156298e-05 * $SOLAR_MASS
+    x: 1.28943695621391e+01,
+    y: -1.51111514016986e+01,
+    z: -2.23307578892656e-01,
+    vx: 2.96460137564762e-03 * $DAYS_PER_YEAR,
+    vy: 2.37847173959481e-03 * $DAYS_PER_YEAR,
+    vz: -2.96589568540238e-05 * $DAYS_PER_YEAR,
+    mass: 4.36624404335156e-05 * $SOLAR_MASS
   };
 
   neptune is {
-    x: 1.53796971148509165e+01,
-    y: -2.59193146099879641e+01,
-    z: 1.79258772950371181e-01,
-    vx: 2.68067772490389322e-03 * $DAYS_PER_YEAR,
-    vy: 1.62824170038242295e-03 * $DAYS_PER_YEAR,
-    vz: -9.51592254519715870e-05 * $DAYS_PER_YEAR,
-    mass: 5.15138902046611451e-05 * $SOLAR_MASS
+    x: 1.53796971148509e+01,
+    y: -2.59193146099880e+01,
+    z: 1.79258772950371e-01,
+    vx: 2.68067772490389e-03 * $DAYS_PER_YEAR,
+    vy: 1.62824170038242e-03 * $DAYS_PER_YEAR,
+    vz: -9.51592254519716e-05 * $DAYS_PER_YEAR,
+    mass: 5.15138902046611e-05 * $SOLAR_MASS
   };
 
   sun is {
@@ -118,7 +117,7 @@ public class NBodyBenchmark extends TruffleBenchmark {
       1..$@n-body-system::length -> templates
         i is $;
         iBody is $@n-body-system($);
-        @energy set $@energy + 0.5000000000000000 * $iBody(mass:) * ($iBody(vx:) * $iBody(vx:) +
+        @energy set $@energy + 0.500000000000000 * $iBody(mass:) * ($iBody(vx:) * $iBody(vx:) +
           $iBody(vy:) * $iBody(vy:) +
           $iBody(vz:) * $iBody(vz:));
 
@@ -147,7 +146,8 @@ public class NBodyBenchmark extends TruffleBenchmark {
   @Benchmark
   public void nbody_tailspin() {
     SciNum energy = truffleContext.eval("tt", tailspinProgram).as(SciNum.class);
-    if (energy.compareTo(new SciNum(BigDecimal.valueOf(-0.1690184748576636))) != 0) throw new AssertionError("Wrong result " + energy);
+    SciNum expected = SciNum.fromDigits("-16901847485766", -14);
+    if (energy.compareTo(expected) != 0) throw new AssertionError("Wrong result " + energy + " vs " + expected);
   }
 
   @Benchmark

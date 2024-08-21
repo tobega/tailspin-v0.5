@@ -1,6 +1,5 @@
 package tailspin.language.parser.composer;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +43,7 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
     // Would like this to be unicode ID_Start followed by ID_Continue
     namedPatterns.put("ID", Pattern.compile(("(?U)\\p{L}[\\p{L}\\p{Pc}\\p{Pd}\\p{Nd}\\p{Nl}]*")));
     namedValueCreators.put("ID", Function.identity());
-    namedPatterns.put("NUM", Pattern.compile("[+-]?(0|[1-9][0-9_]*)(\\.[0-9_]*)?([Ee][+-]?([0-9][0-9_]*))?"));
+    namedPatterns.put("NUM", Pattern.compile("([+-]?(0|[1-9][0-9_]*)\\.[0-9_]*([Ee][+-]?([0-9][0-9_]*))?)|([+-]?(0|[1-9][0-9_]*)[Ee][+-]?([0-9][0-9_]*))"));
     namedValueCreators.put("NUM", s -> {
       s = s.replace("_", "");
       String[] parts = s.split("[Ee]");
@@ -57,8 +56,7 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
         exponent -= parts[0].length() - 1 - dotPosition;
       }
       String digits = parts[0].replace(".", "");
-      BigInteger unscaled = new BigInteger(digits);
-      return new SciNum(new BigDecimal(unscaled, -exponent));
+      return SciNum.fromDigits(digits, exponent);
     });
   }
 

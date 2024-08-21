@@ -319,3 +319,20 @@ NOTE: evaluating the answer through truffle array interop is really slow, so cas
 2024-08-20 Running nbody java with BigDecimal takes about the same time as the Tailspin version (although it gives the wrong answer)
 NBodyBenchmark.nbody_java                      avgt    5  11220,231 ± 321,714  us/op
 NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  us/op
+
+2024-08-21 Represent small SciNums as double values
+|Benchmark                                      |Mode  |Cnt  |   Score |    Error  |Units|
+|-----------------------------------------------|------|-----|---------|-----------|-----|
+|BubblesortBenchmark.sort_java                  |avgt  |  5  |  19,257 |±   0,260  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate      |avgt  |  5  |  33,153 |±   2,977  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse      |avgt  |  5  |  37,846 |±   0,488  |us/op|
+|FibonacciBenchmark.recursive_java              |avgt  |  5  |  35,854 |±   0,227  |us/op|
+|FibonacciBenchmark.recursive_tailspin_measure  |avgt  |  5  | 124,990 |±   6,453  |us/op|
+|FibonacciBenchmark.recursive_tailspin_raw      |avgt  |  5  |  56,764 |±   1,082  |us/op|
+|ListBenchmark.list_java                        |avgt  |  5  |  22,811 |±   0,581  |us/op|
+|ListBenchmark.list_tailspin_empty              |avgt  |  5  |1190,262 |±  37,626  |us/op|
+|ListBenchmark.list_tailspin_optional           |avgt  |  5  | 921,520 |±  15,058  |us/op|
+|NBodyBenchmark.nbody_java                      |avgt  |  5  |  15,332 |±   0,263  |us/op|
+|NBodyBenchmark.nbody_tailspin                  |avgt  |  5  |6056,729 |± 210,260  |us/op|
+|PascalBenchmark.triangle_java                  |avgt  |  5  |  13,981 |±   0,508  |us/op|
+|PascalBenchmark.triangle_tailspin              |avgt  |  5  |  18,788 |±   0,523  |us/op|

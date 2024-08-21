@@ -16,6 +16,9 @@
 ---addition rounds to rightmost common digit
 1.111 + 2.0 !
 =3.1e0
+---addition maintains precision on new leftmost digit
+5.111 + 6.0 !
+=1.1e1
 ---digits within addition precision remain
 1.111 + 0.20 !
 =1.31e0
@@ -115,6 +118,9 @@ end !
 ---square root operator
 √3 !
 =1.73205e0
+---square root operator preserves precision
+√3.00 !
+=1.73e0
 ---exact square root is still SciNum
 √4 !
 =2.00000e0
