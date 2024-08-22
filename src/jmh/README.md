@@ -336,3 +336,20 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |NBodyBenchmark.nbody_tailspin                  |avgt  |  5  |6056,729 |± 210,260  |us/op|
 |PascalBenchmark.triangle_java                  |avgt  |  5  |  13,981 |±   0,508  |us/op|
 |PascalBenchmark.triangle_tailspin              |avgt  |  5  |  18,788 |±   0,523  |us/op|
+
+2024-08-22 Reverting because it is not worth the complexity. Have to think about what to do here. Just go floating point?
+|Benchmark                                      |Mode  |Cnt  |    Score |    Error  |Units|
+|-----------------------------------------------|------|-----|----------|-----------|-----|
+|BubblesortBenchmark.sort_java                  |avgt  |  5  |   19,902 |±   0,952  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate      |avgt  |  5  |   32,790 |±   1,220  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse      |avgt  |  5  |   37,496 |±   0,947  |us/op|
+|FibonacciBenchmark.recursive_java              |avgt  |  5  |   35,745 |±   0,761  |us/op|
+|FibonacciBenchmark.recursive_tailspin_measure  |avgt  |  5  |  121,144 |±   2,372  |us/op|
+|FibonacciBenchmark.recursive_tailspin_raw      |avgt  |  5  |   56,266 |±   2,257  |us/op|
+|ListBenchmark.list_java                        |avgt  |  5  |   22,520 |±   0,850  |us/op|
+|ListBenchmark.list_tailspin_empty              |avgt  |  5  |  887,708 |±  13,519  |us/op|
+|ListBenchmark.list_tailspin_optional           |avgt  |  5  |  938,157 |±  33,229  |us/op|
+|NBodyBenchmark.nbody_java                      |avgt  |  5  |   15,277 |±   0,536  |us/op|
+|NBodyBenchmark.nbody_tailspin                  |avgt  |  5  |15793,573 |± 538,511  |us/op|
+|PascalBenchmark.triangle_java                  |avgt  |  5  |   11,690 |±   0,470  |us/op|
+|PascalBenchmark.triangle_tailspin              |avgt  |  5  |   18,700 |±   0,369  |us/op|
