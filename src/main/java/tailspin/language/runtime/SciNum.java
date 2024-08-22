@@ -11,11 +11,11 @@ import java.math.RoundingMode;
 @ValueType
 public class SciNum implements TruffleObject {
   private final BigDecimal value;
-  private final boolean isExact;
+  private final int precision;
 
-  private SciNum(BigDecimal value, boolean isExact) {
+  private SciNum(BigDecimal value, int precision) {
     this.value = value;
-    this.isExact = isExact;
+    this.precision = precision;
   }
 
   public static SciNum fromDigits(String digits, int exponent) {
@@ -24,23 +24,19 @@ public class SciNum implements TruffleObject {
       sign = digits.substring(0, 1);
       digits = digits.substring(1);
     }
-    int precision = digits.length(); // TODO: zero can have precision
+    int precision = digits.length();
     while (digits.startsWith("0")) digits = digits.substring(1);
     if (!digits.isEmpty()) precision = digits.length();
     if (digits.isEmpty()) digits = "0";
-    return new SciNum(new BigDecimal(new BigInteger(sign + digits), -exponent), false);
-  }
-
-  private SciNum(BigDecimal value) {
-    this(value, false);
+    return new SciNum(new BigDecimal(new BigInteger(sign + digits), -exponent), precision);
   }
 
   public static SciNum fromBigNumber(BigNumber bigNumber) {
-    return new SciNum(new BigDecimal(bigNumber.asBigInteger(), 0), true);
+    return new SciNum(new BigDecimal(bigNumber.asBigInteger(), 0), 0);
   }
 
   public static SciNum fromLong(long value) {
-    return new SciNum(new BigDecimal(BigInteger.valueOf(value)), true);
+    return new SciNum(new BigDecimal(BigInteger.valueOf(value)), 0);
   }
 
   @TruffleBoundary
@@ -59,14 +55,15 @@ public class SciNum implements TruffleObject {
 
   public SciNum add(SciNum augend) {
     BigDecimal added = value.add(augend.value);
-    BigDecimal result = added.setScale(additiveScale(augend), RoundingMode.HALF_UP);
-    return new SciNum(result);
+    int newScale = additiveScale(augend);
+    BigDecimal result = added.setScale(newScale, RoundingMode.HALF_UP);
+    return new SciNum(result, result.precision());
   }
 
   private int additiveScale(SciNum other) {
-    if (isExact) {
+    if (precision == 0) {
       return other.value.scale();
-    } else if (other.isExact) {
+    } else if (other.precision == 0) {
       return value.scale();
     }
     return Math.min(value.scale(), other.value.scale());
@@ -75,12 +72,13 @@ public class SciNum implements TruffleObject {
   public SciNum subtract(SciNum subtrahend) {
     BigDecimal subtracted = value.subtract(subtrahend.value);
     BigDecimal result = subtracted.setScale(additiveScale(subtrahend), RoundingMode.HALF_UP);
-    return new SciNum(result);
+    return new SciNum(result, result.precision());
   }
 
   public SciNum multiply(SciNum multiplicand) {
-    MathContext context = new MathContext(multiplicativePrecision(multiplicand));
-    return new SciNum(value.multiply(multiplicand.value, context));
+    int newPrecision = multiplicativePrecision(multiplicand);
+    MathContext context = new MathContext(newPrecision);
+    return new SciNum(fixPrecision(value.multiply(multiplicand.value, context), newPrecision), newPrecision);
   }
 
   public SciNum mod(SciNum modulus) {
@@ -88,8 +86,9 @@ public class SciNum implements TruffleObject {
     if (remainder.signum() < 0) {
       remainder = remainder.add(modulus.value.abs());
     }
-    remainder = fixPrecision(remainder, multiplicativePrecision(modulus));
-    return new SciNum(remainder);
+    int newPrecision = multiplicativePrecision(modulus);
+    remainder = fixPrecision(remainder, newPrecision);
+    return new SciNum(remainder, newPrecision);
   }
 
   public Object truncateDivide(SciNum divisor) {
@@ -106,27 +105,32 @@ public class SciNum implements TruffleObject {
     MathContext context = new MathContext(precision);
     BigDecimal quotient = value.divide(divisor.value, context);
     quotient = fixPrecision(quotient, precision);
-    return new SciNum(quotient);
+    return new SciNum(quotient, precision);
   }
 
   private static BigDecimal fixPrecision(BigDecimal result, int precision) {
-    if (result.precision() < precision) {
+    if (result.compareTo(BigDecimal.ZERO) == 0) {
+      result = result.setScale(precision - 1, RoundingMode.HALF_UP);
+    } else if (result.precision() < precision) {
       int expand = precision - result.precision();
       BigInteger unscaled = result.movePointRight(expand + result.scale()).unscaledValue();
       result = new BigDecimal(unscaled, result.scale() + expand);
+    } else if (result.precision() > precision) {
+      int contract = result.precision() - precision;
+      result = result.setScale(result.scale() - contract, RoundingMode.HALF_UP);
     }
     return result;
   }
 
   private int multiplicativePrecision(SciNum other) {
-    if (isExact && other.isExact) {
+    if (precision == 0 && other.precision == 0) {
       return  6;
-    } else if (isExact) {
-      return  other.value.precision();
-    } else if (other.isExact) {
-      return  value.precision();
+    } else if (precision == 0) {
+      return  other.precision;
+    } else if (other.precision == 0) {
+      return  precision;
     }
-    return Math.min(value.precision(), other.value.precision());
+    return Math.min(precision, other.precision);
   }
 
   public int compareTo(SciNum right) {
@@ -134,8 +138,8 @@ public class SciNum implements TruffleObject {
   }
 
   public SciNum squareRoot() {
-    int precision = isExact ? 6 : value.precision();
+    int precision = this.precision == 0 ? 6 : this.precision;
     BigDecimal sqrt = value.sqrt(new MathContext(precision));
-    return new SciNum(fixPrecision(sqrt, precision));
+    return new SciNum(fixPrecision(sqrt, precision), precision);
   }
 }

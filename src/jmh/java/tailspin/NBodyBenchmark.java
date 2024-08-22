@@ -146,7 +146,7 @@ public class NBodyBenchmark extends TruffleBenchmark {
   @Benchmark
   public void nbody_tailspin() {
     SciNum energy = truffleContext.eval("tt", tailspinProgram).as(SciNum.class);
-    if (energy.compareTo(SciNum.fromDigits("-1690184748576636", -16)) != 0) throw new AssertionError("Wrong result " + energy);
+    if (energy.compareTo(SciNum.fromDigits("-1690184748576635", -16)) != 0) throw new AssertionError("Wrong result " + energy);
   }
 
   @Benchmark

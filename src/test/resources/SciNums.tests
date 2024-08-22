@@ -133,3 +133,15 @@ end !
 ---math mod precision
 7.55 mod 2.30 !
 =6.50e-1
+---zero has a precision for add
+0.00 + 12.345 !
+=1.235e1
+---derived zero has a precision for add
+(1.11 - 1.11) + 12.345 !
+=1.235e1
+---zero has a precision for multiplication
+0.00 * 12.345 + 7.654321 !
+=7.65e0
+---derived zero has a precision for multiplication
+(1.11 - 1.11) * 12.345 + 7.654321 !
+=7.65e0
