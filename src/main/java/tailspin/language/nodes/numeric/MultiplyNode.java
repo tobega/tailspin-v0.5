@@ -51,7 +51,7 @@ public abstract class MultiplyNode extends ValueNode {
     @Specialization
     @TruffleBoundary
     protected Object doRational(Rational left, Rational right) {
-      return left.multiply(right);
+      return left.multiply(right).simplestForm();
     }
 
     @Specialization

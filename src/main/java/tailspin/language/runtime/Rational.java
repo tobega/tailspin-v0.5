@@ -31,11 +31,21 @@ public class Rational implements TruffleObject {
     return this;
   }
 
-  public Object divide(Rational right) {
-    return new Rational(numerator.multiply(right.denominator), denominator.multiply(right.numerator)).simplestForm();
+  public Rational divide(Rational right) {
+    return new Rational(numerator.multiply(right.denominator), denominator.multiply(right.numerator));
   }
 
-  public Object multiply(Rational right) {
-    return new Rational(numerator.multiply(right.numerator), denominator.multiply(right.denominator)).simplestForm();
+  public Rational multiply(Rational right) {
+    return new Rational(numerator.multiply(right.numerator), denominator.multiply(right.denominator));
+  }
+
+  public Rational add(Rational right) {
+    return new Rational(numerator.multiply(right.denominator).add(right.numerator.multiply(denominator)),
+        denominator.multiply(right.denominator));
+  }
+
+  public Rational subtract(Rational right) {
+    return new Rational(numerator.multiply(right.denominator).subtract(right.numerator.multiply(denominator)),
+        denominator.multiply(right.denominator));
   }
 }

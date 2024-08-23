@@ -51,7 +51,7 @@ public abstract class DivideNode extends ValueNode {
     @Specialization
     @TruffleBoundary
     protected Object doRational(Rational left, Rational right) {
-      return left.divide(right);
+      return left.divide(right).simplestForm();
     }
 
     @Specialization

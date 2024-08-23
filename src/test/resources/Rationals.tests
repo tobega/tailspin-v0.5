@@ -21,3 +21,23 @@ foo is 6/5;
 bar is 5/2;
 $foo * $bar !
 =3
+---add rationals
+foo is 3/5;
+bar is 2/3;
+$foo + $bar !
+=19/15
+---add rationals to integer
+foo is 6/5;
+bar is 4/5;
+$foo + $bar !
+=2
+---subtract rationals
+foo is 3/5;
+bar is 2/3;
+$foo - $bar !
+=-1/15
+---subtract rationals to integer
+foo is 6/5;
+bar is 1/5;
+$foo - $bar !
+=1
