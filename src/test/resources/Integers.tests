@@ -178,9 +178,12 @@ end !
 ---add non-number is type error
 1 + ({ foo: 1}) !
 =*TypeError
----divide gives 6-digit precision
+---divide gives rational
 3 / 7 !
-=4.28571e-1
----exact long divide gives six digit precision as well
+=3/7
+---exact long divide gives long
 14 / 7 !
-=2.00000e0
+=2
+---exact big number divide gives integer
+2000000000000000000020000000000000000000 / 20000000000000000000 !
+=100000000000000000001

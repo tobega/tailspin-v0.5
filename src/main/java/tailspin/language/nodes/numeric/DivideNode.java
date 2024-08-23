@@ -9,11 +9,14 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import java.math.BigInteger;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
+import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
 
 public abstract class DivideNode extends ValueNode {
@@ -34,6 +37,16 @@ public abstract class DivideNode extends ValueNode {
   @TypeSystemReference(TailspinTypes.class)
   public static abstract class DoDivideNode extends Node {
     public abstract Object executeDivide(VirtualFrame frame, Node node, Object left, Object right);
+
+    @Specialization
+    protected Object doRational(long numerator, long denominator) {
+      return new Rational(BigInteger.valueOf(numerator), BigInteger.valueOf(denominator)).simplestForm();
+    }
+
+    @Specialization
+    protected Object doBigRational(BigNumber numerator, BigNumber denominator) {
+      return new Rational(numerator.asBigInteger(), denominator.asBigInteger()).simplestForm();
+    }
 
     @Specialization
     @TruffleBoundary
