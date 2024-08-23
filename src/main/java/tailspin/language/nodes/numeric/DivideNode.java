@@ -39,13 +39,19 @@ public abstract class DivideNode extends ValueNode {
     public abstract Object executeDivide(VirtualFrame frame, Node node, Object left, Object right);
 
     @Specialization
-    protected Object doRational(long numerator, long denominator) {
+    protected Object doCreateRational(long numerator, long denominator) {
       return new Rational(BigInteger.valueOf(numerator), BigInteger.valueOf(denominator)).simplestForm();
     }
 
     @Specialization
-    protected Object doBigRational(BigNumber numerator, BigNumber denominator) {
+    protected Object doCreateBigRational(BigNumber numerator, BigNumber denominator) {
       return new Rational(numerator.asBigInteger(), denominator.asBigInteger()).simplestForm();
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object doRational(Rational left, Rational right) {
+      return left.divide(right);
     }
 
     @Specialization

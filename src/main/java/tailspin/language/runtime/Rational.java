@@ -30,4 +30,12 @@ public class Rational implements TruffleObject {
     }
     return this;
   }
+
+  public Object divide(Rational right) {
+    return new Rational(numerator.multiply(right.denominator), denominator.multiply(right.numerator)).simplestForm();
+  }
+
+  public Object multiply(Rational right) {
+    return new Rational(numerator.multiply(right.numerator), denominator.multiply(right.denominator)).simplestForm();
+  }
 }

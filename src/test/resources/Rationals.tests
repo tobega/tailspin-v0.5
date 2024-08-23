@@ -1,3 +1,23 @@
 ---create and show rational
 3 / 5 !
 =3/5
+---divide rationals
+foo is 3/5;
+bar is 2/3;
+$foo / $bar !
+=9/10
+---divide rationals to integer
+foo is 3/5;
+bar is 1/5;
+$foo / $bar !
+=3
+---multiply rationals
+foo is 3/5;
+bar is 2/3;
+$foo * $bar !
+=2/5
+---multiply rationals to integer
+foo is 6/5;
+bar is 5/2;
+$foo * $bar !
+=3
