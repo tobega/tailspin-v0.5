@@ -15,6 +15,7 @@ import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
+import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
 
 public abstract class MathModNode extends ValueNode {
@@ -45,6 +46,12 @@ public abstract class MathModNode extends ValueNode {
     @TruffleBoundary
     protected BigNumber doBigNumber(BigNumber left, BigNumber right) {
       return left.mod(right);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object doRational(Rational left, Rational right) {
+      return left.mod(right).simplestForm();
     }
 
     @Specialization

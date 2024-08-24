@@ -50,3 +50,28 @@ $foo - $bar !
 ---negative works correctly on simplification of double negative
 -15 / -25 !
 =3/5
+---rational modulus same base
+foo is 8/5;
+bar is 3/5;
+$foo mod $bar !
+=2/5
+---rational modulus different base
+foo is 8/5;
+bar is 3/7;
+$foo mod $bar !
+=11/35
+---zero modulus is just zero
+foo is 6/5;
+bar is 3/5;
+$foo mod $bar !
+=0
+---rational negative modulus
+foo is 8/5;
+bar is -3/7;
+$foo mod $bar !
+=11/35
+---rational modulus of negative dividend
+foo is -8/5;
+bar is 3/7;
+$foo mod $bar !
+=4/35
