@@ -32,6 +32,8 @@ public abstract class AddNode extends ValueNode {
     this.rightNode = rightNode;
   }
 
+  public abstract Object executeAdd(VirtualFrame frame, Object left, Object right);
+
   @GenerateInline
   @TypeSystemReference(TailspinTypes.class)
   public static abstract class DoAddNode extends Node {

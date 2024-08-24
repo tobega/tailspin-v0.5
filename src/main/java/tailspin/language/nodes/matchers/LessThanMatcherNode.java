@@ -24,6 +24,7 @@ import tailspin.language.runtime.VocabularyType;
 @NodeChild(value = "dummy", type = ValueNode.class)
 @NodeChild(value = "valueNode", type = ValueNode.class)
 public abstract class LessThanMatcherNode extends MatcherNode {
+  public abstract boolean executeComparison(VirtualFrame frame, Object toMatch, Object value);
 
   private final boolean inclusive;
   @SuppressWarnings("FieldMayBeFinal")

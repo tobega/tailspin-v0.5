@@ -28,12 +28,15 @@ public class ChainTest {
   void expression_chain_stage() {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int startSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int endSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int incrementSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode expr = AddNode.create(
             IntegerLiteral.create(12),
             ReadContextValueNode.create(-1, rangeSlot));
-    RangeIteration source = RangeIteration.create(rangeSlot, ResultAggregatingNode.create(expr), IntegerLiteral.create(1L),
-        true, IntegerLiteral.create(3L), IntegerLiteral.create(1L), true);
+    RangeIteration source = RangeIteration.create(rangeSlot, ResultAggregatingNode.create(expr), startSlot, IntegerLiteral.create(1L),
+        true, endSlot, IntegerLiteral.create(3L), true, incrementSlot, IntegerLiteral.create(1L));
     source.setResultSlot(resultSlot);
     @SuppressWarnings("unchecked")
     Iterator<Object> result = ((ArrayList<Object>) TestUtil.evaluate(new TransformResultNode(source), fdb.build(),

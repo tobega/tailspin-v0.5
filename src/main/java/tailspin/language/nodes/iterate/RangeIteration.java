@@ -1,6 +1,9 @@
 package tailspin.language.nodes.iterate;
 
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Shared;
+import com.oracle.truffle.api.dsl.Executed;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -8,10 +11,19 @@ import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
+import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNode.SetChainCvNode;
+import tailspin.language.nodes.iterate.RangeIterationNodeGen.InitializeRangeIteratorNodeGen;
 import tailspin.language.nodes.iterate.RangeIterationNodeGen.RangeIteratorNodeGen;
+import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
+import tailspin.language.nodes.matchers.LessThanMatcherNode;
+import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
+import tailspin.language.nodes.numeric.AddNode;
+import tailspin.language.nodes.numeric.IntegerLiteral;
+import tailspin.language.nodes.value.ReadContextValueNode;
+import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
 
 @NodeChild(value = "start", type = ValueNode.class)
 @NodeChild(value = "end", type = ValueNode.class)
@@ -22,18 +34,27 @@ public abstract class RangeIteration extends TransformNode {
   private RangeRepeatingNode repeatingNode;
   @SuppressWarnings("FieldMayBeFinal")
   @Child
+  private InitializeRangeIteratorNode initializeNode;
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child
   private LoopNode loop;
 
-  private final boolean inclusiveStart;
+  final int startSlot;
+  final int endSlot;
+  final int incrementSlot;
+
   private final boolean inclusiveEnd;
 
-  protected RangeIteration(boolean inclusiveStart, boolean inclusiveEnd) {
-    this.inclusiveStart = inclusiveStart;
+  protected RangeIteration(int startSlot, int endSlot, int incrementSlot, boolean inclusiveStart, boolean inclusiveEnd) {
+    this.startSlot = startSlot;
+    this.endSlot = endSlot;
+    this.incrementSlot = incrementSlot;
     this.inclusiveEnd = inclusiveEnd;
+    initializeNode = InitializeRangeIteratorNode.create(startSlot, endSlot, incrementSlot, inclusiveStart);
   }
 
   public void setStage(int rangeCvSlot, TransformNode stage) {
-    repeatingNode = new RangeRepeatingNode(rangeCvSlot, stage, inclusiveStart, inclusiveEnd);
+    repeatingNode = new RangeRepeatingNode(rangeCvSlot, stage, startSlot, endSlot, incrementSlot, inclusiveEnd);
     loop = Truffle.getRuntime().createLoopNode(repeatingNode);
   }
 
@@ -43,26 +64,21 @@ public abstract class RangeIteration extends TransformNode {
     repeatingNode.setResultSlot(resultSlot);
   }
 
-  public static RangeIteration create(int rangeCvSlot, TransformNode stage, ValueNode start,
-      boolean inclusiveStart, ValueNode end, ValueNode increment, boolean inclusiveEnd) {
-    RangeIteration created = RangeIterationNodeGen.create(inclusiveStart, inclusiveEnd, start, end, increment);
+  public static RangeIteration create(int rangeCvSlot, TransformNode stage, int startSlot, ValueNode start,
+      boolean inclusiveStart, int endSlot, ValueNode end, boolean inclusiveEnd, int incrementSlot, ValueNode increment) {
+    RangeIteration created = RangeIterationNodeGen.create(startSlot, endSlot, incrementSlot, inclusiveStart, inclusiveEnd, start, end, increment);
     created.setStage(rangeCvSlot, stage);
     return created;
   }
 
-  public static RangeIteration create(ValueNode start, boolean inclusiveStart, ValueNode end, boolean inclusiveEnd, ValueNode increment) {
-    return RangeIterationNodeGen.create(inclusiveStart, inclusiveEnd, start, end, increment);
+  public static RangeIteration create(int startSlot, ValueNode start, boolean inclusiveStart, int endSlot, ValueNode end, boolean inclusiveEnd, int incrementSlot, ValueNode increment) {
+    return RangeIterationNodeGen.create(startSlot, endSlot, incrementSlot, inclusiveStart, inclusiveEnd, start, end, increment);
   }
 
   @Specialization
-  public void doLong(VirtualFrame frame, long start, long end, long increment) {
-    repeatingNode.initialize(start, end, increment);
+  public void doIterate(VirtualFrame frame, Object start, Object end, Object increment) {
+    initializeNode.executeInitialize(frame, start, end, increment);
     loop.execute(frame);
-  }
-
-  @Specialization
-  public void doObject(Object start, Object end, Object increment) {
-    throw new UnsupportedOperationException(String.format("No range iterator for %s %s %s", start.getClass().getName(), end.getClass().getName(), increment.getClass().getName()));
   }
 
   static class RangeRepeatingNode extends Node implements RepeatingNode {
@@ -78,15 +94,11 @@ public abstract class RangeIteration extends TransformNode {
     @Child
     TransformNode stage;
 
-    RangeRepeatingNode(int rangeCvSlot, TransformNode stage, boolean inclusiveStart,
+    RangeRepeatingNode(int rangeCvSlot, TransformNode stage, int currentSlot, int endSlot, int incrementSlot,
         boolean inclusiveEnd) {
-      iterator = RangeIteratorNode.create(inclusiveStart, inclusiveEnd);
+      iterator = RangeIteratorNode.create(currentSlot, endSlot, incrementSlot, inclusiveEnd);
       setCurrentValue = SetChainCvNode.create(rangeCvSlot);
       this.stage = stage;
-    }
-
-    void initialize(long start, long end, long increment) {
-      this.iterator.initialize(start, end, increment);
     }
 
     @Override
@@ -105,51 +117,120 @@ public abstract class RangeIteration extends TransformNode {
     }
   }
 
-  static abstract class RangeIteratorNode extends Node {
-    long current;
-    long end;
-    long increment;
+  static abstract class InitializeRangeIteratorNode extends Node {
+    final int startSlot;
+    final int endSlot;
+    final int incrementSlot;
 
     final boolean inclusiveStart;
-    final boolean inclusiveEnd;
 
-    RangeIteratorNode(boolean inclusiveStart, boolean inclusiveEnd) {
+    InitializeRangeIteratorNode(int startSlot, int endSlot, int incrementSlot, boolean inclusiveStart) {
+      this.startSlot = startSlot;
+      this.endSlot = endSlot;
+      this.incrementSlot = incrementSlot;
       this.inclusiveStart = inclusiveStart;
+    }
+
+    public abstract void executeInitialize(VirtualFrame frame, Object start, Object end, Object increment);
+
+    @Specialization(guards = "inclusiveStart")
+    void doInitializeInclusive(VirtualFrame frame, Object start, Object end, Object increment,
+        @Cached(inline = true) @Shared("start") WriteLocalValueNode writeStart,
+        @Cached(inline = true) @Shared("end") WriteLocalValueNode writeEnd,
+        @Cached(inline = true) @Shared("increment") WriteLocalValueNode writeIncrement) {
+      writeStart.executeGeneric(frame, this, startSlot, start);
+      writeEnd.executeGeneric(frame, this, endSlot, end);
+      writeIncrement.executeGeneric(frame, this, incrementSlot, increment);
+    }
+
+    @Specialization
+    void doInitialize(VirtualFrame frame, Object start, Object end, Object increment,
+        @Cached(inline = true) @Shared("start") WriteLocalValueNode writeStart,
+        @Cached(inline = true) @Shared("end") WriteLocalValueNode writeEnd,
+        @Cached(inline = true) @Shared("increment") WriteLocalValueNode writeIncrement,
+        @Cached(value = "createAddNode()", neverDefault = true) AddNode addNode) {
+      writeStart.executeGeneric(frame, this, startSlot, addNode.executeAdd(frame, start, increment));
+      writeEnd.executeGeneric(frame, this, endSlot, end);
+      writeIncrement.executeGeneric(frame, this, incrementSlot, increment);
+    }
+
+    AddNode createAddNode() {
+      return AddNode.create(null, null);
+    }
+
+    public static InitializeRangeIteratorNode create(int startSlot, int endSlot, int incrementSlot, boolean inclusiveStart) {
+      return InitializeRangeIteratorNodeGen.create(startSlot, endSlot, incrementSlot, inclusiveStart);
+    }
+  }
+
+  static abstract class RangeIteratorNode extends Node {
+    @SuppressWarnings("FieldMayBeFinal")
+    @Child @Executed
+    ValueNode currentNode;
+    @SuppressWarnings("FieldMayBeFinal")
+    @Child @Executed
+    ValueNode endNode;
+    @SuppressWarnings("FieldMayBeFinal")
+    @Child @Executed
+    ValueNode incrementNode;
+    @SuppressWarnings("FieldMayBeFinal")
+    @Child @Executed(with = "incrementNode")
+    MatcherNode isGt0Node = GreaterThanMatcherNode.create(false, NumericTypeMatcherNode.create(),
+        IntegerLiteral.create(0L));
+
+    final boolean inclusiveEnd;
+    final int currentSlot;
+
+    RangeIteratorNode(int currentSlot, int endSlot, int incrementSlot, boolean inclusiveEnd) {
+      this.currentNode = ReadContextValueNode.create(-1, currentSlot);
+      this.endNode = ReadContextValueNode.create(-1, endSlot);
+      this.incrementNode = ReadContextValueNode.create(-1, incrementSlot);
       this.inclusiveEnd = inclusiveEnd;
+      this.currentSlot = currentSlot;
     }
 
     public abstract Object execute(VirtualFrame frame);
 
     final CountingConditionProfile doneProfile = CountingConditionProfile.create();
 
-    public void initialize(long start, long end, long increment) {
-      current = start + (inclusiveStart ? 0 : increment);
-      this.end = end;
-      this.increment = increment;
-    }
-
-    @Specialization(guards = "increment > 0")
-    long doIncreasingLong() {
-      if (doneProfile.profile(current > end || (!inclusiveEnd && current == end))) {
+    @Specialization(guards = "isGt0")
+    Object doIncreasing(VirtualFrame frame, Object current, Object end, Object increment, boolean isGt0,
+        @Cached(value = "createUpperBoundExceeded()", neverDefault = true) GreaterThanMatcherNode upperBoundExceeded,
+        @Cached(inline = true) @Shared("current") WriteLocalValueNode writeCurrent,
+        @Cached(value = "createAddNode()", neverDefault = true) @Shared AddNode addNode) {
+      if (doneProfile.profile(upperBoundExceeded.executeComparison(frame, current, end))) {
         throw new EndOfStreamException();
       }
-      long result = current;
-      current += increment;
-      return result;
+      writeCurrent.executeGeneric(frame, this, currentSlot, addNode.executeAdd(frame, current, increment));
+      return current;
     }
 
-    @Specialization(guards = "increment < 0")
-    long doDecreasingLong() {
-      if (doneProfile.profile(current < end)) {
+    GreaterThanMatcherNode createUpperBoundExceeded() {
+      return GreaterThanMatcherNode.create(!inclusiveEnd, NumericTypeMatcherNode.create(), null);
+    }
+
+    AddNode createAddNode() {
+      return AddNode.create(null, null);
+    }
+
+    @Specialization
+    Object doDecreasing(VirtualFrame frame, Object current, Object end, Object increment, boolean isGt0,
+        @Cached(value = "createLowerBoundExceeded()", neverDefault = true) LessThanMatcherNode lowerBoundExceeded,
+        @Cached(inline = true) @Shared("current") WriteLocalValueNode writeCurrent,
+        @Cached(value = "createAddNode()", neverDefault = true) @Shared AddNode addNode) {
+      if (doneProfile.profile(lowerBoundExceeded.executeComparison(frame, current, end))) {
         throw new EndOfStreamException();
       }
-      long result = current;
-      current += increment;
-      return result;
+      writeCurrent.executeGeneric(frame, this, currentSlot, addNode.executeAdd(frame, current, increment));
+      return current;
     }
 
-    public static RangeIteratorNode create(boolean inclusiveStart, boolean inclusiveEnd) {
-      return RangeIteratorNodeGen.create(inclusiveStart, inclusiveEnd);
+    LessThanMatcherNode createLowerBoundExceeded() {
+      return LessThanMatcherNode.create(!inclusiveEnd, NumericTypeMatcherNode.create(), null);
+    }
+
+    public static RangeIteratorNode create(int currentSlot, int endSlot, int incrementSlot, boolean inclusiveEnd) {
+      return RangeIteratorNodeGen.create(currentSlot, endSlot, incrementSlot, inclusiveEnd);
     }
   }
 }

@@ -353,3 +353,20 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |NBodyBenchmark.nbody_tailspin                  |avgt  |  5  |15793,573 |± 538,511  |us/op|
 |PascalBenchmark.triangle_java                  |avgt  |  5  |   11,690 |±   0,470  |us/op|
 |PascalBenchmark.triangle_tailspin              |avgt  |  5  |   18,700 |±   0,369  |us/op|
+
+2024-08-24 Generalize ranges
+|Benchmark                                      |Mode  |Cnt  |    Score |     Error  |Units|
+|-----------------------------------------------|------|-----|----------|------------|-----|
+|BubblesortBenchmark.sort_java                  |avgt  |  5  |   19,573 |±    0,546  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate      |avgt  |  5  |   31,982 |±    1,281  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse      |avgt  |  5  |   36,394 |±    0,493  |us/op|
+|FibonacciBenchmark.recursive_java              |avgt  |  5  |   35,852 |±    0,827  |us/op|
+|FibonacciBenchmark.recursive_tailspin_measure  |avgt  |  5  |  122,743 |±    5,149  |us/op|
+|FibonacciBenchmark.recursive_tailspin_raw      |avgt  |  5  |   56,946 |±    1,760  |us/op|
+|ListBenchmark.list_java                        |avgt  |  5  |   22,700 |±    0,365  |us/op|
+|ListBenchmark.list_tailspin_empty              |avgt  |  5  |  856,712 |±   22,676  |us/op|
+|ListBenchmark.list_tailspin_optional           |avgt  |  5  |  930,229 |±   21,536  |us/op|
+|NBodyBenchmark.nbody_java                      |avgt  |  5  |   15,270 |±    0,271  |us/op|
+|NBodyBenchmark.nbody_tailspin                  |avgt  |  5  |16511,772 |± 3048,357  |us/op|
+|PascalBenchmark.triangle_java                  |avgt  |  5  |   11,593 |±    0,128  |us/op|
+|PascalBenchmark.triangle_tailspin              |avgt  |  5  |   18,728 |±    0,513  |us/op|

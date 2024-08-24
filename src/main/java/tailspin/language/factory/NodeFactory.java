@@ -659,7 +659,7 @@ public class NodeFactory {
     } else {
       stride = IntegerLiteral.create(1L);
     }
-    return RangeIteration.create(start, inclusiveStart, end, inclusiveEnd, stride);
+    return RangeIteration.create(currentScope().newTempSlot(), start, inclusiveStart, currentScope().newTempSlot(), end, inclusiveEnd, currentScope().newTempSlot(), stride);
   }
 
   private ValueNode visitArrayLiteral(Object contents) {
