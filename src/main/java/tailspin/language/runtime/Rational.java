@@ -10,6 +10,10 @@ public class Rational implements TruffleObject {
   private final BigInteger denominator;
 
   public Rational(BigInteger numerator, BigInteger denominator) {
+    if (denominator.signum() < 0) {
+      numerator = numerator.negate();
+      denominator = denominator.negate();
+    }
     BigInteger gcd = numerator.gcd(denominator);
     this.numerator = numerator.divide(gcd);
     this.denominator = denominator.divide(gcd);

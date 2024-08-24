@@ -41,3 +41,12 @@ foo is 6/5;
 bar is 1/5;
 $foo - $bar !
 =1
+---negative is always on numerator
+3 / -5 !
+=-3/5
+---negative works correctly on simplification
+15 / -25 !
+=-3/5
+---negative works correctly on simplification of double negative
+-15 / -25 !
+=3/5
