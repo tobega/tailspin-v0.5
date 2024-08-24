@@ -17,6 +17,7 @@ import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
+import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
 import tailspin.language.runtime.VocabularyType;
 
@@ -47,6 +48,12 @@ public abstract class LessThanMatcherNode extends MatcherNode {
     @Specialization(replaces = "longLess")
     @TruffleBoundary
     protected boolean bigNumberLess(BigNumber toMatch, BigNumber value, boolean inclusive) {
+      return toMatch.compareTo(value) <= (inclusive ? 0 : -1);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean rationalLess(Rational toMatch, Rational value, boolean inclusive) {
       return toMatch.compareTo(value) <= (inclusive ? 0 : -1);
     }
 

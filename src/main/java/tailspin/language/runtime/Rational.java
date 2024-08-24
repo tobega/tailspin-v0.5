@@ -5,7 +5,7 @@ import com.oracle.truffle.api.interop.TruffleObject;
 import java.math.BigInteger;
 
 @ValueType
-public class Rational implements TruffleObject {
+public class Rational implements TruffleObject, Comparable<Rational> {
   private final BigInteger numerator;
   private final BigInteger denominator;
 
@@ -64,5 +64,10 @@ public class Rational implements TruffleObject {
       return numerator.equals(r.numerator) && denominator.equals(r.denominator);
     }
     return false;
+  }
+
+  @Override
+  public int compareTo(Rational other) {
+    return numerator.multiply(other.denominator).compareTo(other.numerator.multiply(denominator));
   }
 }
