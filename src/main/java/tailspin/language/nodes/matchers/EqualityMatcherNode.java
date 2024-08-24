@@ -17,6 +17,7 @@ import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
+import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
 import tailspin.language.runtime.VocabularyType;
 
@@ -44,6 +45,12 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     @Specialization(replaces = "longEquals")
     @TruffleBoundary
     protected boolean bigNumberEquals(BigNumber toMatch, BigNumber value) {
+      return toMatch.equals(value);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean rationalEquals(Rational toMatch, Rational value) {
       return toMatch.equals(value);
     }
 

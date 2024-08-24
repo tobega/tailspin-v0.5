@@ -75,3 +75,21 @@ foo is -8/5;
 bar is 3/7;
 $foo mod $bar !
 =4/35
+---is numeric type
+3/4 -> templates
+  when <|..> do 1 !
+  otherwise 0 !
+end !
+=1
+---literal match
+3/4 -> templates
+  when <|=3/4> do 1 !
+  otherwise 0 !
+end !
+=1
+---literal match false
+4/3 -> templates
+  when <|=3/4> do 1 !
+  otherwise 0 !
+end !
+=0

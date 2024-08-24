@@ -57,4 +57,12 @@ public class Rational implements TruffleObject {
     BigInteger commonDenominator = denominator.multiply(modulus.denominator);
     return new Rational(numerator.multiply(modulus.denominator).mod(modulus.numerator.multiply(denominator).abs()), commonDenominator);
   }
+
+  @Override
+  public boolean equals(Object other) {
+    if (other instanceof Rational r) {
+      return numerator.equals(r.numerator) && denominator.equals(r.denominator);
+    }
+    return false;
+  }
 }

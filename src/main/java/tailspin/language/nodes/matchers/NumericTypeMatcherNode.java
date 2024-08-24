@@ -5,6 +5,7 @@ import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.runtime.BigNumber;
+import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
 
 @GenerateInline(false)
@@ -17,6 +18,11 @@ public abstract class NumericTypeMatcherNode extends MatcherNode {
 
   @Specialization
   protected boolean isBigNumber(BigNumber ignored) {
+    return true;
+  }
+
+  @Specialization
+  protected boolean isRational(Rational ignored) {
     return true;
   }
 
