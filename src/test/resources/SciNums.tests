@@ -148,3 +148,11 @@ end !
 ---range
 [1.1..2.8:0.5]!
 =[1.1e0, 1.6e0, 2.1e0, 2.6e0]
+---multiply by right rational keeps precision
+foo is 2/3;
+1.0000000 * $foo !
+=6.6666667e-1
+---multiply by left rational keeps precision
+foo is 2/3;
+$foo * 1.0000000!
+=6.6666667e-1

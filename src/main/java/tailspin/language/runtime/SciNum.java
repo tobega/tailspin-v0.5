@@ -57,8 +57,8 @@ public class SciNum implements TruffleObject {
     return new SciNum(new BigDecimal(new BigInteger(sign + digits), -exponent), precision);
   }
 
-  public static SciNum fromBigNumber(BigNumber bigNumber) {
-    return new SciNum(new BigDecimal(bigNumber.asBigInteger(), 0), 0);
+  public static SciNum fromBigInteger(BigInteger bigInteger) {
+    return new SciNum(new BigDecimal(bigInteger, 0), 0);
   }
 
   public static SciNum fromLong(long value) {

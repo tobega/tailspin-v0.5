@@ -70,4 +70,12 @@ public class Rational implements TruffleObject, Comparable<Rational> {
   public int compareTo(Rational other) {
     return numerator.multiply(other.denominator).compareTo(other.numerator.multiply(denominator));
   }
+
+  public BigInteger numerator() {
+    return numerator;
+  }
+
+  public BigInteger denominator() {
+    return denominator;
+  }
 }
