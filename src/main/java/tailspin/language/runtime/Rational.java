@@ -26,11 +26,8 @@ public class Rational implements TruffleObject, Comparable<Rational> {
 
   public Object simplestForm() {
     if (denominator.equals(BigInteger.ONE)) {
-      try {
-        return numerator.longValueExact();
-      } catch (ArithmeticException e) {
-        return new BigNumber(numerator);
-      }
+      // Can't go back to long, because Truffle blows up
+      return new BigNumber(numerator);
     }
     return this;
   }
