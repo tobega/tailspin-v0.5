@@ -15,6 +15,7 @@ import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
+import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
 
 public abstract class TruncateDivideNode extends ValueNode {
@@ -49,8 +50,26 @@ public abstract class TruncateDivideNode extends ValueNode {
 
     @Specialization
     @TruffleBoundary
+    protected Object doRational(Rational left, Rational right) {
+      return left.truncateDivide(right);
+    }
+
+    @Specialization
+    @TruffleBoundary
     protected Object doSciNum(SciNum left, SciNum right) {
       return left.truncateDivide(right);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object doRationalSciNum(Rational left, SciNum right) {
+      return SciNum.fromBigInteger(left.numerator()).divide(right).truncateDivide(SciNum.fromBigInteger(left.denominator()));
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object doSciNumRational(SciNum left, Rational right) {
+      return left.multiply(SciNum.fromBigInteger(right.denominator())).truncateDivide(SciNum.fromBigInteger(right.numerator()));
     }
 
     @Specialization

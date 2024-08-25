@@ -13,6 +13,7 @@ import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
+import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
 
 public abstract class SquareRootNode extends ValueNode {
@@ -33,6 +34,12 @@ public abstract class SquareRootNode extends ValueNode {
     @TruffleBoundary
     protected SciNum doSciNum(SciNum square) {
       return square.squareRoot();
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected SciNum doRational(Rational square) {
+      return SciNum.fromBigInteger(square.numerator()).squareRoot().divide(SciNum.fromBigInteger(square.denominator()).squareRoot());
     }
 
     @Specialization

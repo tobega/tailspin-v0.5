@@ -75,4 +75,8 @@ public class Rational implements TruffleObject, Comparable<Rational> {
   public BigInteger denominator() {
     return denominator;
   }
+
+  public BigNumber truncateDivide(Rational right) {
+    return new BigNumber(numerator.multiply(right.denominator).divide(right.numerator.multiply(denominator)));
+  }
 }

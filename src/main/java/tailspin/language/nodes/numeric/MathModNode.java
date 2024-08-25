@@ -61,6 +61,18 @@ public abstract class MathModNode extends ValueNode {
     }
 
     @Specialization
+    @TruffleBoundary
+    protected Object doRationalSciNum(Rational left, SciNum right) {
+      return SciNum.fromBigInteger(left.numerator()).mod(right.multiply(SciNum.fromBigInteger(left.denominator()))).divide(SciNum.fromBigInteger(left.denominator()));
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object doSciNumRational(SciNum left, Rational right) {
+      return left.multiply(SciNum.fromBigInteger(right.denominator())).mod(SciNum.fromBigInteger(right.numerator())).divide(SciNum.fromBigInteger(right.denominator()));
+    }
+
+    @Specialization
     protected Object typeError(Object left, Object right) {
       throw new TypeError("Cannot math mod " + left + " and " + right);
     }

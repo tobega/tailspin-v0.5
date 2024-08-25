@@ -69,7 +69,11 @@ public class SciNum implements TruffleObject {
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
-    builder.append(value.unscaledValue());
+    if (value.compareTo(BigDecimal.ZERO) == 0) {
+      builder.repeat("0", value.scale() + 1);
+    } else {
+      builder.append(value.unscaledValue());
+    }
     int offset = builder.charAt(0) == '-' ? 2 : 1;
     int exponent = builder.length() - offset - value.scale();
     if (builder.length() > 1) {

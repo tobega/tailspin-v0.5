@@ -60,6 +60,12 @@ public abstract class GreaterThanMatcherNode extends MatcherNode {
 
     @Specialization
     @TruffleBoundary
+    protected boolean sciNumMore(SciNum toMatch, SciNum value, boolean inclusive) {
+      return toMatch.compareTo(value) >= (inclusive ? 0 : 1);
+    }
+
+    @Specialization
+    @TruffleBoundary
     protected boolean doRationalSciNum(Rational toMatch, SciNum value, boolean inclusive) {
       return value.compareTo(toMatch) <= (inclusive ? 0 : -1);
     }
@@ -67,12 +73,6 @@ public abstract class GreaterThanMatcherNode extends MatcherNode {
     @Specialization
     @TruffleBoundary
     protected boolean doSciNumRational(SciNum toMatch, Rational value, boolean inclusive) {
-      return toMatch.compareTo(value) >= (inclusive ? 0 : 1);
-    }
-
-    @Specialization
-    @TruffleBoundary
-    protected boolean sciNumMore(SciNum toMatch, SciNum value, boolean inclusive) {
       return toMatch.compareTo(value) >= (inclusive ? 0 : 1);
     }
 

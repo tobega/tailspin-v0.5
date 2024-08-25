@@ -216,3 +216,22 @@ end !
   otherwise 0!
 end !
 =0
+---display 0 at correct precision
+0.00 !
+=0.00e0
+---mod rational
+foo is 1/3;
+0.67 mod $foo !
+=0.0e0
+---rational mod scinum
+foo is 3/8;
+$foo mod 0.25!
+=1.3e-1
+---truncate divide rational
+foo is 1/3;
+0.67 ~/ $foo !
+=2
+---rational truncate divide scinum
+foo is 7/8;
+$foo ~/ 0.25!
+=3

@@ -56,6 +56,12 @@ public abstract class MultiplyNode extends ValueNode {
 
     @Specialization
     @TruffleBoundary
+    protected SciNum doSciNum(SciNum left, SciNum right) {
+      return left.multiply(right);
+    }
+
+    @Specialization
+    @TruffleBoundary
     protected Object doRationalSciNum(Rational left, SciNum right) {
       return SciNum.fromBigInteger(left.numerator()).multiply(right).divide(SciNum.fromBigInteger(left.denominator()));
     }
@@ -64,12 +70,6 @@ public abstract class MultiplyNode extends ValueNode {
     @TruffleBoundary
     protected Object doSciNumRational(SciNum left, Rational right) {
       return left.multiply(SciNum.fromBigInteger(right.numerator())).divide(SciNum.fromBigInteger(right.denominator()));
-    }
-
-    @Specialization
-    @TruffleBoundary
-    protected SciNum doSciNum(SciNum left, SciNum right) {
-      return left.multiply(right);
     }
 
     @Specialization
