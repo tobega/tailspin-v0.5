@@ -172,3 +172,11 @@ foo is 2/3;
 foo is 2/3;
 $foo + 1.0000000!
 =1.6666667e0
+---subtract rational keeps the same precision
+foo is 2/3;
+1.0000000 - $foo !
+=3.3333333e-1
+---rational subtract scinum keeps the same precision
+foo is 2/3;
+$foo - 1.0000000!
+=-3.3333333e-1
