@@ -152,4 +152,8 @@ public class SciNum implements TruffleObject {
     BigDecimal sqrt = value.sqrt(new MathContext(precision));
     return new SciNum(sqrt, precision);
   }
+
+  public int compareTo(Rational right) {
+    return value.multiply(new BigDecimal(right.denominator(), 0)).compareTo(new BigDecimal(right.numerator(), 0));
+  }
 }
