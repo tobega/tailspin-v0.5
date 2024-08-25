@@ -55,6 +55,16 @@ public abstract class DivideNode extends ValueNode {
     }
 
     @Specialization
+    protected Object doRationalSciNum(Rational left, SciNum right) {
+      return SciNum.fromBigInteger(left.numerator()).divide(SciNum.fromBigInteger(left.denominator()).multiply(right));
+    }
+
+    @Specialization
+    protected Object doSciNumRational(SciNum left, Rational right) {
+      return left.multiply(SciNum.fromBigInteger(right.denominator())).divide(SciNum.fromBigInteger(right.numerator()));
+    }
+
+    @Specialization
     @TruffleBoundary
     protected SciNum doSciNum(SciNum left, SciNum right) {
       return left.divide(right);

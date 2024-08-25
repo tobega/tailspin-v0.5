@@ -156,3 +156,11 @@ foo is 2/3;
 foo is 2/3;
 $foo * 1.0000000!
 =6.6666667e-1
+---divide by rational keeps precision
+foo is 2/3;
+1.0000000 / $foo !
+=1.5000000e0
+---rational divide by scinum keeps precision
+foo is 2/3;
+$foo / 1.0000000!
+=6.6666667e-1
