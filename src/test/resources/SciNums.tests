@@ -164,3 +164,11 @@ foo is 2/3;
 foo is 2/3;
 $foo / 1.0000000!
 =6.6666667e-1
+---add rational right keeps precision
+foo is 2/3;
+1.0000000 + $foo !
+=1.6666667e0
+---rational add scinum keeps precision
+foo is 2/3;
+$foo + 1.0000000!
+=1.6666667e0
