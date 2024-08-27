@@ -17,6 +17,7 @@ import tailspin.language.parser.composer.CompositionSpec.NamedComposition;
 import tailspin.language.parser.composer.CompositionSpec.RegexComposition;
 import tailspin.language.parser.composer.CompositionSpec.Resolver;
 import tailspin.language.parser.composer.CompositionSpec.SkipComposition;
+import tailspin.language.parser.composer.CompositionSpec.StringUnescapeComposition;
 import tailspin.language.parser.composer.Memo;
 import tailspin.language.parser.composer.RangeMatch;
 import tailspin.language.parser.composer.SequenceSubComposer;
@@ -42,7 +43,7 @@ public class ParserParser {
         // rule stringLiteral: (<=''''>) <'[^']|'')*'> (<=''''>)
         "stringLiteral", List.of(
             new SkipComposition(List.of(new LiteralComposition((s) -> "'"))),
-            new RegexComposition("([^']|'')*"),
+            new StringUnescapeComposition(new RegexComposition("([^']|'')*")),
             new SkipComposition(List.of(new LiteralComposition((s) -> "'")))
         )
     ));

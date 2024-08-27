@@ -18,6 +18,7 @@ import tailspin.language.parser.composer.CompositionSpec.MultiplierComposition;
 import tailspin.language.parser.composer.CompositionSpec.NamedComposition;
 import tailspin.language.parser.composer.CompositionSpec.RegexComposition;
 import tailspin.language.parser.composer.CompositionSpec.SkipComposition;
+import tailspin.language.parser.composer.CompositionSpec.StringUnescapeComposition;
 import tailspin.language.runtime.SciNum;
 
 public class SubComposerFactory implements CompositionSpec.Resolver {
@@ -88,6 +89,7 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
       }
       case RegexComposition regexSpec -> new RegexpSubComposer(
           Pattern.compile(regexSpec.pattern()), Function.identity());
+      case StringUnescapeComposition unescapeSpec -> new StringUnescape(resolver.resolveSpec(unescapeSpec.producer(), scope, resolver));
       case SkipComposition skip ->
           new SkipSubComposer(new SequenceSubComposer(skip.skipSpecs(), scope, resolver));
       case ChoiceComposition choiceSpec ->

@@ -50,6 +50,8 @@ import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.state.ReadStateNode;
+import tailspin.language.nodes.string.StringLiteral;
+import tailspin.language.nodes.string.StringPart;
 import tailspin.language.nodes.structure.StructureLiteral;
 import tailspin.language.nodes.structure.StructureReadNode;
 import tailspin.language.nodes.structure.WriteKeyValueNode;
@@ -601,7 +603,25 @@ public class NodeFactory {
       case ParseNode(String name, Object contents) when name.equals("array-literal") -> visitArrayLiteral(contents);
       case ParseNode(String name, List<?> bounds) when name.equals("range") -> visitRange(bounds);
       case ParseNode(String name, Object contents) when name.equals("structure-literal") -> visitStructureLiteral(contents);
+      case ParseNode(String name, Object contents) when name.equals("string-literal") -> visitStringLiteral(contents);
       default -> throw new IllegalStateException("Unexpected value: " + source);
+    };
+  }
+
+  private ValueNode visitStringLiteral(Object contents) {
+    List<?> parts;
+    if (contents instanceof List<?> l) {
+      parts = l.subList(1, l.size());
+    } else {
+      parts = List.of();
+    }
+    return StringLiteral.create(parts.stream().map(this::visitStringPart).toList());
+  }
+
+  private ValueNode visitStringPart(Object partSpec) {
+    return switch (partSpec) {
+      case ParseNode(String name, String part) when name.equals("string-part") -> StringPart.create(part);
+      default -> throw new IllegalStateException("Unexpected value: " + partSpec);
     };
   }
 

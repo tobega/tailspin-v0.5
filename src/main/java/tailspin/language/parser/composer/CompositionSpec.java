@@ -12,10 +12,11 @@ import tailspin.language.parser.composer.CompositionSpec.MultiplierComposition;
 import tailspin.language.parser.composer.CompositionSpec.NamedComposition;
 import tailspin.language.parser.composer.CompositionSpec.RegexComposition;
 import tailspin.language.parser.composer.CompositionSpec.SkipComposition;
+import tailspin.language.parser.composer.CompositionSpec.StringUnescapeComposition;
 
 public sealed interface CompositionSpec permits NamedComposition, RegexComposition, SkipComposition,
     Constant, DereferenceComposition, CaptureComposition, MultiplierComposition, ChoiceComposition,
-    InverseComposition, LiteralComposition {
+    InverseComposition, LiteralComposition, StringUnescapeComposition {
   interface Resolver {
     // Pass in a resolver instance to allow wrapping
     SubComposer resolveSpec(CompositionSpec spec, ParseNodeScope scope, CompositionSpec.Resolver resolver);
@@ -25,6 +26,9 @@ public sealed interface CompositionSpec permits NamedComposition, RegexCompositi
   }
 
   record RegexComposition(String pattern) implements CompositionSpec {
+  }
+
+  record StringUnescapeComposition(CompositionSpec producer) implements CompositionSpec {
   }
 
   record SkipComposition(List<CompositionSpec> skipSpecs) implements CompositionSpec {

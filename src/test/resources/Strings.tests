@@ -1,0 +1,6 @@
+---simple constant
+'Hello, world!'!
+=Hello, world!
+---empty string
+{ foo: '' } !
+={ foo: }
