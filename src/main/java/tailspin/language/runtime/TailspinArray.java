@@ -7,6 +7,7 @@ import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.strings.TruffleString;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -116,6 +117,16 @@ public class TailspinArray implements TruffleObject {
 
   @Override
   public String toString() {
-    return Arrays.deepToString(arrayElements);
+    StringBuilder result = new StringBuilder();
+    for (int i = 0; i < length; i++) {
+      result.append(", ");
+      if (arrayElements[i] instanceof TruffleString ts) {
+        result.append(TailspinStrings.escapeAndQuote(ts));
+      } else {
+        result.append(arrayElements[i]);
+      }
+    }
+    result.replace(0, 2, "[").append("]");
+    return result.toString();
   }
 }

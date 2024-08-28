@@ -2,5 +2,20 @@
 'Hello, world!'!
 =Hello, world!
 ---empty string
+''!
+=
+---structure displays quotes around string values
 { foo: '' } !
-={ foo: }
+={ foo: '' }
+---array displays quotes around string values
+[''] !
+=['']
+---escaped values are unescaped
+'''$$''' !
+='$'
+---structure displays escaped string values
+{ foo: '''$$''' } !
+={ foo: '''$$''' }
+---array displays escaped string values
+['''$$'''] !
+=['''$$''']

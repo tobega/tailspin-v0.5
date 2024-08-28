@@ -8,6 +8,7 @@ import com.oracle.truffle.api.library.ExportMessage;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import com.oracle.truffle.api.object.Shape;
+import com.oracle.truffle.api.strings.TruffleString;
 import java.util.Arrays;
 
 @ExportLibrary(InteropLibrary.class)
@@ -55,6 +56,9 @@ public class Structure extends DynamicObject implements TruffleObject {
     StringBuilder result = new StringBuilder("{");
     for (Object key : ordered) {
       Object value = thisObjectLibrary.getOrDefault(this, key, null);
+      if (value instanceof TruffleString ts) {
+        value = TailspinStrings.escapeAndQuote(ts);
+      }
       result.append(", ")
           .append(key).append(":").append(" ")
           .append(InteropLibrary.getUncached().toDisplayString(value));

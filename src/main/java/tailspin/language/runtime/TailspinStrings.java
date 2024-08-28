@@ -17,4 +17,9 @@ public final class TailspinStrings {
   public static TruffleString fromJavaString(String value, TruffleString.FromJavaStringNode fromJavaStringNode) {
     return fromJavaStringNode.execute(value, TAILSPIN_STRING_ENCODING);
   }
+
+  public static String escapeAndQuote(TruffleString ts) {
+    String s = ts.toJavaStringUncached();
+    return "'" + s.replace("'", "''").replace("$", "$$") + "'";
+  }
 }
