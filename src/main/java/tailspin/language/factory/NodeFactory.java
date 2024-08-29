@@ -623,6 +623,7 @@ public class NodeFactory {
       case ParseNode(String name, String part) when name.equals("string-part") -> StringPart.create(part);
       case String s when s.equals("''") -> StringPart.create("'");
       case String s when s.equals("$$") -> StringPart.create("$");
+      case ParseNode(String name, ParseNode valueChain) when name.equals("interpolate") -> new TransformResultNode(asTransformNode(visitValueChain(valueChain)));
       default -> throw new IllegalStateException("Unexpected value: " + partSpec);
     };
   }

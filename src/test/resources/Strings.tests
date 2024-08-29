@@ -19,3 +19,9 @@
 ---array displays escaped string values
 ['''$$'''] !
 =['''$$''']
+---interpolate
+'George' -> 'Hello, $;' !
+=Hello, George
+---interpolate stream
+3 -> 'no $..5;' !
+=no 345
