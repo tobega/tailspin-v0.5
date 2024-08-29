@@ -25,14 +25,17 @@ $permutationsOf5... -> $colours($) -> [$... -> {colour: $}]
   -- 5. The green house is immediately to the left of the white house.
   -> if <[(<{colour: <='green'>}>:<{colour: <='white'>}>)]>
   -- zip with all permutations of nationalities
-  -> [$, by $permutationsOf5... -> $nationalities($)] -> $(first; .. as i; -> {$, nationality: §(last;$i)})
+  -> templates
+       current is $;
+       $permutationsOf5... -> $nationalities($) -> $(.. as i; -> {$current($i), nationality: $}) !
+     end
   -- 10. The Norwegian lives in the first house.
   -> if <?($(1) <{nationality: <='Norwegian'>}>)>
   -- 2. The English man lives in the red house.
   -> if <[<{nationality: <='Englishman'>, colour: <='red'>}>]>
   -- 15. The Norwegian lives next to the blue house.
   -> if <[(<{nationality: <='Norwegian'>}>:<{colour: <='blue'>}>)] | [(<{colour: <='blue'>}>:<{nationality: <='Norwegian'>}>)]>
-  -- zip with all permutations of drinks (alternative expression)
+  -- zip with all permutations of drinks
   -> templates
        current is $;
        $permutationsOf5... -> $drinks($) -> $(.. as i; -> {$current($i), drink: $}) !
@@ -43,11 +46,14 @@ $permutationsOf5... -> $colours($) -> [$... -> {colour: $}]
   -> if <[<{drink: <='coffee'>, colour: <='green'>}>]>
   -- 4. The Dane drinks tea.
   -> if <[<{nationality: <='Dane'>, drink: <='tea'>}>]>
-  -- zip with all permutations of pets (yet another way to do it)
-  -> [$, by $permutationsOf5... -> $pets($) -> $(..; -> {pet: $})] -> $(first; .. as i; -> {§(first;..)...})
+  -- zip with all permutations of pets
+  -> templates
+       current is $;
+       $permutationsOf5... -> $pets($) -> $(.. as i; -> {$current($i), pet: $}) !
+     end
   -- 3. The Swede has a dog.
   -> if <[<{nationality: <='Swede'>, pet: <='dog'>}>]>
-  -- zip with all permutations of smokes (clearest?)
+  -- zip with all permutations of smokes
   -> templates
        current is $;
        $permutationsOf5... -> smokes($) -> $(.. as i; -> {$current($i), smoke: $}) !
