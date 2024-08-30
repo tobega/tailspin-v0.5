@@ -7,8 +7,10 @@ import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
+import java.util.ArrayList;
 import tailspin.language.TailspinLanguage;
 import tailspin.language.nodes.transform.TemplatesRootNode.CreateScopeNode;
+import tailspin.language.runtime.TailspinArray;
 
 public class ProgramRootNode extends RootNode {
 
@@ -33,6 +35,10 @@ public class ProgramRootNode extends RootNode {
     statement.executeVoid(frame);
     Object results = frame.getObjectStatic(EMIT_SLOT);
     frame.setObjectStatic(EMIT_SLOT, null);
+    if (results instanceof ArrayList<?> arrayList) {
+      // Wrap in an array for now
+      results = TailspinArray.value(arrayList.toArray());
+    }
     return results;
   }
 
