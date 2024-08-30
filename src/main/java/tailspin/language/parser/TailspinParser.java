@@ -36,7 +36,7 @@ public class TailspinParser {
      stride rule (<|=':'> <|WS>?) <|range-bound> (<|WS>?)
      string-literal rule <|=''''> <|string-part|=''''''|='$$'|interpolate>* (<|=''''> <|WS>?)
      string-part rule <|'[^''$]+'>
-     interpolate rule (<|'(?=\\$)'>) <|value-chain> (<|=';'>)
+     interpolate rule (<|='$:'|'(?=\\$)'> <|WS>?) <|value-chain> (<|=';'>)
      
      lens-expression rule (<|='('> <|WS>?) <|source|key> <|next-lens-dimension>? (<|WS>? <|=')'>)
      key rule <|ID> (<|=':'> <|WS>?)

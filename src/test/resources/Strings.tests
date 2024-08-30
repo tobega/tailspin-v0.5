@@ -25,3 +25,6 @@
 ---interpolate stream
 3 -> 'no $..5;' !
 =no 345
+---interpolate without current value
+'Easy as $: 1..3;' !
+=Easy as 123
