@@ -10,6 +10,8 @@ import tailspin.language.runtime.TailspinArray;
 @NodeChild(value = "array", type = ValueNode.class)
 @NodeChild(value = "lens", type = ValueNode.class)
 public abstract class ArrayReadNode extends ValueNode {
+  public abstract Object executeDirect(Object array, Object lens);
+
   @Specialization
   protected Object doLong(TailspinArray array, long index) {
     return array.getNative((int) index - 1);
@@ -18,6 +20,16 @@ public abstract class ArrayReadNode extends ValueNode {
   @Specialization
   protected Object doBigNumber(TailspinArray array, BigNumber index) {
     return array.getNative(index.intValueExact() - 1);
+  }
+
+  @Specialization
+  protected Object doArray(TailspinArray array, TailspinArray selection) {
+    long length = selection.getArraySize();
+    Object[] elements = new Object[(int) length];
+    for (int i = 0; i < length; i++) {
+      elements[i] = executeDirect(array, selection.getNative(i));
+    }
+    return TailspinArray.value(elements);
   }
 
   @Specialization

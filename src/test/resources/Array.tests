@@ -60,3 +60,9 @@ end !
 ---arrays autotype is checked
 { foo: [6] } -> { foo: 3} !
 =*TypeError
+---read selection
+[3..9] -> $([3, 5, 1]) !
+=[5, 7, 3]
+---read selection selection - TODO: do we want this?
+[3..9] -> $([[3, 4], [4, 5], [1, 2]]) !
+=[[5, 6], [6, 7], [3, 4]]
