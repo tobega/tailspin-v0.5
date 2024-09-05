@@ -66,3 +66,12 @@ end !
 ---read selection selection - TODO: do we want this?
 [3..9] -> $([[3, 4], [4, 5], [1, 2]]) !
 =[[5, 6], [6, 7], [3, 4]]
+---read next dimension
+[3..9 -> ['a$;', 'b$;']] -> $(2; 1) !
+=a4
+---read first dimension and selection
+[3..9 -> ['a$;', 'b$;']] -> $(3; [2, 1]) !
+=['b5', 'a5']
+---read selection and next dimension
+[3..9 -> ['a$;', 'b$;']] -> $([3, 5, 1]; 2) !
+=['b5', 'b7', 'b3']

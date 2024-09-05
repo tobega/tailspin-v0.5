@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import tailspin.language.nodes.TestUtil;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
+import tailspin.language.nodes.value.LensReadExpressionNode;
 import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.VocabularyType;
 
@@ -28,7 +29,8 @@ public class StructureTest {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     VocabularyType fooType = new VocabularyType("foo");
     ValueNode structureNode = StructureLiteral.create(rootShape, List.of(fooType, new VocabularyType("bar")), List.of(IntegerLiteral.create(3L), IntegerLiteral.create(5L)));
-    ValueNode readNode = StructureReadNode.create(structureNode, fooType);
+    ValueNode readNode = LensReadExpressionNode.create(structureNode, List.of(
+        StructureReadNode.create(fooType)));
     Long foo = (Long) TestUtil.evaluate(readNode, fdb.build(), List.of());
     assertEquals(3, foo);
   }
