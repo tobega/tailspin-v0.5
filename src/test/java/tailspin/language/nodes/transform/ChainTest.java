@@ -18,7 +18,6 @@ import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
-import tailspin.language.nodes.value.LensReadExpressionNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
 import tailspin.language.nodes.value.TransformResultNode;
@@ -71,8 +70,7 @@ public class ChainTest {
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode source = ArrayLiteral.create(buildSlot, List.of(ResultAggregatingNode.create(IntegerLiteral.create(12))));
-    ValueNode expr = LensReadExpressionNode.create(ReadContextValueNode.create(-1, cvSlot), List.of(
-        ArrayReadNode.create(IntegerLiteral.create(1))));
+    ValueNode expr = ArrayReadNode.create(ReadContextValueNode.create(-1, cvSlot), IntegerLiteral.create(1));
     ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(
         ResultAggregatingNode.create(source), ResultAggregatingNode.create(expr)));
     assertEquals(12L, TestUtil.evaluate(SingleValueNode.create(chain), fdb.build(),

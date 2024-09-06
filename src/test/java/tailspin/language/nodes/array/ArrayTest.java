@@ -13,7 +13,6 @@ import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.processor.MessageNode;
-import tailspin.language.nodes.value.LensReadExpressionNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.runtime.TailspinArray;
 
@@ -33,8 +32,7 @@ public class ArrayTest {
             ResultAggregatingNode.create(IntegerLiteral.create(6)),
             RangeIteration.create(rangeSlot, ResultAggregatingNode.create(ReadContextValueNode.create(-1, rangeSlot)), startSlot, IntegerLiteral.create(10L),
                 true, endSlot, IntegerLiteral.create(15L), true, incrementSlot, IntegerLiteral.create(5L))));
-    ValueNode readNode = LensReadExpressionNode.create(array, List.of(
-        ArrayReadNode.create(IntegerLiteral.create(4))));
+    ValueNode readNode = ArrayReadNode.create(array, IntegerLiteral.create(4));
     assertEquals(6L, TestUtil.evaluate(readNode, fdb.build(), List.of()));
   }
 
@@ -54,8 +52,7 @@ public class ArrayTest {
             RangeIteration.create(rangeSlot, ResultAggregatingNode.create(ReadContextValueNode.create(-1, rangeSlot)), startSlot, IntegerLiteral.create(10L),
                 true, endSlot, IntegerLiteral.create(15L), true, incrementSlot, IntegerLiteral.create(5L))));
     ValueNode writeNode = ArrayMutateNode.create(array, IntegerLiteral.create(4), IntegerLiteral.create(35));
-    ValueNode readNode = LensReadExpressionNode.create(writeNode, List.of(
-        ArrayReadNode.create(IntegerLiteral.create(4))));
+    ValueNode readNode = ArrayReadNode.create(writeNode, IntegerLiteral.create(4));
     assertEquals(35L, TestUtil.evaluate(readNode, fdb.build(), List.of()));
   }
 

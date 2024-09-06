@@ -410,3 +410,23 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |NBodyBenchmark.nbody_tailspin                       |avgt  |  5  |35963,946 |±  5531,127  |us/op|
 |PascalBenchmark.triangle_java                       |avgt  |  5  |   12,252 |±     0,255  |us/op|
 |PascalBenchmark.triangle_tailspin                   |avgt  |  5  |  214,786 |±     6,629  |us/op|
+
+2024-09-06 So simple Array selection projection
+|Benchmark                                           |Mode  |Cnt  |    Score |     Error  |Units|
+|----------------------------------------------------|------|-----|----------|------------|-----|
+|BubblesortBenchmark.sort_java                       |avgt  |  5  |   19,760 |±    1,320  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate           |avgt  |  5  |   31,662 |±    0,729  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse           |avgt  |  5  |   36,686 |±    0,736  |us/op|
+|FibonacciBenchmark.recursive_java                   |avgt  |  5  |   35,593 |±    0,242  |us/op|
+|FibonacciBenchmark.recursive_tailspin_bignumber     |avgt  |  5  |  522,036 |±   17,063  |us/op|
+|FibonacciBenchmark.recursive_tailspin_measure_long  |avgt  |  5  |  120,948 |±    2,944  |us/op|
+|FibonacciBenchmark.recursive_tailspin_rational      |avgt  |  5  | 8761,341 |±  110,736  |us/op|
+|FibonacciBenchmark.recursive_tailspin_raw_long      |avgt  |  5  |   57,015 |±    4,173  |us/op|
+|FibonacciBenchmark.recursive_tailspin_scinum        |avgt  |  5  |  892,497 |±    7,981  |us/op|
+|ListBenchmark.list_java                             |avgt  |  5  |   22,596 |±    1,033  |us/op|
+|ListBenchmark.list_tailspin_empty                   |avgt  |  5  |  886,772 |±   15,053  |us/op|
+|ListBenchmark.list_tailspin_optional                |avgt  |  5  |  929,349 |±   20,581  |us/op|
+|NBodyBenchmark.nbody_java                           |avgt  |  5  |   15,347 |±    0,196  |us/op|
+|NBodyBenchmark.nbody_tailspin                       |avgt  |  5  |15168,646 |± 1417,988  |us/op|
+|PascalBenchmark.triangle_java                       |avgt  |  5  |   11,458 |±    0,393  |us/op|
+|PascalBenchmark.triangle_tailspin                   |avgt  |  5  |   19,464 |±    2,686  |us/op|

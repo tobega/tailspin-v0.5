@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import tailspin.language.TailspinLanguage;
-import tailspin.language.nodes.LensProjectionNode;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.TailspinNode;
@@ -65,7 +64,6 @@ import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.SinkNode;
-import tailspin.language.nodes.value.LensReadExpressionNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
 import tailspin.language.nodes.value.TransformResultNode;
@@ -248,8 +246,7 @@ public class NodeFactory {
       case ParseNode(String type, ParseNode id) when type.equals("key")
           -> WriteKeyValueNode.create(currentScope().getVocabularyType((String) id.content()), target, asSingleValueNode(value));
       case List<?> dimension -> {
-        if (dimension.size() != 2) throw new UnsupportedOperationException("Unimplemented mutate operation");
-        LensProjectionNode thisDimension = visitReadLensExpression(dimension.getFirst()).getFirst().withTarget(target);
+        ValueNode thisDimension = visitReadLensExpression(target, dimension.getFirst());
         ValueNode modifiedTarget = visitWriteLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content(), value);
         yield visitWriteLensExpression(target, dimension.getFirst(), modifiedTarget);
       }
@@ -776,7 +773,7 @@ public class NodeFactory {
       default -> throw new IllegalStateException("Unexpected value: " + ref);
     };
     if (!predicate.isEmpty() && predicate.getFirst() instanceof ParseNode(String type, Object lensExpression) && type.equals("lens-expression")){
-      value = LensReadExpressionNode.create(asSingleValueNode(value), visitReadLensExpression(lensExpression));
+      value = visitReadLensExpression(asSingleValueNode(value), lensExpression);
     }
     if (readsState) {
       value = ReadStateNode.create((ValueNode) value);
@@ -788,18 +785,15 @@ public class NodeFactory {
     return value;
   }
 
-  private List<LensProjectionNode> visitReadLensExpression(Object lensExpression) {
+  private ValueNode visitReadLensExpression(ValueNode target, Object lensExpression) {
     return switch (lensExpression) {
       case ParseNode(String type, ParseNode source) when type.equals("source")
-          -> List.of(ArrayReadNode.create(asSingleValueNode(visitSource(source))));
+          -> ArrayReadNode.create(target, asSingleValueNode(visitSource(source)));
       case ParseNode(String type, ParseNode(String ignored, String key)) when type.equals("key")
-          -> List.of(StructureReadNode.create(currentScope().getVocabularyType(key)));
-      case List<?> dimensions -> {
-        List<LensProjectionNode> result = new ArrayList<>(visitReadLensExpression(dimensions.getFirst()));
-        for (Object additionalDimension : dimensions.subList(1, dimensions.size())) {
-          result.addAll(visitReadLensExpression(((ParseNode) additionalDimension).content()));
-        }
-        yield result;
+          -> StructureReadNode.create(target, currentScope().getVocabularyType(key));
+      case List<?> dimension -> {
+        ValueNode thisDimension = visitReadLensExpression(target, dimension.getFirst());
+        yield visitReadLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content());
       }
       default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };
