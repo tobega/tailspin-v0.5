@@ -64,6 +64,7 @@ import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.SinkNode;
+import tailspin.language.nodes.value.ConsolidateLensResultNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
 import tailspin.language.nodes.value.TransformResultNode;
@@ -773,7 +774,7 @@ public class NodeFactory {
       default -> throw new IllegalStateException("Unexpected value: " + ref);
     };
     if (!predicate.isEmpty() && predicate.getFirst() instanceof ParseNode(String type, Object lensExpression) && type.equals("lens-expression")){
-      value = visitReadLensExpression(asSingleValueNode(value), lensExpression);
+      value = ConsolidateLensResultNode.create(visitReadLensExpression(asSingleValueNode(value), lensExpression));
     }
     if (readsState) {
       value = ReadStateNode.create((ValueNode) value);

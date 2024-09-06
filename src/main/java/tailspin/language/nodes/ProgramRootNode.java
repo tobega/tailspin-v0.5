@@ -36,8 +36,8 @@ public class ProgramRootNode extends RootNode {
     Object results = frame.getObjectStatic(EMIT_SLOT);
     frame.setObjectStatic(EMIT_SLOT, null);
     if (results instanceof ArrayList<?> arrayList) {
-      // Wrap in an array for now
-      results = TailspinArray.value(arrayList.toArray());
+      // Wrap in a double array for now
+      results = TailspinArray.value(new Object[] {TailspinArray.value(arrayList.toArray())});
     }
     return results;
   }
