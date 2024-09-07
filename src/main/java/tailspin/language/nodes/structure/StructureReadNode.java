@@ -6,6 +6,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.Structure;
@@ -19,6 +20,8 @@ public abstract class StructureReadNode extends ValueNode {
     this.key = key;
   }
 
+  public abstract Object executeDirect(Object target);
+
   @Specialization(rewriteOn = UnexpectedResultException.class)
   protected long doLong(Structure target, @CachedLibrary(limit = "2") @Shared DynamicObjectLibrary dynamicObjectLibrary)
       throws UnexpectedResultException {
@@ -28,6 +31,13 @@ public abstract class StructureReadNode extends ValueNode {
   @Specialization
   protected Object doRead(Structure target, @CachedLibrary(limit = "2") @Shared DynamicObjectLibrary dynamicObjectLibrary) {
     return dynamicObjectLibrary.getOrDefault(target, key, null);
+  }
+
+  @Specialization
+  @SuppressWarnings("unchecked")
+  protected Object doMultiSelect(ArrayList<?> multiple) {
+    ((ArrayList<Object>) multiple).replaceAll(this::executeDirect);
+    return multiple;
   }
 
   @Specialization

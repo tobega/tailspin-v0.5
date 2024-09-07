@@ -13,10 +13,10 @@ import org.junit.jupiter.api.Test;
 
 public class SampleTests {
   private static final String[] SAMPLE_FILES = new String[] {
-//      "Integers.tests", "Chain.tests", "Templates.tests", "Array.tests", "Range.tests", "Matchers.tests",
-//      "Structure.tests", "Types.tests", "State.tests", "Measures.tests", "SciNums.tests", "TypeBounds.tests",
-//      "Rationals.tests", "Strings.tests"
-  "Debug.tests"};
+      "Integers.tests", "Chain.tests", "Templates.tests", "Array.tests", "Range.tests", "Matchers.tests",
+      "Structure.tests", "Types.tests", "State.tests", "Measures.tests", "SciNums.tests", "TypeBounds.tests",
+      "Rationals.tests", "Strings.tests"
+  };
 
   @Test
   void samples() throws IOException {

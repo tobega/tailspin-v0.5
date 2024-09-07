@@ -75,3 +75,6 @@ end !
 ---read selection and next dimension
 [3..9 -> ['a$;', 'b$;']] -> $([3, 5, 1]; 2) !
 =['b5', 'b7', 'b3']
+---read selection and dimensions and select again
+[3..9 -> ['a$;', 'b$;']] -> $([3, 5, 1]; 2) -> $(3) !
+=b3
