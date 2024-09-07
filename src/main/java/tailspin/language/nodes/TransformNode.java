@@ -6,7 +6,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 public abstract class TransformNode extends TailspinNode {
 
   @CompilerDirectives.CompilationFinal
-  private int resultSlot;
+  private Integer resultSlot = null;
   public abstract void executeTransform(VirtualFrame frame);
 
   public int getResultSlot() {

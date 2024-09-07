@@ -243,9 +243,9 @@ public class NodeFactory {
   private ValueNode visitWriteLensExpression(ValueNode target, Object lensExpression, TailspinNode value) {
     return switch (lensExpression) {
       case ParseNode(String type, ParseNode source) when type.equals("source")
-          -> ArrayMutateNode.create(target, asSingleValueNode(visitSource(source)), asSingleValueNode(value));
+          -> ArrayMutateNode.create(target, asSingleValueNode(visitSource(source)), asTransformResult(value));
       case ParseNode(String type, ParseNode id) when type.equals("key")
-          -> WriteKeyValueNode.create(currentScope().getVocabularyType((String) id.content()), target, asSingleValueNode(value));
+          -> WriteKeyValueNode.create(currentScope().getVocabularyType((String) id.content()), target, asTransformResult(value));
       case List<?> dimension -> {
         ValueNode thisDimension = visitReadLensExpression(target, dimension.getFirst());
         ValueNode modifiedTarget = visitWriteLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content(), value);
@@ -271,6 +271,7 @@ public class NodeFactory {
       if (sourceNode instanceof RangeIteration r) {
         pushCvSlot(currentScope().newTempSlot());
         r.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())));
+        r.setResultSlot(currentScope().newResultSlot());
         popCvSlot();
       }
       return sourceNode;
@@ -309,6 +310,7 @@ public class NodeFactory {
       }
       if (pendingIteration != null) {
         pendingIteration.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())));
+        pendingIteration.setResultSlot(currentScope().newResultSlot());
         popCvSlot();
       }
       popCvSlot();
@@ -318,12 +320,23 @@ public class NodeFactory {
   }
 
   private TransformNode asTransformNode(TailspinNode node) {
-    if (node instanceof ValueNode v)
-      return ResultAggregatingNode.create(v);
+    if (node instanceof ValueNode v) {
+      ResultAggregatingNode resultAggregatingNode = ResultAggregatingNode.create(v);
+      resultAggregatingNode.setResultSlot(currentScope().newResultSlot());
+      return resultAggregatingNode;
+    }
     if (node instanceof TransformNode t)
       return t;
     if (node instanceof StatementNode s)
       return StatementTransformNode.create(s);
+    throw new IllegalStateException("Unknown source node " + node);
+  }
+
+  private ValueNode asTransformResult(TailspinNode node) {
+    if (node instanceof ValueNode v)
+      return v;
+    if (node instanceof TransformNode t)
+      return new TransformResultNode(t);
     throw new IllegalStateException("Unknown source node " + node);
   }
 
@@ -624,7 +637,7 @@ public class NodeFactory {
       case ParseNode(String name, String part) when name.equals("string-part") -> StringPart.create(part);
       case String s when s.equals("''") -> StringPart.create("'");
       case String s when s.equals("$$") -> StringPart.create("$");
-      case ParseNode(String name, ParseNode valueChain) when name.equals("interpolate") -> new TransformResultNode(asTransformNode(visitValueChain(valueChain)));
+      case ParseNode(String name, ParseNode valueChain) when name.equals("interpolate") -> asTransformResult(visitValueChain(valueChain));
       default -> throw new IllegalStateException("Unexpected value: " + partSpec);
     };
   }
@@ -652,7 +665,7 @@ public class NodeFactory {
         values.add(asSingleValueNode(visitValueChain((ParseNode) kv.getLast())));
       } else if (sc instanceof ParseNode vc) {
         keys.add(null);
-        values.add(new TransformResultNode(asTransformNode(visitValueChain(vc))));
+        values.add(asTransformResult(visitValueChain(vc)));
       } else throw new IllegalStateException("Unexpected " + sc);
     }
     return StructureLiteral.create(language.rootShape, keys, values);

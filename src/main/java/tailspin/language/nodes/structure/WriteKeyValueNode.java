@@ -6,6 +6,7 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
@@ -15,6 +16,8 @@ import tailspin.language.runtime.VocabularyType;
 @NodeChild(value = "target", type = ValueNode.class)
 @NodeChild(value = "value", type = ValueNode.class)
 public abstract class WriteKeyValueNode extends ValueNode {
+  public abstract Object executeDirect(Object target, Object value);
+
   final VocabularyType type;
 
   protected WriteKeyValueNode(VocabularyType type) {
@@ -35,6 +38,15 @@ public abstract class WriteKeyValueNode extends ValueNode {
     }
     dynamicObjectLibrary.put(target, type, value);
     return target;
+  }
+
+  @Specialization(guards = "targets.size() == values.size()")
+  @SuppressWarnings("unchecked")
+  protected Object doMany(ArrayList<?> targets, ArrayList<?> values) {
+    for (int i = 0; i < targets.size(); i++) {
+      ((ArrayList<Object>) targets).set(i, executeDirect(targets.get(i), values.get(i)));
+    }
+    return targets;
   }
 
   @Fallback

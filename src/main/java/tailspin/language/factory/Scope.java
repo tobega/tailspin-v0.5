@@ -38,6 +38,10 @@ public class Scope {
     return  rootFdb.addSlot(FrameSlotKind.Illegal, null, null);
   }
 
+  public int newResultSlot() {
+    return  rootFdb.addSlot(FrameSlotKind.Static, null, null);
+  }
+
   StatementNode block;
   Builder blockRootFdb;
   public void setBlock(StatementNode blockNode) {

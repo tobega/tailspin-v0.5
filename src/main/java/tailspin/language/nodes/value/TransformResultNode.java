@@ -1,10 +1,9 @@
 package tailspin.language.nodes.value;
 
-import static tailspin.language.runtime.Templates.TEMP_RESULT_SLOT;
-
 import com.oracle.truffle.api.frame.VirtualFrame;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.iterate.ResultAggregatingNode;
 
 public class TransformResultNode extends ValueNode {
 
@@ -13,15 +12,15 @@ public class TransformResultNode extends ValueNode {
   private TransformNode transform;
 
   public TransformResultNode(TransformNode transform) {
+    if (transform instanceof ResultAggregatingNode) throw new IllegalArgumentException("No double conversion of transforms and values");
     this.transform = transform;
-    transform.setResultSlot(TEMP_RESULT_SLOT);
   }
 
   @Override
   public Object executeGeneric(VirtualFrame frame) {
     transform.executeTransform(frame);
-    Object result = frame.getObjectStatic(TEMP_RESULT_SLOT);
-    frame.setObjectStatic(TEMP_RESULT_SLOT, null);
+    Object result = frame.getObjectStatic(transform.getResultSlot());
+    frame.setObjectStatic(transform.getResultSlot(), null);
     return result;
   }
 }

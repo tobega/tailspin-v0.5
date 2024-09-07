@@ -2,6 +2,7 @@ package tailspin.language.nodes.array;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
@@ -11,6 +12,7 @@ import tailspin.language.runtime.TailspinArray;
 @NodeChild(value = "lens", type = ValueNode.class)
 @NodeChild(value = "value", type = ValueNode.class)
 public abstract class ArrayMutateNode extends ValueNode {
+  public abstract Object executeDirect(Object target, Object index, Object value);
 
   public static ArrayMutateNode create(ValueNode array, ValueNode index, ValueNode value) {
     return ArrayMutateNodeGen.create(array, index, value);
@@ -28,6 +30,24 @@ public abstract class ArrayMutateNode extends ValueNode {
     TailspinArray result = array.getThawed();
     result.setNative(index.intValueExact() - 1, value);
     return result;
+  }
+
+  @Specialization(guards = "indexes.getArraySize() == values.size()")
+  protected Object doArray(TailspinArray array, TailspinArray indexes, ArrayList<?> values) {
+    TailspinArray result = array.getThawed();
+    for (int i = 0; i < indexes.getArraySize(); i++) {
+      executeDirect(result, indexes.getNative(i), values.get(i));
+    }
+    return result;
+  }
+
+  @Specialization(guards = "arrays.size() == values.size()")
+  @SuppressWarnings("unchecked")
+  protected Object doMany(ArrayList<?> arrays, Object index, ArrayList<?> values) {
+    for (int i = 0; i < arrays.size(); i++) {
+      ((ArrayList<Object>) arrays).set(i, executeDirect(arrays.get(i), index, values.get(i)));
+    }
+    return arrays;
   }
 
   @Specialization
