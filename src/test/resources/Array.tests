@@ -78,3 +78,6 @@ end !
 ---read selection and dimensions and select again
 [3..9 -> ['a$;', 'b$;']] -> $([3, 5, 1]; 2) -> $(3) !
 =b3
+---read range
+[5..9] -> $(2..4) !
+=[6, 7, 8]

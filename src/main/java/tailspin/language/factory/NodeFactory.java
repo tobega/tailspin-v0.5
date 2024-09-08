@@ -267,15 +267,15 @@ public class NodeFactory {
 
   private TailspinNode visitValueChain(ParseNode valueChain) {
     if (!valueChain.name().equals("value-chain")) throw new IllegalStateException("Unexpected value: " + valueChain);
-    if (valueChain.content() instanceof ParseNode(String name, ParseNode source) && name.equals("source")) {
-      TailspinNode sourceNode = visitSource(source);
-      if (sourceNode instanceof RangeIteration r) {
-        pushCvSlot(currentScope().newTempSlot());
-        r.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())));
-        r.setResultSlot(currentScope().newResultSlot());
-        popCvSlot();
-      }
-      return sourceNode;
+    if (valueChain.content() instanceof ParseNode(String name, List<?> bounds) && name.equals("range")) {
+      RangeIteration r = visitRange(bounds);
+      pushCvSlot(currentScope().newTempSlot());
+      r.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())));
+      r.setResultSlot(currentScope().newResultSlot());
+      popCvSlot();
+      return r;
+    } else if (valueChain.content() instanceof ParseNode(String name, ParseNode source) && name.equals("source")) {
+      return visitSource(source);
     } else if (valueChain.content() instanceof List<?> chain) {
       ChainSlots chainSlots = currentScope().newChainSlots();
       List<TransformNode> stages = new ArrayList<>();
@@ -283,6 +283,7 @@ public class NodeFactory {
       for (Object stage : chain) {
         TailspinNode stageNode = switch (stage) {
           case ParseNode(String name, Object transform) when name.equals("transform") -> visitTransform(transform);
+          case ParseNode(String name, List<?> bounds) when name.equals("range") -> visitRange(bounds);
           case ParseNode(String name, ParseNode transform) when name.equals("source") -> visitSource(transform);
           case ParseNode(String name, String ignored) when name.equals("stream") -> StreamNode.create(ReadContextValueNode.create(-1, currentValueSlot()));
           case ParseNode(String name, ParseNode setState) when name.equals("set-state") -> visitSetState(setState);
@@ -352,6 +353,7 @@ public class NodeFactory {
   private TransformNode visitTransform(Object transform) {
     return switch(transform) {
       case ParseNode(String name, ParseNode source) when name.equals("source") -> asTransformNode(visitSource(source));
+      case ParseNode(String name, List<?> bounds) when name.equals("range") -> asTransformNode(visitRange(bounds));
       case ParseNode(String name, ParseNode body) when name.equals("inline-templates-call") -> {
         enterNewScope(null);
         visitTemplatesBody(body);
@@ -616,7 +618,6 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
       case ParseNode(String name, ParseNode vc) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc));
       case ParseNode(String name, Object contents) when name.equals("array-literal") -> visitArrayLiteral(contents);
-      case ParseNode(String name, List<?> bounds) when name.equals("range") -> visitRange(bounds);
       case ParseNode(String name, Object contents) when name.equals("structure-literal") -> visitStructureLiteral(contents);
       case ParseNode(String name, Object contents) when name.equals("string-literal") -> visitStringLiteral(contents);
       default -> throw new IllegalStateException("Unexpected value: " + source);
@@ -806,6 +807,14 @@ public class NodeFactory {
     return switch (lensExpression) {
       case ParseNode(String type, ParseNode source) when type.equals("source")
           -> ArrayReadNode.create(target, asSingleValueNode(visitSource(source)));
+      case ParseNode(String type, List<?> bounds) when type.equals("range") -> {
+        RangeIteration r = visitRange(bounds);
+        pushCvSlot(currentScope().newTempSlot());
+        r.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())));
+        r.setResultSlot(currentScope().newResultSlot());
+        popCvSlot();
+        yield  ArrayReadNode.create(target, asTransformResult(r));
+      }
       case ParseNode(String type, ParseNode(String ignored, String key)) when type.equals("key")
           -> StructureReadNode.create(target, currentScope().getVocabularyType(key));
       case List<?> dimension -> {

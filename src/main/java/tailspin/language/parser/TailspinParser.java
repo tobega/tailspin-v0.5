@@ -28,11 +28,11 @@ public class TailspinParser {
      sink rule (<|WS>? <|='->'> <|WS>? <|='!'> <|WS>?) <|='VOID'|='#'|templates-call>
      accumulator-state rule (<|WS>? <|='->'> <|WS>?) <|set-state>
      
-     value-chain rule <|source> <|transform|stream>*
-     source rule <|arithmetic-expression|reference|single-value-chain|array-literal|range|structure-literal|string-literal> (<|WS>?)
+     value-chain rule <|range|source> <|transform|stream>*
+     source rule <|arithmetic-expression|reference|single-value-chain|array-literal|structure-literal|string-literal> (<|WS>?)
      reference rule <|='$'> <|='@'>? <|ID>? <|lens-expression>? <|message-send>?
      single-value-chain rule (<|='('> <|WS>?) <|value-chain> (<|WS>? <|=')'>)
-     range rule <|range-bound> <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound> <|stride>?
+     range rule <|range-bound> <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound> <|stride>? (<|WS>?)
      stride rule (<|=':'> <|WS>?) <|range-bound> (<|WS>?)
      string-literal rule <|=''''> <|string-part|=''''''|='$$'|unicode-bytes|codepoint|interpolate>* (<|=''''> <|WS>?)
      string-part rule <|'[^''$]+'>
@@ -40,7 +40,7 @@ public class TailspinParser {
      codepoint rule (<|='$#'> <|WS>?) <|value-chain> (<|=';'>)
      interpolate rule (<|='$:'|'(?=\\$)'> <|WS>?) <|value-chain> (<|=';'>)
      
-     lens-expression rule (<|='('> <|WS>?) <|source|key> <|next-lens-dimension>? (<|WS>? <|=')'>)
+     lens-expression rule (<|='('> <|WS>?) <|range|source|key> <|next-lens-dimension>? (<|WS>? <|=')'>)
      key rule <|ID> (<|=':'> <|WS>?)
      next-lens-dimension rule (<|WS>? <|=';'> <|WS>?) <|source|key> <|next-lens-dimension>?
      
@@ -55,7 +55,7 @@ public class TailspinParser {
      key-value rule <|ID> (<|=':'> <|WS>?) <|value-chain>
      additional-key-value rule (<|=','> <|WS>?) <|key-value|value-chain>
 
-     transform rule (<|='->'> <|WS>?) <|source|inline-templates-call|='#'|templates-call|filter> (<|WS>?)
+     transform rule (<|='->'> <|WS>?) <|source|range|inline-templates-call|='#'|templates-call|filter> (<|WS>?)
      templates-call rule <|ID>
      inline-templates-call rule (<|='templates'> <|WS>) <|templates-body>  (<|='end'> <|WS>?)
      templates rule (name is <|ID>; <|WS>) <|='templates'|='source'|='sink'> (<|WS>) <|templates-body>  (<|='end'> <|WS>) <|=$name>

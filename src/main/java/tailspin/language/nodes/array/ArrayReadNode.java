@@ -34,6 +34,15 @@ public abstract class ArrayReadNode extends ValueNode {
   }
 
   @Specialization
+  protected Object doRange(TailspinArray array, ArrayList<?> range) {
+    ArrayList<Object> elements = new ArrayList<>();
+    for (Object o : range) {
+      elements.add(executeDirect(array, o));
+    }
+    return elements;
+  }
+
+  @Specialization
   @SuppressWarnings("unchecked")
   protected Object doMultiSelect(ArrayList<?> multiple, Object selection) {
     ((ArrayList<Object>) multiple).replaceAll(array -> executeDirect(array, selection));
