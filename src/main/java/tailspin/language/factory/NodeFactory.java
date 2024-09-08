@@ -50,6 +50,7 @@ import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.state.ReadStateNode;
+import tailspin.language.nodes.string.CodepointNode;
 import tailspin.language.nodes.string.StringLiteral;
 import tailspin.language.nodes.string.StringPart;
 import tailspin.language.nodes.structure.StructureLiteral;
@@ -638,6 +639,8 @@ public class NodeFactory {
       case String s when s.equals("''") -> StringPart.create("'");
       case String s when s.equals("$$") -> StringPart.create("$");
       case ParseNode(String name, ParseNode valueChain) when name.equals("interpolate") -> asTransformResult(visitValueChain(valueChain));
+      case ParseNode(String name, ParseNode valueChain) when name.equals("codepoint") -> CodepointNode.create(asSingleValueNode(visitValueChain(valueChain)));
+      case ParseNode(String name, String bytes) when name.equals("unicode-bytes") -> CodepointNode.create(IntegerLiteral.create(Long.valueOf(bytes, 16)));
       default -> throw new IllegalStateException("Unexpected value: " + partSpec);
     };
   }
