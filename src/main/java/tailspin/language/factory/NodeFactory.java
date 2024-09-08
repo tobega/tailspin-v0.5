@@ -2,7 +2,6 @@ package tailspin.language.factory;
 
 import static tailspin.language.parser.ParseNode.normalizeValues;
 import static tailspin.language.runtime.Templates.CV_SLOT;
-import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
 import static tailspin.language.runtime.Templates.STATE_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
@@ -844,7 +843,7 @@ public class NodeFactory {
           (ParseNode) ((ParseNode) bounds.getFirst()).content()));
     } else {
       inclusiveStart = separator == 0;
-      start = MessageNode.create("first", ReadContextValueNode.create(-1, LENS_CONTEXT_SLOT));
+      start = VoidValue.create();
     }
     boolean inclusiveEnd;
     ValueNode end;
@@ -854,7 +853,7 @@ public class NodeFactory {
           (ParseNode) ((ParseNode) bounds.getLast()).content()));
     } else {
       inclusiveEnd = separator + 1 == bounds.size();
-      end = MessageNode.create("last", ReadContextValueNode.create(-1, LENS_CONTEXT_SLOT));
+      end = VoidValue.create();
     }
     RangeIteration r = RangeIteration.create(currentScope().newTempSlot(), start, inclusiveStart, currentScope().newTempSlot(), end, inclusiveEnd, currentScope().newTempSlot(), stride);
     pushCvSlot(currentScope().newTempSlot());

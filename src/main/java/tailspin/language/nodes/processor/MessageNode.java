@@ -11,6 +11,8 @@ import tailspin.language.nodes.ValueNode;
 
 @NodeChild(value = "processor", type = ValueNode.class)
 public abstract class MessageNode extends ValueNode {
+  public abstract Object executeMessage(Object processor);
+
   private final String message;
 
   protected MessageNode(String message) {

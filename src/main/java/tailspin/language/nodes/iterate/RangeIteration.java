@@ -1,5 +1,7 @@
 package tailspin.language.nodes.iterate;
 
+import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
+
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
@@ -22,6 +24,7 @@ import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
+import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
 
@@ -44,6 +47,11 @@ public abstract class RangeIteration extends TransformNode {
   final int incrementSlot;
 
   private final boolean inclusiveEnd;
+
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child
+  MatcherNode isGt0Node = GreaterThanMatcherNode.create(false, NumericTypeMatcherNode.create(),
+      IntegerLiteral.create(0L));
 
   protected RangeIteration(int startSlot, int endSlot, int incrementSlot, boolean inclusiveStart, boolean inclusiveEnd) {
     this.startSlot = startSlot;
@@ -76,9 +84,27 @@ public abstract class RangeIteration extends TransformNode {
   }
 
   @Specialization
-  public void doIterate(VirtualFrame frame, Object start, Object end, Object increment) {
+  public void doIterate(VirtualFrame frame, Object start, Object end, Object increment,
+      @Cached(value = "createGetFirst()", neverDefault = true) MessageNode getFirst,
+      @Cached(value = "createGetLast()", neverDefault = true) MessageNode getLast) {
+    if (start == null) {
+      if (isGt0Node.executeMatcherGeneric(frame, increment)) start = getFirst.executeMessage(frame.getObject(LENS_CONTEXT_SLOT));
+      else start = getLast.executeMessage(frame.getObject(LENS_CONTEXT_SLOT));
+    }
+    if (end == null) {
+      if (isGt0Node.executeMatcherGeneric(frame, increment)) end = getLast.executeMessage(frame.getObject(LENS_CONTEXT_SLOT));
+      else end = getFirst.executeMessage(frame.getObject(LENS_CONTEXT_SLOT));
+    }
     initializeNode.executeInitialize(frame, start, end, increment);
     loop.execute(frame);
+  }
+
+  MessageNode createGetFirst() {
+    return MessageNode.create("first", null);
+  }
+
+  MessageNode createGetLast() {
+    return MessageNode.create("last", null);
   }
 
   static class RangeRepeatingNode extends Node implements RepeatingNode {
