@@ -10,6 +10,7 @@ import com.oracle.truffle.api.library.ExportMessage;
 import com.oracle.truffle.api.strings.TruffleString;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
 
 @ExportLibrary(InteropLibrary.class)
 public class TailspinArray implements TruffleObject {
@@ -97,14 +98,18 @@ public class TailspinArray implements TruffleObject {
     return true;
   }
 
+  final Set<String> supportedMessages = Set.of("first", "last", "length");
+
   @ExportMessage
   public boolean isMemberReadable(String member) {
-    return "length".equals(member);
+    return supportedMessages.contains(member);
   }
 
   @ExportMessage
   public Object readMember(String member) throws UnknownIdentifierException {
     return switch(member) {
+      case "first" -> 1L;
+      case "last" -> length;
       case "length" -> length;
       default -> throw UnknownIdentifierException.create(member);
     };

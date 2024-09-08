@@ -2,6 +2,7 @@ package tailspin.language.factory;
 
 import static tailspin.language.parser.ParseNode.normalizeValues;
 import static tailspin.language.runtime.Templates.CV_SLOT;
+import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
 import static tailspin.language.runtime.Templates.STATE_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
@@ -807,14 +808,7 @@ public class NodeFactory {
     return switch (lensExpression) {
       case ParseNode(String type, ParseNode source) when type.equals("source")
           -> ArrayReadNode.create(target, asSingleValueNode(visitSource(source)));
-      case ParseNode(String type, List<?> bounds) when type.equals("range") -> {
-        RangeIteration r = visitRange(bounds);
-        pushCvSlot(currentScope().newTempSlot());
-        r.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())));
-        r.setResultSlot(currentScope().newResultSlot());
-        popCvSlot();
-        yield  ArrayReadNode.create(target, asTransformResult(r));
-      }
+      case ParseNode(String type, Object bounds) when type.equals("lens-range") -> ArrayReadNode.create(target, asTransformResult(visitLensRange(bounds)));
       case ParseNode(String type, ParseNode(String ignored, String key)) when type.equals("key")
           -> StructureReadNode.create(target, currentScope().getVocabularyType(key));
       case List<?> dimension -> {
@@ -823,6 +817,51 @@ public class NodeFactory {
       }
       default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };
+  }
+
+  @SuppressWarnings("unchecked")
+  private RangeIteration visitLensRange(Object boundsSpec) {
+    List<Object> bounds;
+    if (boundsSpec instanceof List<?> l) {
+      bounds = (List<Object>) l;
+    } else {
+      bounds = List.of(boundsSpec);
+    }
+    int separator = bounds.indexOf("..");
+    ValueNode stride;
+    if (bounds.getLast() instanceof ParseNode(String name, ParseNode content) && name.equals("stride")) {
+      stride = asSingleValueNode(visitSource((ParseNode) (
+          (ParseNode) content.content()).content()));
+      bounds = bounds.subList(0, bounds.size() - 1);
+    } else {
+      stride = IntegerLiteral.create(1L);
+    }
+    boolean inclusiveStart;
+    ValueNode start;
+    if (separator > 0 && !bounds.getFirst().equals("~")) {
+      inclusiveStart = separator == 1;
+      start = asSingleValueNode(visitSource(
+          (ParseNode) ((ParseNode) bounds.getFirst()).content()));
+    } else {
+      inclusiveStart = separator == 0;
+      start = MessageNode.create("first", ReadContextValueNode.create(-1, LENS_CONTEXT_SLOT));
+    }
+    boolean inclusiveEnd;
+    ValueNode end;
+    if (separator + 1 < bounds.size() && !bounds.getLast().equals("~")) {
+      inclusiveEnd = separator + 2 == bounds.size();
+      end = asSingleValueNode(visitSource(
+          (ParseNode) ((ParseNode) bounds.getLast()).content()));
+    } else {
+      inclusiveEnd = separator + 1 == bounds.size();
+      end = MessageNode.create("last", ReadContextValueNode.create(-1, LENS_CONTEXT_SLOT));
+    }
+    RangeIteration r = RangeIteration.create(currentScope().newTempSlot(), start, inclusiveStart, currentScope().newTempSlot(), end, inclusiveEnd, currentScope().newTempSlot(), stride);
+    pushCvSlot(currentScope().newTempSlot());
+    r.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())));
+    r.setResultSlot(currentScope().newResultSlot());
+    popCvSlot();
+    return r;
   }
 
   private ValueNode visitArithmeticExpression(ParseNode ae) {

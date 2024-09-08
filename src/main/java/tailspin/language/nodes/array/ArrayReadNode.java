@@ -1,14 +1,19 @@
 package tailspin.language.nodes.array;
 
+import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
+
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.array.ArrayReadNode.SetLensContextNode;
+import tailspin.language.nodes.array.ArrayReadNodeGen.SetLensContextNodeGen;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.TailspinArray;
 
-@NodeChild(value = "array", type = ValueNode.class)
+@NodeChild(value = "array", type = SetLensContextNode.class)
 @NodeChild(value = "lens", type = ValueNode.class)
 public abstract class ArrayReadNode extends ValueNode {
   public abstract Object executeDirect(Object array, Object lens);
@@ -55,6 +60,19 @@ public abstract class ArrayReadNode extends ValueNode {
   }
 
   public static ArrayReadNode create(ValueNode array, ValueNode lens) {
-    return ArrayReadNodeGen.create(array, lens);
+    return ArrayReadNodeGen.create(SetLensContextNode.create(array), lens);
+  }
+
+  @NodeChild(value = "array", type = ValueNode.class)
+  static abstract class SetLensContextNode extends ValueNode {
+    @Specialization
+    Object doSetContext(VirtualFrame frame, Object target) {
+      frame.setObject(LENS_CONTEXT_SLOT, target);
+      return target;
+    }
+
+    static SetLensContextNode create(ValueNode lens) {
+      return SetLensContextNodeGen.create(lens);
+    }
   }
 }

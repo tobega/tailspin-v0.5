@@ -9,6 +9,7 @@ public class Templates {
   public static final int SCOPE_SLOT = 0;
   public static final int CV_SLOT = 1;
   public static final int EMIT_SLOT = 2;
+  public static final int LENS_CONTEXT_SLOT = 3;
 
   public static final int STATE_SLOT = 0;
 
@@ -17,6 +18,7 @@ public class Templates {
     assertSlot(SCOPE_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
     assertSlot(CV_SLOT, fdb.addSlot(FrameSlotKind.Illegal, null, null));
     assertSlot(EMIT_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
+    assertSlot(LENS_CONTEXT_SLOT, fdb.addSlot(FrameSlotKind.Object, null, null));
     return fdb;
   }
 

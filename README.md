@@ -20,6 +20,8 @@ Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.c
 ### Harmonizing projections
 - Projections will get a clear and general transform step at the end, marked by `->`, e.g. `$(5; -> 0)` will select the 5th element of the array and then transform it to `0` (OK, this example ends up being useless, but it is simple and shows the syntax). The advantage of the "inside" transform is that overlying structure can be kept.
 - Since there will be an arrow (`->`) in the projection transform step, it makes sense to just use regular `$` instead of `§`
+- The current value that a lens applies to is made accessible as $.
+- The special array context words `first` and `last` are removed, just use range without specific bound, e.g. `..`, `~..` or `2..~`. If needed, use `$::first` and `$::last`.
 - `..` will be introduced as a short form of `first..last` (and will also work as an *all* selector for non-indexed collections like relations)
 - As a consequence, the structure transform projection, e.g. `$({x:, y: §.y + 1"1"})` will become `$(-> {x:, y: $.y + 1"1"})` for a structure value, equivalent to `$ -> {x:, y: $.y + 1"1"}`, or `$(..; -> {x:, y: $.y + 1"1"})` for a collection of structures.
 - Array templates will be folded in as projections, so `$ -> \[i]($ * $i! \)` will be written instead `$(.. as i; -> $ * $i)`

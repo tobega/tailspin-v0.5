@@ -40,9 +40,10 @@ public class TailspinParser {
      codepoint rule (<|='$#'> <|WS>?) <|value-chain> (<|=';'>)
      interpolate rule (<|='$:'|'(?=\\$)'> <|WS>?) <|value-chain> (<|=';'>)
      
-     lens-expression rule (<|='('> <|WS>?) <|range|source|key> <|next-lens-dimension>? (<|WS>? <|=')'>)
+     lens-expression rule (<|='('> <|WS>?) <|lens-range|source|key> <|next-lens-dimension>? (<|WS>? <|=')'>)
      key rule <|ID> (<|=':'> <|WS>?)
      next-lens-dimension rule (<|WS>? <|=';'> <|WS>?) <|source|key> <|next-lens-dimension>?
+     lens-range rule <|range-bound>? <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound>? <|stride>?
      
      message-send rule (<|='::'>) <|ID>
 

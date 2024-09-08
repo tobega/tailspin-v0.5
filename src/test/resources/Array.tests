@@ -81,3 +81,18 @@ end !
 ---read range
 [5..9] -> $(2..4) !
 =[6, 7, 8]
+---read all range
+[1..3 -> [$, $ * 2]] -> $(..; 2) !
+=[2, 4, 6]
+---read all except first
+[1..3] -> $(~..) !
+=[2, 3]
+---read all except last
+[1..3] -> $(..~) !
+=[1, 2]
+---read every third
+[1..10] -> $(..:3)!
+=[1, 4, 7, 10]
+---read every third except last
+[1..10] -> $(..~:3)!
+=[1, 4, 7]
