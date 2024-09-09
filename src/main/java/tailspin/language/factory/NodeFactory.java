@@ -859,6 +859,7 @@ public class NodeFactory {
     pushCvSlot(currentScope().newTempSlot());
     r.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())));
     r.setResultSlot(currentScope().newResultSlot());
+    r.setIsLensRange();
     popCvSlot();
     return r;
   }

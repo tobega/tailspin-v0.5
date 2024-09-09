@@ -2,6 +2,7 @@ package tailspin.language.nodes.iterate;
 
 import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
 
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
@@ -13,6 +14,7 @@ import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
+import java.util.ArrayList;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
@@ -48,6 +50,9 @@ public abstract class RangeIteration extends TransformNode {
 
   private final boolean inclusiveEnd;
 
+  @CompilationFinal
+  private boolean isLensRange = false;
+
   @SuppressWarnings("FieldMayBeFinal")
   @Child
   MatcherNode isGt0Node = GreaterThanMatcherNode.create(false, NumericTypeMatcherNode.create(),
@@ -59,6 +64,10 @@ public abstract class RangeIteration extends TransformNode {
     this.incrementSlot = incrementSlot;
     this.inclusiveEnd = inclusiveEnd;
     initializeNode = InitializeRangeIteratorNode.create(startSlot, endSlot, incrementSlot, inclusiveStart);
+  }
+
+  public void setIsLensRange() {
+    isLensRange = true;
   }
 
   public void setStage(int rangeCvSlot, TransformNode stage) {
@@ -96,6 +105,9 @@ public abstract class RangeIteration extends TransformNode {
       else end = getFirst.executeMessage(frame.getObject(LENS_CONTEXT_SLOT));
     }
     initializeNode.executeInitialize(frame, start, end, increment);
+    if (isLensRange) {
+      frame.setObjectStatic(getResultSlot(), new ArrayList<>());
+    }
     loop.execute(frame);
   }
 
