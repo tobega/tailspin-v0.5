@@ -364,7 +364,7 @@ public class NodeFactory {
       }
       case String crosshatch when crosshatch.equals("#") -> {
         Templates matchers = currentScope().getOrCreateMatcherTemplates();
-        yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size() - 1, matchers);
+        yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size() - (currentScope().hasBlock() ? 1 : 0), matchers);
       }
       case ParseNode(String type, ParseNode id) when type.equals("templates-call")
           -> SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(),
@@ -396,6 +396,7 @@ public class NodeFactory {
       break;
       case ParseNode(@SuppressWarnings("unused") String bodyName, ParseNode(String name, Object matchers))
           when name.equals("matchers"):
+        currentScope().setBlock(null);
         visitMatchers(matchers);
       break;
       default: throw new IllegalStateException("Unexpected value: " + body);

@@ -42,12 +42,21 @@ public class Scope {
     return  rootFdb.addSlot(FrameSlotKind.Static, null, null);
   }
 
+  boolean hasBlock = true;
   StatementNode block;
   Builder blockRootFdb;
   public void setBlock(StatementNode blockNode) {
+    if (blockNode == null) {
+      hasBlock = false;
+      return;
+    }
     block = blockNode;
     blockRootFdb = rootFdb;
     rootFdb = Templates.createBasicFdb();
+  }
+
+  public boolean hasBlock() {
+    return hasBlock;
   }
 
   Templates matcherTemplates;

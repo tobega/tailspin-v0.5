@@ -110,3 +110,10 @@ bar templates
 end bar
 5 -> bar!
 =6
+---use defined value in recursive templates call
+  bar is 4;
+  1 -> templates
+    when <|..$bar> do $ + 1 -> # !
+    otherwise $ !
+  end !
+=5
