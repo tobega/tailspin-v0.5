@@ -105,3 +105,6 @@ end !
 ---single value range
 [4] -> $(..) !
 =[4]
+---range on next dimension
+[[1, 2], [3, 4]] -> $(2; ..) !
+=[3, 4]

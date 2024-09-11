@@ -243,6 +243,8 @@ public class NodeFactory {
 
   private ValueNode visitWriteLensExpression(ValueNode target, Object lensExpression, TailspinNode value) {
     return switch (lensExpression) {
+      case ParseNode(String type, Object lensDimension) when type.equals("lens-dimension")
+          -> visitWriteLensExpression(target, lensDimension, value);
       case ParseNode(String type, ParseNode source) when type.equals("source")
           -> ArrayMutateNode.create(target, asSingleValueNode(visitSource(source)), asTransformResult(value));
       case ParseNode(String type, ParseNode id) when type.equals("key")
@@ -806,9 +808,12 @@ public class NodeFactory {
 
   private ValueNode visitReadLensExpression(ValueNode target, Object lensExpression) {
     return switch (lensExpression) {
+      case ParseNode(String type, Object lensDimension) when type.equals("lens-dimension")
+          -> visitReadLensExpression(target, lensDimension);
       case ParseNode(String type, ParseNode source) when type.equals("source")
           -> ArrayReadNode.create(target, asSingleValueNode(visitSource(source)));
-      case ParseNode(String type, Object bounds) when type.equals("lens-range") -> ArrayReadNode.create(target, asTransformResult(visitLensRange(bounds)));
+      case ParseNode(String type, Object bounds) when type.equals("lens-range")
+          -> ArrayReadNode.create(target, asTransformResult(visitLensRange(bounds)));
       case ParseNode(String type, ParseNode(String ignored, String key)) when type.equals("key")
           -> StructureReadNode.create(target, currentScope().getVocabularyType(key));
       case List<?> dimension -> {
