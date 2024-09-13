@@ -108,3 +108,7 @@ end !
 ---range on next dimension
 [[1, 2], [3, 4]] -> $(2; ..) !
 =[3, 4]
+---read defined array by current value
+a is [2, 4, 6];
+3 -> $a($) !
+=6

@@ -33,6 +33,15 @@ end !
   otherwise ($ + 1) * $a !
 end !
 =6
+---access block defined value from templates in matcher
+2 -> templates
+  a is $;
+  $a -> # !
+  otherwise ($ + 1) -> templates
+    $ * $a !
+  end !
+end !
+=6
 ---access block defined value from recursive matcher
 2 -> templates
   a is $;
