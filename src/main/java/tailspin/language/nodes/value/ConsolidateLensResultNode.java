@@ -5,6 +5,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import java.util.ArrayList;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.IndexedArrayValue;
 import tailspin.language.runtime.TailspinArray;
 
 @NodeChild(type = ValueNode.class)
@@ -18,6 +19,11 @@ public abstract class ConsolidateLensResultNode extends ValueNode {
       elements[i] = executeDirect(frame, many.get(i));
     }
     return TailspinArray.value(elements);
+  }
+
+  @Specialization
+  Object doConsolidateIndexed(VirtualFrame frame, IndexedArrayValue indexedArrayValue) {
+    return executeDirect(frame, indexedArrayValue.value());
   }
 
   @Specialization

@@ -71,7 +71,7 @@ public class Scope {
 
   public void makeMatcherCallTarget(MatchBlockNode matchBlockNode) {
     getOrCreateMatcherTemplates();
-    matcherTemplates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), block == null ? scopeFdb.build() : null, matchBlockNode));
+    matcherTemplates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), hasBlock ? null : scopeFdb.build(), matchBlockNode));
   }
 
   private void assignReferences(Builder fdb) {
@@ -107,10 +107,10 @@ public class Scope {
   }
 
   public Object getSource(String identifier, int level) {
-    if (level == -1 && (block != null || matcherTemplates == null)) {
+    if (block != null || !hasBlock) {
       // TODO: We should be able to have local matcher values
       getOrCreateMatcherTemplates().setNeedsScope();
-      level = 0;
+      if (level == -1) level = 0;
     }
     Object defined = definitions.get(identifier);
     switch (defined) {

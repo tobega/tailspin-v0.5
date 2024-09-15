@@ -70,7 +70,7 @@ public class ChainTest {
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode source = ArrayLiteral.create(buildSlot, List.of(ResultAggregatingNode.create(IntegerLiteral.create(12))));
-    ValueNode expr = ArrayReadNode.create(ReadContextValueNode.create(-1, cvSlot), IntegerLiteral.create(1));
+    ValueNode expr = ArrayReadNode.create(ReadContextValueNode.create(-1, cvSlot), IntegerLiteral.create(1), null);
     ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(
         ResultAggregatingNode.create(source), ResultAggregatingNode.create(expr)));
     assertEquals(12L, TestUtil.evaluate(SingleValueNode.create(chain), fdb.build(),

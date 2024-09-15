@@ -155,6 +155,7 @@ public class NodeFactory {
       case ParseNode(String stmtType, List<?> def) when stmtType.equals("type-def") -> {
         VocabularyType type = currentScope().getVocabularyType(((ParseNode) def.getFirst()).content().toString());
         enterNewScope(null);
+        currentScope().setBlock(null);
         MatcherNode constraint = visitAlternativeMembranes(null, def.subList(1, def.size()));
         Scope definedScope = exitScope();
         Templates templates = definedScope.getOrCreateMatcherTemplates();
@@ -252,7 +253,11 @@ public class NodeFactory {
       case ParseNode(String type, ParseNode id) when type.equals("key")
           -> WriteKeyValueNode.create(currentScope().getVocabularyType((String) id.content()), target, asTransformResult(value));
       case List<?> dimension -> {
-        ValueNode thisDimension = visitReadLensExpression(target, dimension.getFirst());
+        Reference indexVar = null;
+        if (dimension.get(1) instanceof ParseNode(String type, ParseNode(String ignored, String identifier)) && type.equals("index-variable")) {
+          indexVar = currentScope().defineValue(identifier);
+        }
+        ValueNode thisDimension = visitReadLensExpression(target, dimension.getFirst(), indexVar);
         ValueNode modifiedTarget = visitWriteLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content(), value);
         yield visitWriteLensExpression(target, dimension.getFirst(), modifiedTarget);
       }
@@ -796,7 +801,7 @@ public class NodeFactory {
       default -> throw new IllegalStateException("Unexpected value: " + ref);
     };
     if (!predicate.isEmpty() && predicate.getFirst() instanceof ParseNode(String type, Object lensExpression) && type.equals("lens-expression")){
-      value = ConsolidateLensResultNode.create(visitReadLensExpression(asSingleValueNode(value), lensExpression));
+      value = ConsolidateLensResultNode.create(visitReadLensExpression(asSingleValueNode(value), lensExpression, null));
     }
     if (readsState) {
       value = ReadStateNode.create((ValueNode) value);
@@ -808,26 +813,30 @@ public class NodeFactory {
     return value;
   }
 
-  private ValueNode visitReadLensExpression(ValueNode target, Object lensExpression) {
+  private ValueNode visitReadLensExpression(ValueNode target, Object lensExpression, Reference indexVar) {
     return switch (lensExpression) {
       case ParseNode(String type, Object lensDimension) when type.equals("lens-dimension")
-          -> visitReadLensExpression(target, lensDimension);
+          -> visitReadLensExpression(target, lensDimension, indexVar);
       case ParseNode(String type, ParseNode source) when type.equals("source")
-          -> ArrayReadNode.create(target, asSingleValueNode(visitSource(source)));
+          -> ArrayReadNode.create(target, asSingleValueNode(visitSource(source)), indexVar);
       case ParseNode(String type, Object bounds) when type.equals("lens-range")
-          -> asTransformResult(visitLensRange(target, bounds));
+          -> asTransformResult(visitLensRange(target, bounds, indexVar));
       case ParseNode(String type, ParseNode(String ignored, String key)) when type.equals("key")
           -> StructureReadNode.create(target, currentScope().getVocabularyType(key));
       case List<?> dimension -> {
-        ValueNode thisDimension = visitReadLensExpression(target, dimension.getFirst());
-        yield visitReadLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content());
+        indexVar = null;
+        if (dimension.get(1) instanceof ParseNode(String type, ParseNode(String ignored, String identifier)) && type.equals("index-variable")) {
+          indexVar = currentScope().defineValue(identifier);
+        }
+        ValueNode thisDimension = visitReadLensExpression(target, dimension.getFirst(), indexVar);
+        yield visitReadLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content(), null);
       }
       default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };
   }
 
   @SuppressWarnings("unchecked")
-  private ArrayRangeReadNode visitLensRange(ValueNode target, Object boundsSpec) {
+  private ArrayRangeReadNode visitLensRange(ValueNode target, Object boundsSpec, Reference indexVar) {
     List<Object> bounds;
     if (boundsSpec instanceof List<?> l) {
       bounds = (List<Object>) l;
@@ -865,7 +874,7 @@ public class NodeFactory {
     }
     RangeIteration r = RangeIteration.create(currentScope().newTempSlot(), start, inclusiveStart, currentScope().newTempSlot(), end, inclusiveEnd, currentScope().newTempSlot(), stride);
     pushCvSlot(currentScope().newTempSlot());
-    r.setStage(currentValueSlot(), ResultAggregatingNode.create(ArrayReadNode.create(ReadContextValueNode.create(-1, LENS_CONTEXT_SLOT), ReadContextValueNode.create(-1, currentValueSlot()))));
+    r.setStage(currentValueSlot(), ResultAggregatingNode.create(ArrayReadNode.create(ReadContextValueNode.create(-1, LENS_CONTEXT_SLOT), ReadContextValueNode.create(-1, currentValueSlot()), indexVar)));
     r.setIsLensRange();
     popCvSlot();
     return ArrayRangeReadNode.create(r, currentScope().newResultSlot(), target);
