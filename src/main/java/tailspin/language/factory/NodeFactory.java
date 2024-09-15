@@ -2,6 +2,7 @@ package tailspin.language.factory;
 
 import static tailspin.language.parser.ParseNode.normalizeValues;
 import static tailspin.language.runtime.Templates.CV_SLOT;
+import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
 import static tailspin.language.runtime.Templates.STATE_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
@@ -18,6 +19,7 @@ import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.array.ArrayMutateNode;
+import tailspin.language.nodes.array.ArrayRangeReadNode;
 import tailspin.language.nodes.array.ArrayReadNode;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.RangeIteration;
@@ -813,7 +815,7 @@ public class NodeFactory {
       case ParseNode(String type, ParseNode source) when type.equals("source")
           -> ArrayReadNode.create(target, asSingleValueNode(visitSource(source)));
       case ParseNode(String type, Object bounds) when type.equals("lens-range")
-          -> ArrayReadNode.create(target, asTransformResult(visitLensRange(bounds)));
+          -> asTransformResult(visitLensRange(target, bounds));
       case ParseNode(String type, ParseNode(String ignored, String key)) when type.equals("key")
           -> StructureReadNode.create(target, currentScope().getVocabularyType(key));
       case List<?> dimension -> {
@@ -825,7 +827,7 @@ public class NodeFactory {
   }
 
   @SuppressWarnings("unchecked")
-  private RangeIteration visitLensRange(Object boundsSpec) {
+  private ArrayRangeReadNode visitLensRange(ValueNode target, Object boundsSpec) {
     List<Object> bounds;
     if (boundsSpec instanceof List<?> l) {
       bounds = (List<Object>) l;
@@ -863,11 +865,10 @@ public class NodeFactory {
     }
     RangeIteration r = RangeIteration.create(currentScope().newTempSlot(), start, inclusiveStart, currentScope().newTempSlot(), end, inclusiveEnd, currentScope().newTempSlot(), stride);
     pushCvSlot(currentScope().newTempSlot());
-    r.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())));
-    r.setResultSlot(currentScope().newResultSlot());
+    r.setStage(currentValueSlot(), ResultAggregatingNode.create(ArrayReadNode.create(ReadContextValueNode.create(-1, LENS_CONTEXT_SLOT), ReadContextValueNode.create(-1, currentValueSlot()))));
     r.setIsLensRange();
     popCvSlot();
-    return r;
+    return ArrayRangeReadNode.create(r, currentScope().newResultSlot(), target);
   }
 
   private ValueNode visitArithmeticExpression(ParseNode ae) {
