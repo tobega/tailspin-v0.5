@@ -2,6 +2,8 @@ package tailspin.language.nodes.transform;
 
 import static com.oracle.truffle.api.CompilerDirectives.castExact;
 
+import com.oracle.truffle.api.dsl.GenerateInline;
+import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
@@ -39,5 +41,49 @@ public class AppendResultNode extends Node {
 
   public static AppendResultNode create() {
     return new AppendResultNode();
+  }
+
+  @GenerateInline
+  public static abstract class MergeResultNode extends Node {
+    public abstract Object execute(Node node, Object previous, Object result);
+
+    @Specialization(guards = "previous == null")
+    Object doPreviousNull(@SuppressWarnings("unused") Object previous, Object result) {
+      return result;
+    }
+
+    @Specialization(guards = "result == null")
+    Object doResultNull(Object previous, @SuppressWarnings("unused") Object result) {
+      return previous;
+    }
+
+    @Specialization
+    @SuppressWarnings("unchecked")
+    ArrayList<?> doMerge(ArrayList<?> previous, ArrayList<?> result) {
+      castExact(previous, ArrayList.class).addAll(castExact(result, ArrayList.class));
+      return previous;
+    }
+
+    @Specialization
+    @SuppressWarnings("unchecked")
+    ArrayList<?> doAppend(ArrayList<?> previous, Object result) {
+      castExact(previous, ArrayList.class).add(result);
+      return previous;
+    }
+
+    @Specialization
+    @SuppressWarnings("unchecked")
+    ArrayList<?> doPrepend(Object previous, ArrayList<?> result) {
+      castExact(result, ArrayList.class).addFirst(previous);
+      return result;
+    }
+
+    @Specialization
+    ArrayList<?> doNewList(Object previous, Object result) {
+      ArrayList<Object> list = new ArrayList<>();
+      list.add(previous);
+      list.add(result);
+      return list;
+    }
   }
 }

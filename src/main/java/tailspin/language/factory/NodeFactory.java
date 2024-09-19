@@ -70,6 +70,7 @@ import tailspin.language.nodes.transform.SinkNode;
 import tailspin.language.nodes.value.ConsolidateLensResultNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
+import tailspin.language.nodes.value.TransformLensNode;
 import tailspin.language.nodes.value.TransformResultNode;
 import tailspin.language.nodes.value.VoidValue;
 import tailspin.language.nodes.value.WriteContextValueNode;
@@ -801,7 +802,22 @@ public class NodeFactory {
       default -> throw new IllegalStateException("Unexpected value: " + ref);
     };
     if (!predicate.isEmpty() && predicate.getFirst() instanceof ParseNode(String type, Object lensExpression) && type.equals("lens-expression")){
-      value = ConsolidateLensResultNode.create(visitReadLensExpression(asSingleValueNode(value), lensExpression, null));
+      value = visitReadLensExpression(asSingleValueNode(value), lensExpression, null);
+      predicate = predicate.subList(1, predicate.size());
+      List<ParseNode> transforms = new ArrayList<>();
+      while (!predicate.isEmpty() && predicate.getFirst() instanceof ParseNode transform && transform.name().equals("transform")) {
+        transforms.add(transform);
+      }
+      if (!transforms.isEmpty()) {
+        pushCvSlot(currentScope().newTempSlot());
+        transforms.addFirst(new ParseNode("reference", "$"));
+        value = TransformLensNode.create(asTransformResult(value),
+            currentValueSlot(),
+            asTransformNode(visitValueChain(new ParseNode("value-chain", transforms))),
+            currentScope().newResultSlot());
+        popCvSlot();
+      }
+      value = ConsolidateLensResultNode.create(asTransformResult(value));
     }
     if (readsState) {
       value = ReadStateNode.create((ValueNode) value);
