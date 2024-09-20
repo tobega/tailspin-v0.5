@@ -47,8 +47,10 @@ public abstract class TransformLensNode extends ValueNode {
 
   @Specialization
   Object doTransformIndexed(VirtualFrame frame, IndexedArrayValue indexedArrayValue,
+      @Cached(inline = true, neverDefault = true) GetContextFrameNode getFrame,
       @Cached(inline = true) @Exclusive WriteLocalValueNode writeIndex) {
-    writeIndex.executeGeneric(frame, this, indexedArrayValue.indexVar().getSlot(), indexedArrayValue.index());
+    VirtualFrame contextFrame = getFrame.execute(frame, this, indexedArrayValue.indexVar().getLevel());
+    writeIndex.executeGeneric(contextFrame, this, indexedArrayValue.indexVar().getSlot(), indexedArrayValue.index());
     return executeDirect(frame, indexedArrayValue.value());
   }
 

@@ -8,6 +8,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import java.util.ArrayList;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.value.GetContextFrameNode;
 import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.IndexedArrayValue;
@@ -75,8 +76,10 @@ public abstract class ArrayReadNode extends ValueNode {
 
   @Specialization
   protected Object doIndexed(VirtualFrame frame, IndexedArrayValue indexedArrayValue,
+      @Cached(inline = true, neverDefault = true) GetContextFrameNode getFrame,
       @Cached(inline = true) WriteLocalValueNode writeIndex) {
-    writeIndex.executeGeneric(frame, this, indexedArrayValue.indexVar().getSlot(), indexedArrayValue.index());
+    VirtualFrame contextFrame = getFrame.execute(frame, this, indexedArrayValue.indexVar().getLevel());
+    writeIndex.executeGeneric(contextFrame, this, indexedArrayValue.indexVar().getSlot(), indexedArrayValue.index());
     Object result = executeDirect(frame, indexedArrayValue.value());
     return indexedArrayValue.withValue(result);
   }
