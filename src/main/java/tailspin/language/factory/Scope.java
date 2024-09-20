@@ -110,7 +110,7 @@ public class Scope {
     return defined.atLevel(-1);
   }
 
-  private Set<String> temporaryIdentifiers = new HashSet<>();
+  private final Set<String> temporaryIdentifiers = new HashSet<>();
   public void markTemporary(String identifier) {
     temporaryIdentifiers.add(identifier);
   }

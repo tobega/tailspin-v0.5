@@ -9,6 +9,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.strings.TruffleString;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.string.StringLiteralNodeGen.AppendStringNodeGen;
 import tailspin.language.runtime.TailspinStrings;
@@ -59,7 +60,7 @@ public abstract class StringLiteral extends ValueNode {
         @Cached @Shared TruffleString.ConcatNode concatNode,
         @Cached TruffleString.FromJavaStringNode fromJavaStringNode) {
       return TailspinStrings.concat(prefix,
-          TailspinStrings.fromJavaString(suffix.toString(), fromJavaStringNode), concatNode);
+          TailspinStrings.fromJavaString(Objects.toString(suffix), fromJavaStringNode), concatNode);
     }
 
     static AppendStringNode create() {
