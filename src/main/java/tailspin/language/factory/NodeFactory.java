@@ -258,7 +258,7 @@ public class NodeFactory {
         if (dimension.get(1) instanceof ParseNode(String type, ParseNode(String ignored, String identifier)) && type.equals("index-variable")) {
           indexVar = currentScope().defineValue(identifier);
         }
-        ValueNode thisDimension = visitReadLensExpression(target, dimension.getFirst(), indexVar);
+        ValueNode thisDimension = visitReadLensDimension(target, dimension.getFirst(), indexVar);
         ValueNode modifiedTarget = visitWriteLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content(), value);
         yield visitWriteLensExpression(target, dimension.getFirst(), modifiedTarget);
       }
@@ -802,21 +802,7 @@ public class NodeFactory {
       default -> throw new IllegalStateException("Unexpected value: " + ref);
     };
     if (!predicate.isEmpty() && predicate.getFirst() instanceof ParseNode(String type, Object lensExpression) && type.equals("lens-expression")){
-      value = visitReadLensExpression(asSingleValueNode(value), lensExpression, null);
-      predicate = predicate.subList(1, predicate.size());
-      List<ParseNode> transforms = new ArrayList<>();
-      while (!predicate.isEmpty() && predicate.getFirst() instanceof ParseNode transform && transform.name().equals("transform")) {
-        transforms.add(transform);
-      }
-      if (!transforms.isEmpty()) {
-        pushCvSlot(currentScope().newTempSlot());
-        transforms.addFirst(new ParseNode("reference", "$"));
-        value = TransformLensNode.create(asTransformResult(value),
-            currentValueSlot(),
-            asTransformNode(visitValueChain(new ParseNode("value-chain", transforms))),
-            currentScope().newResultSlot());
-        popCvSlot();
-      }
+      value = visitReadLensExpression(asSingleValueNode(value), lensExpression);
       value = ConsolidateLensResultNode.create(asTransformResult(value));
     }
     if (readsState) {
@@ -829,10 +815,8 @@ public class NodeFactory {
     return value;
   }
 
-  private ValueNode visitReadLensExpression(ValueNode target, Object lensExpression, Reference indexVar) {
-    return switch (lensExpression) {
-      case ParseNode(String type, Object lensDimension) when type.equals("lens-dimension")
-          -> visitReadLensExpression(target, lensDimension, indexVar);
+  private ValueNode visitReadLensDimension(ValueNode target, Object lensDimension, Reference indexVar) {
+    return switch (lensDimension) {
       case ParseNode(String type, ParseNode source) when type.equals("source")
           -> ArrayReadNode.create(target, asSingleValueNode(visitSource(source)), indexVar);
       case ParseNode(String type, Object bounds) when type.equals("lens-range")
@@ -844,8 +828,37 @@ public class NodeFactory {
         if (dimension.get(1) instanceof ParseNode(String type, ParseNode(String ignored, String identifier)) && type.equals("index-variable")) {
           indexVar = currentScope().defineValue(identifier);
         }
-        ValueNode thisDimension = visitReadLensExpression(target, dimension.getFirst(), indexVar);
-        yield visitReadLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content(), null);
+        ValueNode thisDimension = visitReadLensDimension(target, dimension.getFirst(), indexVar);
+        if (!dimension.isEmpty() && dimension.getLast() instanceof ParseNode(String type, ParseNode nextDimension) && type.equals("next-lens-dimension")) {
+          yield visitReadLensDimension(thisDimension, nextDimension.content(), null);
+        }  else {
+          yield thisDimension;
+        }
+      }
+      default -> throw new IllegalStateException("Unexpected value: " + lensDimension);
+    };
+  }
+
+  private ValueNode visitReadLensExpression(ValueNode target, Object lensExpression) {
+    return switch (lensExpression) {
+      case ParseNode(String type, Object lensDimension) when type.equals("lens-dimension")
+          -> visitReadLensDimension(target, lensDimension, null);
+      case List<?> dimension -> {
+        ParseNode lensDimension = (ParseNode) dimension.getFirst();
+        dimension = dimension.subList(1, dimension.size());
+        ValueNode thisDimension = visitReadLensDimension(target, lensDimension.content(), null);
+        @SuppressWarnings("unchecked")
+        List<ParseNode> transforms = (List<ParseNode>) new ArrayList<>(dimension);
+        if (!transforms.isEmpty()) {
+          pushCvSlot(currentScope().newTempSlot());
+          transforms.addFirst(new ParseNode("source", new ParseNode("reference", "$")));
+          thisDimension = TransformLensNode.create(asTransformResult(thisDimension),
+              currentValueSlot(),
+              asTransformNode(visitValueChain(new ParseNode("value-chain", transforms))),
+              currentScope().newResultSlot());
+          popCvSlot();
+        }
+        yield thisDimension;
       }
       default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };

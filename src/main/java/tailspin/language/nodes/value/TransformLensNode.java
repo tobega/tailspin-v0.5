@@ -1,6 +1,7 @@
 package tailspin.language.nodes.value;
 
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Exclusive;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -34,7 +35,7 @@ public abstract class TransformLensNode extends ValueNode {
 
   @Specialization
   @SuppressWarnings("unchecked")
-  TailspinArray doConsolidateMany(VirtualFrame frame, ArrayList<?> many,
+  TailspinArray doTransformMany(VirtualFrame frame, ArrayList<?> many,
       @Cached(inline = true) MergeResultNode mergeResultNode) {
     ArrayList<Object> elements = new ArrayList<>();
     for (Object one : many) {
@@ -45,13 +46,15 @@ public abstract class TransformLensNode extends ValueNode {
   }
 
   @Specialization
-  Object doConsolidateIndexed(VirtualFrame frame, IndexedArrayValue indexedArrayValue) {
+  Object doTransformIndexed(VirtualFrame frame, IndexedArrayValue indexedArrayValue,
+      @Cached(inline = true) @Exclusive WriteLocalValueNode writeIndex) {
+    writeIndex.executeGeneric(frame, this, indexedArrayValue.indexVar().getSlot(), indexedArrayValue.index());
     return executeDirect(frame, indexedArrayValue.value());
   }
 
   @Specialization
-  Object doConsolidateOne(VirtualFrame frame, Object one,
-      @Cached(inline = true) WriteLocalValueNode writeLocalValueNode) {
+  Object doTransformOne(VirtualFrame frame, Object one,
+      @Cached(inline = true) @Exclusive WriteLocalValueNode writeLocalValueNode) {
     writeLocalValueNode.executeGeneric(frame, this, cvSlot, one);
     transformNode.executeTransform(frame);
     Object result = frame.getObjectStatic(resultSlot);
