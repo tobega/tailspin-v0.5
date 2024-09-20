@@ -827,13 +827,13 @@ public class NodeFactory {
         indexVar = null;
         if (dimension.get(1) instanceof ParseNode(String type, ParseNode(String ignored, String identifier)) && type.equals("index-variable")) {
           indexVar = currentScope().defineValue(identifier);
+          currentScope().markTemporary(identifier);
         }
         ValueNode thisDimension = visitReadLensDimension(target, dimension.getFirst(), indexVar);
         if (!dimension.isEmpty() && dimension.getLast() instanceof ParseNode(String type, ParseNode nextDimension) && type.equals("next-lens-dimension")) {
-          yield visitReadLensDimension(thisDimension, nextDimension.content(), null);
-        }  else {
-          yield thisDimension;
+          thisDimension = visitReadLensDimension(thisDimension, nextDimension.content(), null);
         }
+        yield thisDimension;
       }
       default -> throw new IllegalStateException("Unexpected value: " + lensDimension);
     };
@@ -841,7 +841,7 @@ public class NodeFactory {
 
   @SuppressWarnings("unchecked")
   private ValueNode visitReadLensExpression(ValueNode target, Object lensExpression) {
-    return switch (lensExpression) {
+    ValueNode expression = switch (lensExpression) {
       case ParseNode(String type, Object lensDimension) when type.equals("lens-dimension")
           -> visitReadLensDimension(target, lensDimension, null);
       case List<?> dimension -> {
@@ -867,6 +867,8 @@ public class NodeFactory {
       }
       default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };
+    currentScope().deleteTemporaryValues();
+    return expression;
   }
 
   @SuppressWarnings("unchecked")

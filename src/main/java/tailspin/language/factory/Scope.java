@@ -4,7 +4,9 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor.Builder;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import tailspin.language.TailspinLanguage;
 import tailspin.language.nodes.ProgramRootNode;
 import tailspin.language.nodes.StatementNode;
@@ -77,12 +79,14 @@ public class Scope {
   private void assignReferences(Builder fdb) {
     definitions.values().stream().filter(Slot.class::isInstance).map(Slot.class::cast)
         .filter(Slot::isUndefined)
-        .forEach(s -> {
-          int slot = s.isExported()
-              ? scopeFdb.addSlot(FrameSlotKind.Illegal, null, null)
-              : fdb.addSlot(FrameSlotKind.Illegal, null, null);
-          s.setSlot(slot);
-        });
+        .forEach((s) -> assignSlot(s, fdb));
+  }
+
+  private void assignSlot(Slot s, Builder fdb) {
+      int slot = s.isExported()
+          ? scopeFdb.addSlot(FrameSlotKind.Illegal, null, null)
+          : fdb.addSlot(FrameSlotKind.Illegal, null, null);
+      s.setSlot(slot);
   }
 
   boolean needsScope;
@@ -104,6 +108,20 @@ public class Scope {
     Slot defined = new Slot();
     definitions.put(identifier, defined);
     return defined.atLevel(-1);
+  }
+
+  private Set<String> temporaryIdentifiers = new HashSet<>();
+  public void markTemporary(String identifier) {
+    temporaryIdentifiers.add(identifier);
+  }
+
+  public void deleteTemporaryValues() {
+    Builder fdb = blockRootFdb == null ? rootFdb : blockRootFdb;
+    for (String identifier : temporaryIdentifiers) {
+      assignSlot((Slot) definitions.get(identifier), fdb);
+      definitions.remove(identifier);
+    }
+    temporaryIdentifiers.clear();
   }
 
   public Object getSource(String identifier, int level) {
