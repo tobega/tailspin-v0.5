@@ -839,16 +839,21 @@ public class NodeFactory {
     };
   }
 
+  @SuppressWarnings("unchecked")
   private ValueNode visitReadLensExpression(ValueNode target, Object lensExpression) {
     return switch (lensExpression) {
       case ParseNode(String type, Object lensDimension) when type.equals("lens-dimension")
           -> visitReadLensDimension(target, lensDimension, null);
       case List<?> dimension -> {
         ParseNode lensDimension = (ParseNode) dimension.getFirst();
-        dimension = dimension.subList(1, dimension.size());
         ValueNode thisDimension = visitReadLensDimension(target, lensDimension.content(), null);
-        @SuppressWarnings("unchecked")
-        List<ParseNode> transforms = (List<ParseNode>) new ArrayList<>(dimension);
+        Object lensTransforms = ((ParseNode) dimension.getLast()).content();
+        List<ParseNode> transforms = new ArrayList<>();
+        if (lensTransforms instanceof ParseNode p) {
+          transforms.add(p);
+        } else {
+          transforms.addAll((List<ParseNode>) lensTransforms);
+        }
         if (!transforms.isEmpty()) {
           pushCvSlot(currentScope().newTempSlot());
           transforms.addFirst(new ParseNode("source", new ParseNode("reference", "$")));
