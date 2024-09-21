@@ -43,6 +43,18 @@ end !
   otherwise 0!
 end !
 =0
+---has the undesired property and value
+{ foo: 1, bar: 3 } -> templates
+  when <|{foo: <~|=1>}> do 1!
+  otherwise 0!
+end !
+=0
+---has not the undesired value
+{ foo: 1, bar: 3 } -> templates
+  when <|{foo: <~|=3>}> do 1!
+  otherwise 0!
+end !
+=1
 ---read property
 { foo: 1, bar: 3 } -> $(bar:) !
 =3

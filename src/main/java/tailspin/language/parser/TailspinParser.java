@@ -22,7 +22,7 @@ public class TailspinParser {
      comment rule (<|'--.*\\R'>)
      ignorable-text rule (<|WS|comment>+)
      definition rule <|ID> (<|ignorable-text> <|='is'> <|ignorable-text>) <|value-chain> (<|=';'> <|ignorable-text>?)
-     type-def rule <|ID> (<|ignorable-text> <|='requires'> <|ignorable-text> <|='<'> <|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
+     type-def rule <|ID> (<|ignorable-text> <|='requires'> <|ignorable-text> <|='<'>) <|='~'>? (<|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
      set-state rule (<|='@'>) <|ID>? <|lens-expression>? (<|ignorable-text>? <|='set'> <|ignorable-text>?) <|value-chain> (<|=';'> <|ignorable-text>?)
      
      terminated-chain rule <|value-chain> <|emit|sink|accumulator-state>
@@ -65,7 +65,7 @@ public class TailspinParser {
      templates-call rule <|ID>
      inline-templates-call rule (<|='templates'> <|ignorable-text>) <|templates-body>  (<|='end'> <|ignorable-text>?)
      templates rule (name is <|ID>; <|ignorable-text>) <|='templates'|='source'|='sink'> (<|ignorable-text>) <|templates-body>  (<|='end'> <|ignorable-text>) <|=$name>
-     filter rule (<|='if'> <|ignorable-text>? <|='<'> <|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
+     filter rule (<|='if'> <|ignorable-text>? <|='<'>) <|='~'>? (<|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
      stream rule <|='...'> (<|ignorable-text>?)
      
      templates-body rule <|with-block|matchers>
@@ -74,9 +74,9 @@ public class TailspinParser {
      matchers rule <|match-template>+
      match-template rule <|when-do|otherwise> <|statement>+
      otherwise rule <|='otherwise'> (<|ignorable-text>?)
-     when-do rule (<|='when'> <|ignorable-text>?) <|type-bound>? (<|='<'> <|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>? <|='do'> <|ignorable-text>?)
+     when-do rule (<|='when'> <|ignorable-text>?) <|type-bound>? (<|='<'>) <|='~'>? (<|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>? <|='do'> <|ignorable-text>?)
      membrane rule (<|='|'>) <|literal-match|type-match>? (<|ignorable-text>?) <|condition>*
-     condition rule (<|='?('> <|ignorable-text>?) <|value-chain> (<|='matches'> <|ignorable-text> <|='<'> <|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>? <|=')'> <|ignorable-text>?)
+     condition rule (<|='?('> <|ignorable-text>?) <|value-chain> (<|='matches'> <|ignorable-text> <|='<'>) <|='~'>? (<|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>? <|=')'> <|ignorable-text>?)
      type-bound rule (<|='´'>) <|membrane>+ (<|='´'> <|ignorable-text>?)
 
      literal-match rule (<|='='> <|ignorable-text>?) <|source>
@@ -89,7 +89,7 @@ public class TailspinParser {
      key-matchers rule (<|='{'> <|ignorable-text>?) <|key-matcher> <|additional-key-matcher>*
      key-matcher rule <|='?'>? <|ID> (<|=':'> <|ignorable-text>?) <|content-matcher>?
      additional-key-matcher rule (<|=','> <|ignorable-text>?) <|key-matcher>
-     content-matcher rule (<|='<'> <|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
+     content-matcher rule (<|='<'>) <|='~'>? (<|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
      measure-type-match rule <|='""'|unit> (<|ignorable-text>?)
      
      arithmetic-expression rule <|addition|multiplication|numeric-literal|square-root|negated-term>

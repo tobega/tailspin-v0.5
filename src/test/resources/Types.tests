@@ -91,6 +91,14 @@ val requires <|{}>
 val requires <|..>
 { val: { foo: 4 } } !
 =*TypeError
+---define negated type
+val requires <~|..3>
+4 -> { val: $ } !
+={ val: 4 }
+---define negated type is checked
+val requires <~|..5>
+{ val: 4 } !
+=*TypeError
 ---defined type depends on value in defining scope
 top is 5;
 foo requires <|..$top>

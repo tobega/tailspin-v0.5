@@ -34,6 +34,7 @@ import tailspin.language.nodes.matchers.CallDefinedTypeMatcherNode;
 import tailspin.language.nodes.matchers.ConditionNode;
 import tailspin.language.nodes.matchers.EqualityMatcherNode;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
+import tailspin.language.nodes.matchers.InvertNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.matchers.MeasureTypeMatcher;
 import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
@@ -458,6 +459,10 @@ public class NodeFactory {
       membraneSpecs = l;
     } else {
       membraneSpecs = List.of(membranes);
+    }
+    if (membraneSpecs.getFirst().equals("~")) {
+      return InvertNode.create(visitAlternativeMembranes(typeBound,
+          membraneSpecs.subList(1, membraneSpecs.size())));
     }
     for (Object membraneSpec : membraneSpecs) {
       if (membraneSpec instanceof ParseNode(String m, Object conditions) && m.equals("membrane")) {

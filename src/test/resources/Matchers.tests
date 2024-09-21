@@ -61,3 +61,18 @@ end !
   when <|{ foo: <|[](1..)>}> do 1 !
 end !
 =1
+---invert if true
+3 -> if <~|..2> !
+=3
+---invert when false
+3 -> templates
+  when <~|..4> do 0 !
+  otherwise $ !
+end !
+=3
+---invert condition false
+3 -> templates
+  when <|?($ - 1 matches <~|..4>)> do 0 !
+  otherwise $ !
+end !
+=3
