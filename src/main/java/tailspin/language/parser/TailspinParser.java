@@ -16,90 +16,92 @@ import tailspin.language.parser.composer.SubComposerFactory;
 public class TailspinParser {
 
   static final String tailspinSyntax = """
-     program rule (<|WS>?) <|statement>+ (<|WS>?)
+     program rule (<|ignorable-text>?) <|statement>+
      
-     statement rule <|definition|set-state|templates|type-def|terminated-chain> (<|WS>?)
-     definition rule <|ID> (<|WS> <|='is'> <|WS>) <|value-chain> (<|=';'> <|WS>?)
-     type-def rule <|ID> (<|WS> <|='requires'> <|WS> <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>?)
-     set-state rule (<|='@'>) <|ID>? <|lens-expression>? (<|WS>? <|='set'> <|WS>?) <|value-chain> (<|=';'> <|WS>?)
+     statement rule <|definition|set-state|templates|type-def|terminated-chain> (<|ignorable-text>?)
+     comment rule (<|WS>? <|'--.*\\R'> <|WS>?)
+     ignorable-text rule (<|WS|comment>+)
+     definition rule <|ID> (<|ignorable-text> <|='is'> <|ignorable-text>) <|value-chain> (<|=';'> <|ignorable-text>?)
+     type-def rule <|ID> (<|ignorable-text> <|='requires'> <|ignorable-text> <|='<'> <|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
+     set-state rule (<|='@'>) <|ID>? <|lens-expression>? (<|ignorable-text>? <|='set'> <|ignorable-text>?) <|value-chain> (<|=';'> <|ignorable-text>?)
      
      terminated-chain rule <|value-chain> <|emit|sink|accumulator-state>
-     emit rule (<|WS>? <|='!'>)
-     sink rule (<|WS>? <|='->'> <|WS>? <|='!'> <|WS>?) <|='VOID'|='#'|templates-call>
-     accumulator-state rule (<|WS>? <|='->'> <|WS>?) <|set-state>
+     emit rule (<|ignorable-text>? <|='!'>)
+     sink rule (<|ignorable-text>? <|='->'> <|ignorable-text>? <|='!'> <|ignorable-text>?) <|='VOID'|='#'|templates-call>
+     accumulator-state rule (<|ignorable-text>? <|='->'> <|ignorable-text>?) <|set-state>
      
      value-chain rule <|range|source> <|transform|stream>*
-     source rule <|arithmetic-expression|reference|single-value-chain|array-literal|structure-literal|string-literal> (<|WS>?)
+     source rule <|arithmetic-expression|reference|single-value-chain|array-literal|structure-literal|string-literal> (<|ignorable-text>?)
      reference rule <|='$'> <|='@'>? <|ID>? <|lens-expression>? <|message-send>?
-     single-value-chain rule (<|='('> <|WS>?) <|value-chain> (<|WS>? <|=')'>)
-     range rule <|range-bound> <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound> <|stride>? (<|WS>?)
-     stride rule (<|=':'> <|WS>?) <|range-bound> (<|WS>?)
-     string-literal rule <|=''''> <|string-part|=''''''|='$$'|unicode-bytes|codepoint|interpolate>* (<|=''''> <|WS>?)
+     single-value-chain rule (<|='('> <|ignorable-text>?) <|value-chain> (<|ignorable-text>? <|=')'>)
+     range rule <|range-bound> <|='~'>? <|='..'> <|='~'>? (<|ignorable-text>?) <|range-bound> <|stride>? (<|ignorable-text>?)
+     stride rule (<|=':'> <|ignorable-text>?) <|range-bound> (<|ignorable-text>?)
+     string-literal rule <|=''''> <|string-part|=''''''|='$$'|unicode-bytes|codepoint|interpolate>* (<|=''''> <|ignorable-text>?)
      string-part rule <|'[^''$]+'>
      unicode-bytes rule (<|='$#U+'>) <|'[0-9a-fA-F]+'> (<|=';'>)
-     codepoint rule (<|='$#'> <|WS>?) <|value-chain> (<|=';'>)
-     interpolate rule (<|='$:'|'(?=\\$)'> <|WS>?) <|value-chain> (<|=';'>)
+     codepoint rule (<|='$#'> <|ignorable-text>?) <|value-chain> (<|=';'>)
+     interpolate rule (<|='$:'|'(?=\\$)'> <|ignorable-text>?) <|value-chain> (<|=';'>)
      
-     lens-expression rule (<|='('> <|WS>?) <|lens-dimension>  <|lens-transform>? (<|=')'>)
-     lens-transform rule (<|=';'> <|WS>?) <|transform>+
-     lens-dimension rule <|lens-range|source|key> (<|WS>?) <|index-variable>? <|next-lens-dimension>? (<|WS>?)
-     index-variable rule (<|='as'> <|WS>) <|ID> (<|WS>?)
-     key rule <|ID> (<|=':'> <|WS>?)
-     next-lens-dimension rule (<|WS>? <|=';'> <|WS>?) <|lens-dimension>
-     lens-range rule <|range-bound>? <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound>? <|stride>?
+     lens-expression rule (<|='('> <|ignorable-text>?) <|lens-dimension>  <|lens-transform>? (<|=')'>)
+     lens-transform rule (<|=';'> <|ignorable-text>?) <|transform>+
+     lens-dimension rule <|lens-range|source|key> (<|ignorable-text>?) <|index-variable>? <|next-lens-dimension>? (<|ignorable-text>?)
+     index-variable rule (<|='as'> <|ignorable-text>) <|ID> (<|ignorable-text>?)
+     key rule <|ID> (<|=':'> <|ignorable-text>?)
+     next-lens-dimension rule (<|ignorable-text>? <|=';'> <|ignorable-text>?) <|lens-dimension>
+     lens-range rule <|range-bound>? <|='~'>? <|='..'> <|='~'>? (<|ignorable-text>?) <|range-bound>? <|stride>?
      
      message-send rule (<|='::'>) <|ID>
 
-     array-literal rule <|='['|array-contents>? (<|WS>? <|=']'> <|WS>?)
-     array-contents rule (<|='['> <|WS>?) <|value-chain> (<|WS>?) <|more-array-contents>*
-     more-array-contents rule (<|=','> <|WS>?) <|value-chain> (<|WS>?)
+     array-literal rule <|='['|array-contents>? (<|ignorable-text>? <|=']'> <|ignorable-text>?)
+     array-contents rule (<|='['> <|ignorable-text>?) <|value-chain> (<|ignorable-text>?) <|more-array-contents>*
+     more-array-contents rule (<|=','> <|ignorable-text>?) <|value-chain> (<|ignorable-text>?)
      
-     structure-literal rule <|='{'|key-values> (<|WS>? <|='}'> <|WS>?)
-     key-values rule (<|='{'> <|WS>?) <|key-value|value-chain> <|additional-key-value>*
-     key-value rule <|ID> (<|=':'> <|WS>?) <|value-chain>
-     additional-key-value rule (<|=','> <|WS>?) <|key-value|value-chain>
+     structure-literal rule <|='{'|key-values> (<|ignorable-text>? <|='}'> <|ignorable-text>?)
+     key-values rule (<|='{'> <|ignorable-text>?) <|key-value|value-chain> <|additional-key-value>*
+     key-value rule <|ID> (<|=':'> <|ignorable-text>?) <|value-chain>
+     additional-key-value rule (<|=','> <|ignorable-text>?) <|key-value|value-chain>
 
-     transform rule (<|='->'> <|WS>?) <|source|range|inline-templates-call|='#'|templates-call|filter> (<|WS>?)
+     transform rule (<|='->'> <|ignorable-text>?) <|source|range|inline-templates-call|='#'|templates-call|filter> (<|ignorable-text>?)
      templates-call rule <|ID>
-     inline-templates-call rule (<|='templates'> <|WS>) <|templates-body>  (<|='end'> <|WS>?)
-     templates rule (name is <|ID>; <|WS>) <|='templates'|='source'|='sink'> (<|WS>) <|templates-body>  (<|='end'> <|WS>) <|=$name>
-     filter rule (<|='if'> <|WS>? <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>?)
-     stream rule <|='...'> (<|WS>?)
+     inline-templates-call rule (<|='templates'> <|ignorable-text>) <|templates-body>  (<|='end'> <|ignorable-text>?)
+     templates rule (name is <|ID>; <|ignorable-text>) <|='templates'|='source'|='sink'> (<|ignorable-text>) <|templates-body>  (<|='end'> <|ignorable-text>) <|=$name>
+     filter rule (<|='if'> <|ignorable-text>? <|='<'> <|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
+     stream rule <|='...'> (<|ignorable-text>?)
      
      templates-body rule <|with-block|matchers>
      with-block rule <|statement>+ <|matchers>?
      
      matchers rule <|match-template>+
      match-template rule <|when-do|otherwise> <|statement>+
-     otherwise rule <|='otherwise'> (<|WS>?)
-     when-do rule (<|='when'> <|WS>?) <|type-bound>? (<|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|='do'> <|WS>?)
-     membrane rule (<|='|'>) <|literal-match|type-match>? (<|WS>?) <|condition>*
-     condition rule (<|='?('> <|WS>?) <|value-chain> (<|='matches'> <|WS> <|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>? <|=')'> <|WS>?)
-     type-bound rule (<|='´'>) <|membrane>+ (<|='´'> <|WS>?)
+     otherwise rule <|='otherwise'> (<|ignorable-text>?)
+     when-do rule (<|='when'> <|ignorable-text>?) <|type-bound>? (<|='<'> <|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>? <|='do'> <|ignorable-text>?)
+     membrane rule (<|='|'>) <|literal-match|type-match>? (<|ignorable-text>?) <|condition>*
+     condition rule (<|='?('> <|ignorable-text>?) <|value-chain> (<|='matches'> <|ignorable-text> <|='<'> <|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>? <|=')'> <|ignorable-text>?)
+     type-bound rule (<|='´'>) <|membrane>+ (<|='´'> <|ignorable-text>?)
 
-     literal-match rule (<|='='> <|WS>?) <|source>
+     literal-match rule (<|='='> <|ignorable-text>?) <|source>
      type-match rule <|range-match|array-match|structure-match|measure-type-match>
-     range-match rule <|range-bound>? <|='~'>? <|='..'> <|='~'>? (<|WS>?) <|range-bound>?
+     range-match rule <|range-bound>? <|='~'>? <|='..'> <|='~'>? (<|ignorable-text>?) <|range-bound>?
      range-bound rule <|arithmetic-expression|reference>
-     array-match rule <|='['> (<|WS>?) (<|=']'> <|WS>?) <|array-length-condition>?
-     array-length-condition rule (<|='('> <|WS>?) <|literal-match|range-match> (<|WS>? <|=')'> <|WS>?)
-     structure-match rule <|='{'|key-matchers> (<|WS>?) <|='VOID'>? (<|WS>? <|='}'> <|WS>?)
-     key-matchers rule (<|='{'> <|WS>?) <|key-matcher> <|additional-key-matcher>*
-     key-matcher rule <|='?'>? <|ID> (<|=':'> <|WS>?) <|content-matcher>?
-     additional-key-matcher rule (<|=','> <|WS>?) <|key-matcher>
-     content-matcher rule (<|='<'> <|WS>?) <|membrane>+ (<|='>'> <|WS>?)
-     measure-type-match rule <|='""'|unit> (<|WS>?)
+     array-match rule <|='['> (<|ignorable-text>?) (<|=']'> <|ignorable-text>?) <|array-length-condition>?
+     array-length-condition rule (<|='('> <|ignorable-text>?) <|literal-match|range-match> (<|ignorable-text>? <|=')'> <|ignorable-text>?)
+     structure-match rule <|='{'|key-matchers> (<|ignorable-text>?) <|='VOID'>? (<|ignorable-text>? <|='}'> <|ignorable-text>?)
+     key-matchers rule (<|='{'> <|ignorable-text>?) <|key-matcher> <|additional-key-matcher>*
+     key-matcher rule <|='?'>? <|ID> (<|=':'> <|ignorable-text>?) <|content-matcher>?
+     additional-key-matcher rule (<|=','> <|ignorable-text>?) <|key-matcher>
+     content-matcher rule (<|='<'> <|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
+     measure-type-match rule <|='""'|unit> (<|ignorable-text>?)
      
      arithmetic-expression rule <|addition|multiplication|numeric-literal|square-root>
-     addition rule <|addition|multiplication|term> <|'[+-]'> (<|WS>?) <|multiplication|term> (<|WS>?)
-     multiplication rule <|multiplication|term> <|'\\*|/|~/|mod'> (<|WS>?) <|term> (<|WS>?)
+     addition rule <|addition|multiplication|term> <|'[+-]'> (<|ignorable-text>?) <|multiplication|term> (<|ignorable-text>?)
+     multiplication rule <|multiplication|term> <|'\\*|/|~/|mod'> (<|ignorable-text>?) <|term> (<|ignorable-text>?)
      square-root rule (<|='√'>) <|term>
      numeric-literal rule <|INT|NUM> <|='"1"'|unit>?
-     term rule <|numeric-literal|single-value-chain|reference|square-root> (<|WS>?)
+     term rule <|numeric-literal|single-value-chain|reference|square-root> (<|ignorable-text>?)
      
-     unit rule (<|='"'>) <|measure-product>+ <|measure-denominator>? (<|='"'> <|WS>?)
-     measure-product rule <|ID> (<|WS>?)
-     measure-denominator rule (<|='/'> <|WS>?) <|measure-product>+
+     unit rule (<|='"'>) <|measure-product>+ <|measure-denominator>? (<|='"'> <|ignorable-text>?)
+     measure-product rule <|ID> (<|ignorable-text>?)
+     measure-denominator rule (<|='/'> <|ignorable-text>?) <|measure-product>+
      """;
 
   static final Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(tailspinSyntax);
