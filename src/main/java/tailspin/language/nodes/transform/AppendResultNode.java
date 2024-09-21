@@ -64,14 +64,14 @@ public class AppendResultNode extends Node {
       return previous;
     }
 
-    @Specialization
+    @Specialization(guards = "result != null")
     @SuppressWarnings("unchecked")
     ArrayList<?> doAppend(ArrayList<?> previous, Object result) {
       castExact(previous, ArrayList.class).add(result);
       return previous;
     }
 
-    @Specialization
+    @Specialization(guards = "previous != null")
     @SuppressWarnings("unchecked")
     ArrayList<?> doPrepend(Object previous, ArrayList<?> result) {
       castExact(result, ArrayList.class).addFirst(previous);
