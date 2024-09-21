@@ -126,3 +126,21 @@ end bar
     otherwise $ !
   end !
 =5
+---access outer defined value from matcher-only templates
+foo templates
+  bar is $;
+  1 -> templates
+    when <|..1> do $bar!
+  end !
+end foo
+5 -> foo !
+=5
+---access outer state from matcher-only templates
+foo templates
+  @ set $;
+  1 -> templates
+    when <|..1> do $@foo!
+  end !
+end foo
+5 -> foo !
+=5

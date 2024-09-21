@@ -150,8 +150,8 @@ public class Scope {
   }
 
   public int accessState(String scopeId) {
-    if (block != null) {
-      matcherTemplates.setNeedsScope();
+    if (block != null || !hasBlock) {
+      getOrCreateMatcherTemplates().setNeedsScope();
     }
     if (scopeId == null || scopeId.equals(this.scopeId)) {
       return 0;
