@@ -7,6 +7,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import java.util.ArrayList;
+import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.GetContextFrameNode;
 import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
@@ -95,6 +96,11 @@ public abstract class ArrayReadNode extends ValueNode {
   protected Object doSimpleRead(VirtualFrame frame, TailspinArray array,
       @Cached DoArrayReadNode arrayReadNode) {
     return arrayReadNode.executeArrayRead(array, lensNode.executeGeneric(frame), indexVar);
+  }
+
+  @Specialization
+  protected Object doIllegal(VirtualFrame frame, Object notArray) {
+    throw new TypeError("Cannot read " + notArray + " by array lens");
   }
 
   public static ArrayReadNode create(ValueNode array, ValueNode lens, Reference indexVar) {

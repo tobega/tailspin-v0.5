@@ -133,3 +133,9 @@ $i !
 ---transform to nothing
 [1..5] -> $(..; -> if <|=-1>) !
 =[]
+---Number is not array
+5 -> $(1) !
+=*TypeError
+---Stream single value
+[5]... !
+=5

@@ -52,7 +52,9 @@ public class TailspinArray implements TruffleObject {
     arrayElements[i] = value;
   }
 
-  public ArrayList<Object> stream() {
+  public Object stream() {
+    if (length == 0) return null;
+    if (length == 1) return arrayElements[0];
     return new ArrayList<>(Arrays.asList(arrayElements).subList(0, (int) length));
   }
 
