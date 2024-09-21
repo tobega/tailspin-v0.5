@@ -187,3 +187,15 @@ end !
 ---exact big number divide gives integer
 2000000000000000000020000000000000000000 / 20000000000000000000 !
 =100000000000000000001
+---negated reference
+5 -> -$ !
+=-5
+---negated parens
+-(2 + 3) !
+=-5
+---negated reference in expression
+5 -> 2 * -$ !
+=-10
+---negated parens
+2 * -(2 + 3) !
+=-10

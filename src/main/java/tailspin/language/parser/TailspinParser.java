@@ -19,7 +19,7 @@ public class TailspinParser {
      program rule (<|ignorable-text>?) <|statement>+
      
      statement rule <|definition|set-state|templates|type-def|terminated-chain> (<|ignorable-text>?)
-     comment rule (<|WS>? <|'--.*\\R'> <|WS>?)
+     comment rule (<|'--.*\\R'>)
      ignorable-text rule (<|WS|comment>+)
      definition rule <|ID> (<|ignorable-text> <|='is'> <|ignorable-text>) <|value-chain> (<|=';'> <|ignorable-text>?)
      type-def rule <|ID> (<|ignorable-text> <|='requires'> <|ignorable-text> <|='<'> <|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
@@ -92,12 +92,13 @@ public class TailspinParser {
      content-matcher rule (<|='<'> <|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
      measure-type-match rule <|='""'|unit> (<|ignorable-text>?)
      
-     arithmetic-expression rule <|addition|multiplication|numeric-literal|square-root>
+     arithmetic-expression rule <|addition|multiplication|numeric-literal|square-root|negated-term>
      addition rule <|addition|multiplication|term> <|'[+-]'> (<|ignorable-text>?) <|multiplication|term> (<|ignorable-text>?)
      multiplication rule <|multiplication|term> <|'\\*|/|~/|mod'> (<|ignorable-text>?) <|term> (<|ignorable-text>?)
      square-root rule (<|='√'>) <|term>
      numeric-literal rule <|INT|NUM> <|='"1"'|unit>?
-     term rule <|numeric-literal|single-value-chain|reference|square-root> (<|ignorable-text>?)
+     term rule <|numeric-literal|negated-term|single-value-chain|reference|square-root> (<|ignorable-text>?)
+     negated-term rule (<|='-'>) <|single-value-chain|reference|square-root> (<|ignorable-text>?)
      
      unit rule (<|='"'>) <|measure-product>+ <|measure-denominator>? (<|='"'> <|ignorable-text>?)
      measure-product rule <|ID> (<|ignorable-text>?)

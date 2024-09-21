@@ -171,6 +171,10 @@ public class BigNumber implements TruffleObject, Comparable<BigNumber> {
     return new BigNumber(value.mod(right.value.abs()));
   }
 
+  public BigNumber negate() {
+    return new BigNumber(value.negate());
+  }
+
   @Override
   public int hashCode() {
     return value.hashCode();

@@ -46,6 +46,7 @@ import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.numeric.MathModNode;
 import tailspin.language.nodes.numeric.MeasureLiteral;
 import tailspin.language.nodes.numeric.MultiplyNode;
+import tailspin.language.nodes.numeric.NegateNode;
 import tailspin.language.nodes.numeric.SciNumLiteral;
 import tailspin.language.nodes.numeric.SquareRootNode;
 import tailspin.language.nodes.numeric.SubtractNode;
@@ -924,6 +925,7 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode(String ignored, ParseNode square)) when name.equals("square-root") -> SquareRootNode.create(visitTerm(square));
       // We also handle term here just to simplify the recursive expression parsing
       case ParseNode(String name, ParseNode term) when name.equals("term") -> visitTerm(term);
+      case ParseNode(String name, ParseNode term) when name.equals("negated-term") -> NegateNode.create(visitTerm(term));
       default -> throw new IllegalStateException("Unexpected value: " + ae);
     };
   }
@@ -957,6 +959,7 @@ public class NodeFactory {
   private ValueNode visitTerm(ParseNode term) {
     return switch (term) {
       case ParseNode(String name, Object literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
+      case ParseNode(String name, ParseNode negated) when name.equals("negated-term") -> NegateNode.create(visitTerm(negated));
       case ParseNode(String name, Object ref) when name.equals("reference") -> asSingleValueNode(visitReference(ref));
       case ParseNode(String name, ParseNode vc) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc));
       case ParseNode(String name, ParseNode(String ignored, ParseNode square)) when name.equals("square-root") -> SquareRootNode.create(visitTerm(square));

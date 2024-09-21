@@ -55,6 +55,10 @@ public class Rational implements TruffleObject, Comparable<Rational> {
     return new Rational(numerator.multiply(modulus.denominator).mod(modulus.numerator.multiply(denominator).abs()), commonDenominator);
   }
 
+  public Rational negate() {
+    return new Rational(numerator.negate(), denominator);
+  }
+
   @Override
   public boolean equals(Object other) {
     if (other instanceof Rational r) {
