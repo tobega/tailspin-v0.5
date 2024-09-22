@@ -144,3 +144,18 @@ foo templates
 end foo
 5 -> foo !
 =5
+---unused matcher local variable (this should really throw for being unused)
+3 -> templates
+  $ -> # !
+  otherwise
+    n is $;
+    1 !
+end !
+=1
+---matcher-only local variable
+3 -> templates
+  otherwise
+    n is $;
+    $n - 1 !
+end !
+=2
