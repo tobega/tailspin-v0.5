@@ -159,3 +159,12 @@ end !
     $n - 1 !
 end !
 =2
+---temporary matcher block variables
+3 -> templates
+  when <|5..> do
+    n is $;
+    $ !
+  otherwise
+    $n !
+end !
+=*IllegalStateException

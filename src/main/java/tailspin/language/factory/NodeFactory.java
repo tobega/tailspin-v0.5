@@ -432,6 +432,7 @@ public class NodeFactory {
   private MatchTemplateNode visitMatchTemplate(List<?> matchTemplate) {
     MatcherNode matcherNode = visitMatcher((ParseNode) matchTemplate.getFirst());
     StatementNode block = visitBlock(normalizeValues(matchTemplate.subList(1, matchTemplate.size())));
+    currentScope().deleteTemporaryValues();
     return MatchTemplateNode.create(matcherNode, block);
   }
 

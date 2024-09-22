@@ -112,6 +112,7 @@ public class Scope {
     definitions.put(identifier, defined);
     if (block != null || !hasBlock) {
       // TODO: We should be able to have local matcher values
+      markTemporary(identifier);
       getOrCreateMatcherTemplates().setNeedsScope();
       return defined.atLevel(0);
     }
