@@ -2,6 +2,7 @@ package tailspin.language.runtime;
 
 import com.oracle.truffle.api.strings.TruffleString;
 import com.oracle.truffle.api.strings.TruffleString.FromCodePointNode;
+import com.oracle.truffle.api.strings.TruffleString.ToJavaStringNode;
 import com.oracle.truffle.api.strings.TruffleStringBuilder;
 import com.oracle.truffle.api.strings.TruffleStringIterator;
 
@@ -36,5 +37,9 @@ public final class TailspinStrings {
 
   public static TruffleString fromCodepoint(int codepoint, FromCodePointNode fromCodePointNode) {
     return fromCodePointNode.execute(codepoint, TAILSPIN_STRING_ENCODING);
+  }
+
+  public static String toJavaString(TruffleString regex, ToJavaStringNode toJavaStringNode) {
+    return toJavaStringNode.execute(regex);
   }
 }

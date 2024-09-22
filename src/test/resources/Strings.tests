@@ -47,3 +47,15 @@ sp is 32;
 ---keep together compound symbols
 ['$#U+D83D;$#U+DC68;$#U+200D;$#U+D83D;$#U+DC69;$#U+200D;$#U+D83D;$#U+DC66;'...] -> $::length !
 =1
+---regex match
+'abcd' -> if <|'a.*'> !
+=abcd
+---is a string
+'abcd' -> if <|''> !
+=abcd
+---is not a string
+5 -> templates
+   when <|''> do 0 !
+   otherwise 1 !
+end !
+=1

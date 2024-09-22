@@ -38,6 +38,8 @@ import tailspin.language.nodes.matchers.InvertNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.matchers.MeasureTypeMatcher;
 import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
+import tailspin.language.nodes.matchers.RegexMatcherNode;
+import tailspin.language.nodes.matchers.StringTypeMatcherNode;
 import tailspin.language.nodes.matchers.StructureKeyMatcherNode;
 import tailspin.language.nodes.matchers.StructureTypeMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
@@ -591,6 +593,12 @@ public class NodeFactory {
           yield List.of(MeasureTypeMatcher.create(null));
         }
         yield List.of(MeasureTypeMatcher.create(visitUnit(typeMatch.content())));
+      }
+      case "string-literal" -> {
+        if (typeMatch.content().equals("'")) {
+          yield List.of(StringTypeMatcherNode.create());
+        }
+        yield List.of(RegexMatcherNode.create(visitStringLiteral(typeMatch.content())));
       }
       default -> throw new IllegalStateException("Unexpected value: " + typeMatch);
     };
