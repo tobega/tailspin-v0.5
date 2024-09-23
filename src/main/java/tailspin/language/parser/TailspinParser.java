@@ -33,7 +33,7 @@ public class TailspinParser {
      value-chain rule <|range|source> <|transform|stream>*
      source rule <|arithmetic-expression|reference|single-value-chain|array-literal|structure-literal|string-literal> (<|ignorable-text>?)
      reference rule <|='$'> <|='@'>? <|ID>? <|lens-expression>? <|message-send>?
-     single-value-chain rule (<|='('> <|ignorable-text>?) <|value-chain> (<|ignorable-text>? <|=')'>)
+     single-value-chain rule (<|='('> <|ignorable-text>?) <|value-chain> (<|ignorable-text>? <|=')'>) <|='"1"'|unit>?
      range rule <|range-bound> <|='~'>? <|='..'> <|='~'>? (<|ignorable-text>?) <|range-bound> <|stride>? (<|ignorable-text>?)
      stride rule (<|=':'> <|ignorable-text>?) <|range-bound> (<|ignorable-text>?)
      string-literal rule <|=''''> <|string-part|=''''''|='$$'|unicode-bytes|codepoint|interpolate>* (<|=''''> <|ignorable-text>?)

@@ -97,3 +97,12 @@ end !
   otherwise 0 !
 end !
 =0
+---cast measure expression
+(5"N" * 3"m")"J" !
+=15"J"
+---cast measure subtract
+(5"N" - 3"m")"J" !
+=2"J"
+---cast measure all operators
+(√4"a" + 3"b" - 2"c" / 1"d" * 1"e" ~/ 5"f" + 2"g" mod 3"h" - 2"i")"j" !
+=5.00000e0"j"

@@ -27,9 +27,12 @@ public abstract class MultiplyNode extends ValueNode {
   @Child @Executed
   protected ValueNode rightNode;
 
-  MultiplyNode(ValueNode leftNode, ValueNode rightNode) {
+  protected final boolean isUntypedRegion;
+
+  MultiplyNode(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
     this.leftNode = leftNode;
     this.rightNode = rightNode;
+    this.isUntypedRegion = isUntypedRegion;
   }
 
   @GenerateInline
@@ -94,14 +97,32 @@ public abstract class MultiplyNode extends ValueNode {
     return new Measure(doMultiplyNode.executeMultiply(frame, this, left.value(), right.value()), right.unit());
   }
 
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasures(VirtualFrame frame, Measure left, Measure right,
+      @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
+    return doMultiplyNode.executeMultiply(frame, this, left.value(), right.value());
+  }
+
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasureRight(VirtualFrame frame, Object left, Measure right,
+      @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
+    return doMultiplyNode.executeMultiply(frame, this, left, right.value());
+  }
+
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasureLeft(VirtualFrame frame, Measure left, Object right,
+      @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
+    return doMultiplyNode.executeMultiply(frame, this, left.value(), right);
+  }
+
   @Specialization
-  protected Object doUntyped(VirtualFrame frame, Object left, Object right,
+  protected Object doOther(VirtualFrame frame, Object left, Object right,
       @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
     return doMultiplyNode.executeMultiply(frame, this, left, right);
   }
 
-  public static MultiplyNode create(ValueNode leftNode, ValueNode rightNode) {
-    return MultiplyNodeGen.create(leftNode, rightNode);
+  public static MultiplyNode create(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
+    return MultiplyNodeGen.create(leftNode, rightNode, isUntypedRegion);
   }
 
   @Override

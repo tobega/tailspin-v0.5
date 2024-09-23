@@ -643,6 +643,14 @@ public class NodeFactory {
       case ParseNode(String name, Object ref) when name.equals("reference") -> visitReference(ref);
       case ParseNode(String name, ParseNode literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
       case ParseNode(String name, ParseNode vc) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc));
+      case ParseNode(String name, List<?> cast) when name.equals("single-value-chain") -> {
+        ParseNode vc = (ParseNode) cast.getFirst();
+        Object unit = visitUnit(cast.getLast());
+        currentScope().setUntypedArithmetic(true);
+        ValueNode value = asSingleValueNode(visitValueChain(vc));
+        currentScope().setUntypedArithmetic(false);
+        yield MeasureLiteral.create(value, unit);
+      }
       case ParseNode(String name, Object contents) when name.equals("array-literal") -> visitArrayLiteral(contents);
       case ParseNode(String name, Object contents) when name.equals("structure-literal") -> visitStructureLiteral(contents);
       case ParseNode(String name, Object contents) when name.equals("string-literal") -> visitStringLiteral(contents);
@@ -936,7 +944,7 @@ public class NodeFactory {
       case ParseNode(String name, Object literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
       case ParseNode(String name, List<?> addition) when name.equals("addition") -> visitAddition(addition);
       case ParseNode(String name, List<?> multiplication) when name.equals("multiplication") -> visitMultiplication(multiplication);
-      case ParseNode(String name, ParseNode(String ignored, ParseNode square)) when name.equals("square-root") -> SquareRootNode.create(visitTerm(square));
+      case ParseNode(String name, ParseNode(String ignored, ParseNode square)) when name.equals("square-root") -> SquareRootNode.create(visitTerm(square), currentScope().isUntypedRegion());
       // We also handle term here just to simplify the recursive expression parsing
       case ParseNode(String name, ParseNode term) when name.equals("term") -> visitTerm(term);
       case ParseNode(String name, ParseNode term) when name.equals("negated-term") -> NegateNode.create(visitTerm(term));
@@ -948,9 +956,9 @@ public class NodeFactory {
     ValueNode left = visitArithmeticExpression((ParseNode) addition.getFirst());
     ValueNode right = visitArithmeticExpression((ParseNode) addition.getLast());
     if(addition.get(1).equals("+")) {
-      return AddNode.create(left, right);
+      return AddNode.create(left, right, currentScope().isUntypedRegion());
     } else if(addition.get(1).equals("-")) {
-      return SubtractNode.create(left, right);
+      return SubtractNode.create(left, right, currentScope().isUntypedRegion());
     }
     throw new IllegalStateException("Unexpected value: " + addition);
   }
@@ -959,13 +967,13 @@ public class NodeFactory {
     ValueNode left = visitArithmeticExpression((ParseNode) multiplication.getFirst());
     ValueNode right = visitArithmeticExpression((ParseNode) multiplication.getLast());
     if(multiplication.get(1).equals("*")) {
-      return MultiplyNode.create(left, right);
+      return MultiplyNode.create(left, right, currentScope().isUntypedRegion());
     } else if(multiplication.get(1).equals("/")) {
-      return DivideNode.create(left, right);
+      return DivideNode.create(left, right, currentScope().isUntypedRegion());
     } else if(multiplication.get(1).equals("~/")) {
-      return TruncateDivideNode.create(left, right);
+      return TruncateDivideNode.create(left, right, currentScope().isUntypedRegion());
     } else if(multiplication.get(1).equals("mod")) {
-      return MathModNode.create(left, right);
+      return MathModNode.create(left, right, currentScope().isUntypedRegion());
     }
     throw new IllegalStateException("Unexpected value: " + multiplication);
   }
@@ -976,7 +984,7 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode negated) when name.equals("negated-term") -> NegateNode.create(visitTerm(negated));
       case ParseNode(String name, Object ref) when name.equals("reference") -> asSingleValueNode(visitReference(ref));
       case ParseNode(String name, ParseNode vc) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc));
-      case ParseNode(String name, ParseNode(String ignored, ParseNode square)) when name.equals("square-root") -> SquareRootNode.create(visitTerm(square));
+      case ParseNode(String name, ParseNode(String ignored, ParseNode square)) when name.equals("square-root") -> SquareRootNode.create(visitTerm(square), currentScope().isUntypedRegion());
       default -> throw new IllegalStateException("Unexpected value: " + term);
     };
   }

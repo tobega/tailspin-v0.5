@@ -27,9 +27,12 @@ public abstract class MathModNode extends ValueNode {
   @Child @Executed
   protected ValueNode rightNode;
 
-  MathModNode(ValueNode leftNode, ValueNode rightNode) {
+  protected final boolean isUntypedRegion;
+
+  MathModNode(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
     this.leftNode = leftNode;
     this.rightNode = rightNode;
+    this.isUntypedRegion = isUntypedRegion;
   }
 
   @GenerateInline
@@ -84,14 +87,32 @@ public abstract class MathModNode extends ValueNode {
     return new Measure(doMathModNode.executeMathMod(frame, this, left.value(), right.value()), left.unit());
   }
 
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasures(VirtualFrame frame, Measure left, Measure right,
+      @Cached(inline = true) @Shared DoMathModNode doMathModNode) {
+    return doMathModNode.executeMathMod(frame, this, left.value(), right.value());
+  }
+
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasureRight(VirtualFrame frame, Object left, Measure right,
+      @Cached(inline = true) @Shared DoMathModNode doMathModNode) {
+    return doMathModNode.executeMathMod(frame, this, left, right.value());
+  }
+
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasureLeft(VirtualFrame frame, Measure left, Object right,
+      @Cached(inline = true) @Shared DoMathModNode doMathModNode) {
+    return doMathModNode.executeMathMod(frame, this, left.value(), right);
+  }
+
   @Specialization
-  protected Object doUntyped(VirtualFrame frame, Object left, Object right,
+  protected Object doOther(VirtualFrame frame, Object left, Object right,
       @Cached(inline = true) @Shared DoMathModNode doMathModNode) {
     return doMathModNode.executeMathMod(frame, this, left, right);
   }
 
-  public static MathModNode create(ValueNode leftNode, ValueNode rightNode) {
-    return MathModNodeGen.create(leftNode, rightNode);
+  public static MathModNode create(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
+    return MathModNodeGen.create(leftNode, rightNode, isUntypedRegion);
   }
 
   @Override

@@ -199,4 +199,13 @@ public class Scope {
     vocabularyTypes.put(key, type);
     return type;
   }
+
+  private boolean isUntypedRegion = false;
+  public void setUntypedArithmetic(boolean isUntypedRegion) {
+    this.isUntypedRegion = isUntypedRegion;
+  }
+
+  public boolean isUntypedRegion() {
+    return isUntypedRegion;
+  }
 }

@@ -34,12 +34,12 @@ public class TemplatesTest {
 
     ValueNode expr1 = AddNode.create(
         IntegerLiteral.create(5),
-        ReadContextValueNode.create(-1, CV_SLOT));
+        ReadContextValueNode.create(-1, CV_SLOT), false);
     StatementNode first = EmitNode.create(ResultAggregatingNode.create(expr1));
 
     ValueNode expr2 = AddNode.create(
         IntegerLiteral.create(7),
-        ReadContextValueNode.create(-1, CV_SLOT));
+        ReadContextValueNode.create(-1, CV_SLOT), false);
     StatementNode second = EmitNode.create(ResultAggregatingNode.create(expr2));
 
     CallTarget callTarget = TemplatesRootNode.create(fdb.build(), createScopeFdb().build(), BlockNode.create(List.of(first, second)));
@@ -92,7 +92,7 @@ public class TemplatesTest {
     // -> \($! 100 - $!\)
     BlockNode flatMapBlock = BlockNode.create(List.of(
         EmitNode.create(ResultAggregatingNode.create(ReadContextValueNode.create(-1, CV_SLOT))),
-        EmitNode.create(ResultAggregatingNode.create(SubtractNode.create(IntegerLiteral.create(100L), ReadContextValueNode.create(-1, CV_SLOT)))
+        EmitNode.create(ResultAggregatingNode.create(SubtractNode.create(IntegerLiteral.create(100L), ReadContextValueNode.create(-1, CV_SLOT), false))
         )
     ));
     flatMap.setCallTarget(TemplatesRootNode.create(fdb.build(), createScopeFdb().build(), flatMapBlock));

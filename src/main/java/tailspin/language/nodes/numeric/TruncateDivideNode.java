@@ -27,9 +27,12 @@ public abstract class TruncateDivideNode extends ValueNode {
   @Child @Executed
   protected ValueNode rightNode;
 
-  TruncateDivideNode(ValueNode leftNode, ValueNode rightNode) {
+  protected final boolean isUntypedRegion;
+
+  TruncateDivideNode(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
     this.leftNode = leftNode;
     this.rightNode = rightNode;
+    this.isUntypedRegion = isUntypedRegion;
   }
 
   @GenerateInline
@@ -88,14 +91,32 @@ public abstract class TruncateDivideNode extends ValueNode {
     return unit == Measure.SCALAR;
   }
 
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasures(VirtualFrame frame, Measure left, Measure right,
+      @Cached(inline = true) @Shared DoTruncateDivideNode doDivideNode) {
+    return doDivideNode.executeTruncateDivide(frame, this, left.value(), right.value());
+  }
+
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasureRight(VirtualFrame frame, Object left, Measure right,
+      @Cached(inline = true) @Shared DoTruncateDivideNode doDivideNode) {
+    return doDivideNode.executeTruncateDivide(frame, this, left, right.value());
+  }
+
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasureLeft(VirtualFrame frame, Measure left, Object right,
+      @Cached(inline = true) @Shared DoTruncateDivideNode doDivideNode) {
+    return doDivideNode.executeTruncateDivide(frame, this, left.value(), right);
+  }
+
   @Specialization
-  protected Object doUntyped(VirtualFrame frame, Object left, Object right,
+  protected Object doOther(VirtualFrame frame, Object left, Object right,
       @Cached(inline = true) @Shared DoTruncateDivideNode doTruncateDivideNode) {
     return doTruncateDivideNode.executeTruncateDivide(frame, this, left, right);
   }
 
-  public static TruncateDivideNode create(ValueNode leftNode, ValueNode rightNode) {
-    return TruncateDivideNodeGen.create(leftNode, rightNode);
+  public static TruncateDivideNode create(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
+    return TruncateDivideNodeGen.create(leftNode, rightNode, isUntypedRegion);
   }
 
   @Override

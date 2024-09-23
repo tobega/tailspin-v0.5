@@ -2,6 +2,7 @@ package tailspin.language.nodes.numeric;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.Executed;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -13,6 +14,7 @@ import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
+import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
 
@@ -21,8 +23,11 @@ public abstract class SquareRootNode extends ValueNode {
   @Child @Executed
   protected ValueNode squareNode;
 
-  SquareRootNode(ValueNode squareNode) {
+  protected final boolean isUntypedRegion;
+
+  SquareRootNode(ValueNode squareNode, boolean isUntypedRegion) {
     this.squareNode = squareNode;
+    this.isUntypedRegion = isUntypedRegion;
   }
 
   @GenerateInline
@@ -48,14 +53,20 @@ public abstract class SquareRootNode extends ValueNode {
     }
   }
 
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasure(VirtualFrame frame, Measure square,
+      @Cached(inline = true) @Shared DoSquareRootNode doSquareRootNode) {
+    return doSquareRootNode.executeSquareRoot(frame, this, square.value());
+  }
+
   @Specialization
-  protected Object doUntyped(VirtualFrame frame, Object square,
-      @Cached(inline = true) DoSquareRootNode doSquareRootNode) {
+  protected Object doOther(VirtualFrame frame, Object square,
+      @Cached(inline = true) @Shared DoSquareRootNode doSquareRootNode) {
     return doSquareRootNode.executeSquareRoot(frame, this, square);
   }
 
-  public static SquareRootNode create(ValueNode squareNode) {
-    return SquareRootNodeGen.create(squareNode);
+  public static SquareRootNode create(ValueNode squareNode, boolean isUntypedRegion) {
+    return SquareRootNodeGen.create(squareNode, isUntypedRegion);
   }
 
   @Override

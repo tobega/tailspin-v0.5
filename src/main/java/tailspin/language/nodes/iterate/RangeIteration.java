@@ -193,7 +193,7 @@ public abstract class RangeIteration extends TransformNode {
     }
 
     AddNode createAddNode() {
-      return AddNode.create(null, null);
+      return AddNode.create(null, null, false);
     }
 
     public static InitializeRangeIteratorNode create(int startSlot, int endSlot, int incrementSlot, boolean inclusiveStart) {
@@ -248,7 +248,7 @@ public abstract class RangeIteration extends TransformNode {
     }
 
     AddNode createAddNode() {
-      return AddNode.create(null, null);
+      return AddNode.create(null, null, false);
     }
 
     @Specialization

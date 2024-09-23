@@ -34,7 +34,7 @@ public class ChainTest {
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode expr = AddNode.create(
             IntegerLiteral.create(12),
-            ReadContextValueNode.create(-1, rangeSlot));
+            ReadContextValueNode.create(-1, rangeSlot), false);
     RangeIteration source = RangeIteration.create(rangeSlot, ResultAggregatingNode.create(expr), startSlot, IntegerLiteral.create(1L),
         true, endSlot, IntegerLiteral.create(3L), true, incrementSlot, IntegerLiteral.create(1L));
     source.setResultSlot(resultSlot);
@@ -55,7 +55,7 @@ public class ChainTest {
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode expr = AddNode.create(
             IntegerLiteral.create(12),
-            ReadContextValueNode.create(-1, cvSlot));
+            ReadContextValueNode.create(-1, cvSlot), false);
     ValueNode source = IntegerLiteral.create(1L);
     ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(
         ResultAggregatingNode.create(source), ResultAggregatingNode.create(expr)));

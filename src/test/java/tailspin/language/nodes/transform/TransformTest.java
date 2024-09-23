@@ -23,7 +23,7 @@ public class TransformTest {
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     ValueNode valueNode = AddNode.create(
         IntegerLiteral.create(12),
-        ReadContextValueNode.create(-1, cvSlot));
+        ReadContextValueNode.create(-1, cvSlot), false);
     assertEquals(46L,
         TestUtil.evaluate(valueNode,
             fdb.build(),
@@ -36,7 +36,7 @@ public class TransformTest {
     int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
     ValueNode valueNode  = AddNode.create(
         IntegerLiteral.create(12),
-        ReadContextValueNode.create(-1, cvSlot));
+        ReadContextValueNode.create(-1, cvSlot), false);
     assertThrows(TypeError.class, () -> TestUtil.evaluate(valueNode, fdb.build(), List.of()));
   }
 }

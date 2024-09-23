@@ -27,9 +27,12 @@ public abstract class AddNode extends ValueNode {
   @Child @Executed
   protected ValueNode rightNode;
 
-  AddNode(ValueNode leftNode, ValueNode rightNode) {
+  protected final boolean isUntypedRegion;
+
+  AddNode(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
     this.leftNode = leftNode;
     this.rightNode = rightNode;
+    this.isUntypedRegion = isUntypedRegion;
   }
 
   public abstract Object executeAdd(VirtualFrame frame, Object left, Object right);
@@ -86,14 +89,32 @@ public abstract class AddNode extends ValueNode {
     return new Measure(doAddNode.executeAdd(frame, this, left.value(), right.value()), left.unit());
   }
 
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasures(VirtualFrame frame, Measure left, Measure right,
+      @Cached(inline = true) @Shared DoAddNode doAddNode) {
+    return doAddNode.executeAdd(frame, this, left.value(), right.value());
+  }
+
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasureRight(VirtualFrame frame, Object left, Measure right,
+      @Cached(inline = true) @Shared DoAddNode doAddNode) {
+    return doAddNode.executeAdd(frame, this, left, right.value());
+  }
+
+  @Specialization(guards = "isUntypedRegion")
+  protected Object doUntypedMeasureLeft(VirtualFrame frame, Measure left, Object right,
+      @Cached(inline = true) @Shared DoAddNode doAddNode) {
+    return doAddNode.executeAdd(frame, this, left.value(), right);
+  }
+
   @Specialization
-  protected Object doUntyped(VirtualFrame frame, Object left, Object right,
+  protected Object doOther(VirtualFrame frame, Object left, Object right,
       @Cached(inline = true) @Shared DoAddNode doAddNode) {
     return doAddNode.executeAdd(frame, this, left, right);
   }
 
-  public static AddNode create(ValueNode leftNode, ValueNode rightNode) {
-    return AddNodeGen.create(leftNode, rightNode);
+  public static AddNode create(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
+    return AddNodeGen.create(leftNode, rightNode, isUntypedRegion);
   }
 
   @Override
