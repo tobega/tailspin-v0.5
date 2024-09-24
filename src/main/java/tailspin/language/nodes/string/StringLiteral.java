@@ -63,7 +63,7 @@ public abstract class StringLiteral extends ValueNode {
           TailspinStrings.fromJavaString(Objects.toString(suffix), fromJavaStringNode), concatNode);
     }
 
-    @Specialization(guards = "suffix == null")
+    @Specialization(guards = "ignored == null")
     TruffleString doAppendNone(TruffleString prefix, Object ignored) {
       return prefix;
     }
