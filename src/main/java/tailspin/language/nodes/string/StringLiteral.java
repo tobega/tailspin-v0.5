@@ -40,14 +40,14 @@ public abstract class StringLiteral extends ValueNode {
   static abstract class AppendStringNode extends Node {
     abstract TruffleString executeAppend(TruffleString prefix, Object suffix);
 
-    @Specialization
+    @Specialization(guards = "suffix != null")
     TruffleString doAppendString(TruffleString prefix, TruffleString suffix,
         @Cached @Shared TruffleString.ConcatNode concatNode) {
       return TailspinStrings.concat(prefix, suffix, concatNode);
     }
 
-    @Specialization
-    TruffleString doAppendString(TruffleString prefix, ArrayList<?> suffix) {
+    @Specialization(guards = "suffix != null")
+    TruffleString doAppendMany(TruffleString prefix, ArrayList<?> suffix) {
       TruffleString result = prefix;
       for (Object part : suffix) {
         result = executeAppend(result, part);
@@ -55,12 +55,17 @@ public abstract class StringLiteral extends ValueNode {
       return result;
     }
 
-    @Specialization
+    @Specialization(guards = "suffix != null")
     TruffleString doAppendObject(TruffleString prefix, Object suffix,
         @Cached @Shared TruffleString.ConcatNode concatNode,
         @Cached TruffleString.FromJavaStringNode fromJavaStringNode) {
       return TailspinStrings.concat(prefix,
           TailspinStrings.fromJavaString(Objects.toString(suffix), fromJavaStringNode), concatNode);
+    }
+
+    @Specialization(guards = "suffix == null")
+    TruffleString doAppendNone(TruffleString prefix, Object ignored) {
+      return prefix;
     }
 
     static AppendStringNode create() {
