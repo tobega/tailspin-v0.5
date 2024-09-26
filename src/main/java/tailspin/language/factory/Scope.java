@@ -3,8 +3,10 @@ package tailspin.language.factory;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor.Builder;
 import com.oracle.truffle.api.frame.FrameSlotKind;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import tailspin.language.TailspinLanguage;
@@ -119,18 +121,22 @@ public class Scope {
     return defined.atLevel(-1);
   }
 
-  private final Set<String> temporaryIdentifiers = new HashSet<>();
+  private final List<Set<String>> temporaryIdentifiers = new ArrayList<>();
   public void markTemporary(String identifier) {
-    temporaryIdentifiers.add(identifier);
+    temporaryIdentifiers.getLast().add(identifier);
   }
 
   public void deleteTemporaryValues() {
     Builder fdb = blockRootFdb == null ? rootFdb : blockRootFdb;
-    for (String identifier : temporaryIdentifiers) {
+    Set<String> toDelete = temporaryIdentifiers.removeLast();
+    for (String identifier : toDelete) {
       assignSlot((Slot) definitions.get(identifier), fdb);
       definitions.remove(identifier);
     }
-    temporaryIdentifiers.clear();
+  }
+
+  public void pushTemporaryVariables() {
+    temporaryIdentifiers.addLast(new HashSet<>());
   }
 
   public Object getSource(String identifier, int level) {

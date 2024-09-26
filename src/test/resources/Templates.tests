@@ -168,3 +168,17 @@ end !
     $n !
 end !
 =*IllegalStateException
+---nested temporary variables work match,lens
+[ 5..7 ] -> templates
+  otherwise
+    foo is 3;
+    $(.. as i; -> $i + $) -> $foo !
+end !
+=3
+---nested temporary variables work match,match
+[ 5..7 ] -> templates
+  otherwise
+    foo is 3;
+    $(.. as i; -> $i + $) -> $foo !
+end !
+=3

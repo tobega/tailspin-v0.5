@@ -139,3 +139,13 @@ $i !
 ---Stream single value
 [5]... !
 =5
+---nested temporary variables work lens,lens
+[ 5..7 -> [5..$]] -> $(.. as i; -> $(.. as j; -> $j) -> $i) !
+=[1, 2, 3]
+---nested temporary variables work lens,match
+[ 5..7 ] -> $(.. as i; -> templates
+  otherwise
+    foo is 3;
+    $ * $foo !
+end -> $ + $i) !
+=[16, 20, 24]

@@ -432,6 +432,7 @@ public class NodeFactory {
   }
 
   private MatchTemplateNode visitMatchTemplate(List<?> matchTemplate) {
+    currentScope().pushTemporaryVariables();
     MatcherNode matcherNode = visitMatcher((ParseNode) matchTemplate.getFirst());
     StatementNode block = visitBlock(normalizeValues(matchTemplate.subList(1, matchTemplate.size())));
     currentScope().deleteTemporaryValues();
@@ -864,6 +865,7 @@ public class NodeFactory {
 
   @SuppressWarnings("unchecked")
   private ValueNode visitReadLensExpression(ValueNode target, Object lensExpression) {
+    currentScope().pushTemporaryVariables();
     ValueNode expression = switch (lensExpression) {
       case ParseNode(String type, Object lensDimension) when type.equals("lens-dimension")
           -> visitReadLensDimension(target, lensDimension, null);
