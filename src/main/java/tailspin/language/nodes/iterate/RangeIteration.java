@@ -19,6 +19,7 @@ import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNode.SetChainCvNode;
+import tailspin.language.nodes.iterate.RangeIterationNodeGen.GtZeroNodeGen;
 import tailspin.language.nodes.iterate.RangeIterationNodeGen.InitializeRangeIteratorNodeGen;
 import tailspin.language.nodes.iterate.RangeIterationNodeGen.RangeIteratorNodeGen;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
@@ -29,6 +30,7 @@ import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
+import tailspin.language.runtime.Measure;
 
 @NodeChild(value = "start", type = ValueNode.class)
 @NodeChild(value = "end", type = ValueNode.class)
@@ -92,18 +94,38 @@ public abstract class RangeIteration extends TransformNode {
     return RangeIterationNodeGen.create(startSlot, endSlot, incrementSlot, inclusiveStart, inclusiveEnd, start, end, increment);
   }
 
-  @Specialization
-  public void doIterate(VirtualFrame frame, Object start, Object end, Object increment,
-      @Cached(value = "createGetFirst()", neverDefault = true) MessageNode getFirst,
-      @Cached(value = "createGetLast()", neverDefault = true) MessageNode getLast) {
-    if (start == null) {
-      if (isGt0Node.executeMatcherGeneric(frame, increment)) start = getFirst.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
-      else start = getLast.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
-    }
-    if (end == null) {
-      if (isGt0Node.executeMatcherGeneric(frame, increment)) end = getLast.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
-      else end = getFirst.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
-    }
+  public abstract void executeDirect(VirtualFrame frame, Object start, Object end, Object increment);
+
+  @Specialization(guards = "increment == null")
+  public void doIterateLongDefault(VirtualFrame frame, Long start, Long end, Object increment) {
+    executeDirect(frame, start, end, 1L);
+  }
+
+  @Specialization(guards = "increment == null")
+  public void doIterateMeasureDefault(VirtualFrame frame, Measure start, Measure end, Object increment) {
+    executeDirect(frame, start, end, new Measure(1L, start.unit()));
+  }
+
+  @Specialization(guards = "start == null")
+  public void doIterateInferStart(VirtualFrame frame, Object start, Object end, Object increment,
+      @Cached(value = "createGetFirst()", neverDefault = true) @Shared MessageNode getFirst,
+      @Cached(value = "createGetLast()", neverDefault = true) @Shared MessageNode getLast) {
+    if (increment == null || isGt0Node.executeMatcherGeneric(frame, increment)) start = getFirst.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
+    else start = getLast.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
+    executeDirect(frame, start, end, increment);
+  }
+
+  @Specialization(guards = "end == null")
+  public void doIterateInferEnd(VirtualFrame frame, Object start, Object end, Object increment,
+      @Cached(value = "createGetFirst()", neverDefault = true) @Shared MessageNode getFirst,
+      @Cached(value = "createGetLast()", neverDefault = true) @Shared MessageNode getLast) {
+    if (increment == null || isGt0Node.executeMatcherGeneric(frame, increment)) end = getLast.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
+    else end = getFirst.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
+    executeDirect(frame, start, end, increment);
+  }
+
+  @Specialization(guards = {"start != null", "end != null", "increment != null"})
+  public void doIterate(VirtualFrame frame, Object start, Object end, Object increment) {
     initializeNode.executeInitialize(frame, start, end, increment);
     if (isLensRange) {
       frame.setObjectStatic(getResultSlot(), new ArrayList<>());
@@ -213,8 +235,7 @@ public abstract class RangeIteration extends TransformNode {
     ValueNode incrementNode;
     @SuppressWarnings("FieldMayBeFinal")
     @Child @Executed(with = "incrementNode")
-    MatcherNode isGt0Node = GreaterThanMatcherNode.create(false, NumericTypeMatcherNode.create(),
-        IntegerLiteral.create(0L));
+    MatcherNode isGt0Node = GtZeroNode.create();
 
     final boolean inclusiveEnd;
     final int currentSlot;
@@ -269,6 +290,25 @@ public abstract class RangeIteration extends TransformNode {
 
     public static RangeIteratorNode create(int currentSlot, int endSlot, int incrementSlot, boolean inclusiveEnd) {
       return RangeIteratorNodeGen.create(currentSlot, endSlot, incrementSlot, inclusiveEnd);
+    }
+  }
+
+  static abstract class GtZeroNode extends MatcherNode {
+    MatcherNode isGt0Node = GreaterThanMatcherNode.create(false, NumericTypeMatcherNode.create(),
+        IntegerLiteral.create(0L));
+
+    @Specialization
+    boolean compareMeasure(VirtualFrame frame, Measure measure) {
+      return executeMatcherGeneric(frame, measure.value());
+    }
+
+    @Specialization
+    boolean compareRaw(VirtualFrame frame, Object raw) {
+      return isGt0Node.executeMatcherGeneric(frame, raw);
+    }
+
+    public static GtZeroNode create() {
+      return GtZeroNodeGen.create();
     }
   }
 }

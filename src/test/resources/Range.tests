@@ -43,3 +43,6 @@ end !
 ---empty range if end less than start
 [1..~1] !
 =[]
+---measure range
+[1"m"..3"m"] !
+=[1"m", 2"m", 3"m"]

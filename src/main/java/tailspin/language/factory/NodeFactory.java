@@ -733,7 +733,7 @@ public class NodeFactory {
       stride = asSingleValueNode(visitSource((ParseNode) (
           (ParseNode) ((ParseNode) bounds.get(index)).content()).content()));
     } else {
-      stride = IntegerLiteral.create(1L);
+      stride = VoidValue.create();
     }
     return RangeIteration.create(currentScope().newTempSlot(), start, inclusiveStart, currentScope().newTempSlot(), end, inclusiveEnd, currentScope().newTempSlot(), stride);
   }
@@ -911,7 +911,7 @@ public class NodeFactory {
           (ParseNode) content.content()).content()));
       bounds = bounds.subList(0, bounds.size() - 1);
     } else {
-      stride = IntegerLiteral.create(1L);
+      stride = VoidValue.create();
     }
     boolean inclusiveStart;
     ValueNode start;
