@@ -9,7 +9,6 @@ import com.oracle.truffle.api.dsl.NeverDefault;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
@@ -50,7 +49,7 @@ public abstract class ChainStageNode extends TransformNode {
 
   @Specialization
   public void doLong(VirtualFrame frame, long value, @Shared("cvSetters") @Cached(parameters = "cvSlot") SetChainCvNode setCv) {
-    setCv.setLong(frame, value);
+    setCv.setObject(frame, value);
     frame.setObjectStatic(valuesSlot, null);
     stage.executeTransform(frame);
   }
@@ -118,15 +117,8 @@ public abstract class ChainStageNode extends TransformNode {
     public abstract void execute(VirtualFrame frame, Object value);
 
     @Specialization
-    void setLong(VirtualFrame frame, long value) {
-      frame.getFrameDescriptor().setSlotKind(getSlot(), FrameSlotKind.Long);
-      frame.setLong(getSlot(), value);
-    }
-
-    @Specialization
     void setObject(VirtualFrame frame, Object value) {
-      frame.getFrameDescriptor().setSlotKind(getSlot(), FrameSlotKind.Object);
-      frame.setObject(getSlot(), value);
+      frame.setObjectStatic(getSlot(), value);
     }
 
     @NeverDefault

@@ -16,15 +16,15 @@ public class Templates {
   public static FrameDescriptor.Builder createBasicFdb() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     assertSlot(SCOPE_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
-    assertSlot(CV_SLOT, fdb.addSlot(FrameSlotKind.Illegal, null, null));
+    assertSlot(CV_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
     assertSlot(EMIT_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
-    assertSlot(LENS_CONTEXT_SLOT, fdb.addSlot(FrameSlotKind.Object, null, null));
+    assertSlot(LENS_CONTEXT_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
     return fdb;
   }
 
   public static FrameDescriptor.Builder createScopeFdb() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    assertSlot(STATE_SLOT, fdb.addSlot(FrameSlotKind.Illegal, null, null));
+    assertSlot(STATE_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
     return fdb;
   }
 

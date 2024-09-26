@@ -39,7 +39,7 @@ public class Scope {
   }
 
   public int newTempSlot() {
-    return  rootFdb.addSlot(FrameSlotKind.Illegal, null, null);
+    return  rootFdb.addSlot(FrameSlotKind.Static, null, null);
   }
 
   public int newResultSlot() {
@@ -89,8 +89,8 @@ public class Scope {
 
   private void assignSlot(Slot s, Builder fdb) {
       int slot = s.isExported()
-          ? scopeFdb.addSlot(FrameSlotKind.Illegal, null, null)
-          : fdb.addSlot(FrameSlotKind.Illegal, null, null);
+          ? scopeFdb.addSlot(FrameSlotKind.Static, null, null)
+          : fdb.addSlot(FrameSlotKind.Static, null, null);
       s.setSlot(slot);
   }
 

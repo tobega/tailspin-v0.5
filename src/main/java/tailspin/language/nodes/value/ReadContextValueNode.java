@@ -42,14 +42,9 @@ public abstract class ReadContextValueNode extends ValueNode {
     }
     public abstract Object executeGeneric(VirtualFrame frame, Node node, int slot);
 
-    @Specialization(guards = "frame.isLong(slot)")
-    protected long readLong(VirtualFrame frame, int slot) {
-      return frame.getLong(slot);
-    }
-
-    @Specialization(replaces = {"readLong"})
+    @Specialization
     protected Object readObject(VirtualFrame frame, int slot) {
-      return frame.getObject(slot);
+      return frame.getObjectStatic(slot);
     }
 
     public static ReadLocalValueNode create() {

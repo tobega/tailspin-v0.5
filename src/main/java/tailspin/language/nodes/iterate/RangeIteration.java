@@ -97,12 +97,12 @@ public abstract class RangeIteration extends TransformNode {
       @Cached(value = "createGetFirst()", neverDefault = true) MessageNode getFirst,
       @Cached(value = "createGetLast()", neverDefault = true) MessageNode getLast) {
     if (start == null) {
-      if (isGt0Node.executeMatcherGeneric(frame, increment)) start = getFirst.executeMessage(frame.getObject(LENS_CONTEXT_SLOT));
-      else start = getLast.executeMessage(frame.getObject(LENS_CONTEXT_SLOT));
+      if (isGt0Node.executeMatcherGeneric(frame, increment)) start = getFirst.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
+      else start = getLast.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
     }
     if (end == null) {
-      if (isGt0Node.executeMatcherGeneric(frame, increment)) end = getLast.executeMessage(frame.getObject(LENS_CONTEXT_SLOT));
-      else end = getFirst.executeMessage(frame.getObject(LENS_CONTEXT_SLOT));
+      if (isGt0Node.executeMatcherGeneric(frame, increment)) end = getLast.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
+      else end = getFirst.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
     }
     initializeNode.executeInitialize(frame, start, end, increment);
     if (isLensRange) {

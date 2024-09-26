@@ -27,10 +27,10 @@ public class ChainTest {
   @Test
   void expression_chain_stage() {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
-    int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int startSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int endSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int incrementSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int rangeSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int startSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int endSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int incrementSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode expr = AddNode.create(
             IntegerLiteral.create(12),
@@ -50,7 +50,7 @@ public class ChainTest {
   @Test
   void expression_chain_stage_single_value() {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
-    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int cvSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode expr = AddNode.create(
@@ -65,7 +65,7 @@ public class ChainTest {
   @Test
   void expression_chain_stage_single_array() {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
-    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int cvSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);

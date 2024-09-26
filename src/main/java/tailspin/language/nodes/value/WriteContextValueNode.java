@@ -1,7 +1,6 @@
 package tailspin.language.nodes.value;
 
 import com.oracle.truffle.api.dsl.Cached;
-import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.GenerateCached;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.ImportStatic;
@@ -24,17 +23,9 @@ public abstract class WriteContextValueNode extends StatementNode {
   }
 
   @Specialization
-  protected void writeLong(VirtualFrame frame, long value,
-      @Cached(neverDefault = true) @Shared GetContextFrameNode getFrame,
-      @Cached(neverDefault = true) @Shared WriteLocalValueNode writeValue) {
-    VirtualFrame contextFrame = getFrame.execute(frame, this, reference.getLevel());
-    writeValue.executeLong(contextFrame, this, reference.getSlot(), value);
-  }
-
-  @Specialization
   protected void writeObject(VirtualFrame frame, Object value,
-      @Cached(neverDefault = true) @Shared GetContextFrameNode getFrame,
-      @Cached(neverDefault = true) @Shared WriteLocalValueNode writeValue) {
+      @Cached(neverDefault = true) GetContextFrameNode getFrame,
+      @Cached(neverDefault = true) WriteLocalValueNode writeValue) {
     VirtualFrame contextFrame = getFrame.execute(frame, this, reference.getLevel());
     writeValue.executeGeneric(contextFrame, this, reference.getSlot(), value);
   }
@@ -53,17 +44,9 @@ public abstract class WriteContextValueNode extends StatementNode {
     public abstract void executeLong(VirtualFrame frame, Node node, int slot, long value);
     public abstract void executeGeneric(VirtualFrame frame, Node node, int slot, Object value);
 
-    @Specialization(guards = "frame.getFrameDescriptor().getSlotKind(slot) == Illegal || " +
-        "frame.getFrameDescriptor().getSlotKind(slot) == Long")
-    protected void writeLong(VirtualFrame frame, int slot, long value) {
-      frame.getFrameDescriptor().setSlotKind(slot, FrameSlotKind.Long);
-      frame.setLong(slot, value);
-    }
-
-    @Specialization(replaces = "writeLong")
+    @Specialization
     protected void writeObject(VirtualFrame frame, int slot, Object value) {
-      frame.getFrameDescriptor().setSlotKind(slot, FrameSlotKind.Object);
-      frame.setObject(slot, value);
+      frame.setObjectStatic(slot, value);
     }
   }
 }

@@ -20,7 +20,7 @@ public class TransformTest {
   @Test
   void adds_current_value() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int cvSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode valueNode = AddNode.create(
         IntegerLiteral.create(12),
         ReadContextValueNode.create(-1, cvSlot), false);
@@ -33,7 +33,7 @@ public class TransformTest {
   @Test
   void reference_null_current_value_blows_up() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    int cvSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int cvSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode valueNode  = AddNode.create(
         IntegerLiteral.create(12),
         ReadContextValueNode.create(-1, cvSlot), false);

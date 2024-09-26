@@ -450,3 +450,23 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |NBodyBenchmark.nbody_tailspin                       |avgt  |  5  |15874,652 |± 401,710  |us/op|
 |PascalBenchmark.triangle_java                       |avgt  |  5  |   11,453 |±   0,368  |us/op|
 |PascalBenchmark.triangle_tailspin                   |avgt  |  5  |   20,289 |±   0,291  |us/op|
+
+2024-09-26 Only static object frame access
+|Benchmark                                           |Mode  |Cnt  |    Score |     Error  |Units|
+|----------------------------------------------------|------|-----|----------|------------|-----|
+|BubblesortBenchmark.sort_java                       |avgt  |  5  |   19,742 |±    0,450  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate           |avgt  |  5  |   34,985 |±    0,384  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse           |avgt  |  5  |   42,440 |±    1,004  |us/op|
+|FibonacciBenchmark.recursive_java                   |avgt  |  5  |   36,126 |±    0,290  |us/op|
+|FibonacciBenchmark.recursive_tailspin_bignumber     |avgt  |  5  |  542,580 |±    5,244  |us/op|
+|FibonacciBenchmark.recursive_tailspin_measure_long  |avgt  |  5  |  125,786 |±    3,261  |us/op|
+|FibonacciBenchmark.recursive_tailspin_rational      |avgt  |  5  | 9119,309 |±  243,722  |us/op|
+|FibonacciBenchmark.recursive_tailspin_raw_long      |avgt  |  5  |   70,702 |±    1,399  |us/op|
+|FibonacciBenchmark.recursive_tailspin_scinum        |avgt  |  5  |  940,555 |±   16,851  |us/op|
+|ListBenchmark.list_java                             |avgt  |  5  |   22,991 |±    0,353  |us/op|
+|ListBenchmark.list_tailspin_empty                   |avgt  |  5  |  887,310 |±   21,259  |us/op|
+|ListBenchmark.list_tailspin_optional                |avgt  |  5  |  873,727 |±   57,750  |us/op|
+|NBodyBenchmark.nbody_java                           |avgt  |  5  |   15,576 |±    0,587  |us/op|
+|NBodyBenchmark.nbody_tailspin                       |avgt  |  5  |15965,932 |± 1340,698  |us/op|
+|PascalBenchmark.triangle_java                       |avgt  |  5  |   11,817 |±    0,385  |us/op|
+|PascalBenchmark.triangle_tailspin                   |avgt  |  5  |   21,501 |±    1,932  |us/op|

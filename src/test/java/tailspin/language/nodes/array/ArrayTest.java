@@ -20,10 +20,10 @@ public class ArrayTest {
   @Test
   void reads_array_value() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int startSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int endSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int incrementSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int rangeSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int startSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int endSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int incrementSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode array = ArrayLiteral.create(buildSlot,
         List.of(
@@ -39,10 +39,10 @@ public class ArrayTest {
   @Test
   void write_array_value() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int startSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int endSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int incrementSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int rangeSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int startSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int endSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int incrementSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode array = ArrayLiteral.create(buildSlot,
         List.of(
@@ -59,10 +59,10 @@ public class ArrayTest {
   @Test
   void get_array_length() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int startSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int endSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int incrementSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int rangeSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int startSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int endSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int incrementSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode array = ArrayLiteral.create(buildSlot,
         List.of(
@@ -78,10 +78,10 @@ public class ArrayTest {
   @Test
   void create_zeroes() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int startSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int endSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int incrementSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int rangeSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int startSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int endSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int incrementSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     TransformNode contents = RangeIteration.create(rangeSlot, ResultAggregatingNode.create(IntegerLiteral.create(0)), startSlot, IntegerLiteral.create(1L),
         true, endSlot, IntegerLiteral.create(3L), true, incrementSlot, IntegerLiteral.create(1L));

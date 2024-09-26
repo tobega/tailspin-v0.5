@@ -74,14 +74,14 @@ public class TemplatesTest {
   @Test
   void array_chain() {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
-    int rangeSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int startSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int endSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
-    int incrementSlot = fdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int rangeSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int startSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int endSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
+    int incrementSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
 
     FrameDescriptor.Builder scopeFdb = createScopeFdb();
-    int flatMapSlot = scopeFdb.addSlot(FrameSlotKind.Illegal, null, null);
+    int flatMapSlot = scopeFdb.addSlot(FrameSlotKind.Static, null, null);
 
     Templates flatMap = new Templates();
     // [100..1:-1

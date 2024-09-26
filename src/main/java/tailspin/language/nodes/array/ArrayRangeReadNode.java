@@ -29,7 +29,7 @@ public abstract class ArrayRangeReadNode extends ValueNode {
 
   @Specialization
   protected Object doArray(VirtualFrame frame, TailspinArray array) {
-    frame.setObject(LENS_CONTEXT_SLOT, array);
+    frame.setObjectStatic(LENS_CONTEXT_SLOT, array);
     frame.setObjectStatic(resultSlot, new ArrayList<>());
     iterationNode.executeTransform(frame);
     return frame.getObjectStatic(resultSlot);
