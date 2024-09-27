@@ -19,7 +19,7 @@ public class TailspinParser {
      program rule (<|ignorable-text>?) <|statement>+
      
      statement rule <|definition|set-state|templates|type-def|terminated-chain> (<|ignorable-text>?)
-     comment rule (<|'--.*\\R'>)
+     comment rule (<|'--.*(\\R|\\z)'>)
      ignorable-text rule (<|WS|comment>+)
      definition rule <|ID> (<|ignorable-text> <|='is'> <|ignorable-text>) <|value-chain> (<|=';'> <|ignorable-text>?)
      type-def rule <|ID> (<|ignorable-text> <|='requires'> <|ignorable-text> <|='<'>) <|='~'>? (<|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)

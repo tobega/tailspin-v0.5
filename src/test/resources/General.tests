@@ -14,3 +14,7 @@ foo is 1;
 -- And this
 $foo !
 =1
+---comment at end
+4 !
+-- this is a comment
+=4
