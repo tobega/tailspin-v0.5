@@ -2,6 +2,7 @@ package tailspin.language.nodes.string;
 
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -55,17 +56,17 @@ public abstract class StringLiteral extends ValueNode {
       return result;
     }
 
-    @Specialization(guards = "suffix != null")
+    @Specialization(guards = "ignored == null")
+    TruffleString doAppendNone(TruffleString prefix, Object ignored) {
+      return prefix;
+    }
+
+    @Fallback
     TruffleString doAppendObject(TruffleString prefix, Object suffix,
         @Cached @Shared TruffleString.ConcatNode concatNode,
         @Cached TruffleString.FromJavaStringNode fromJavaStringNode) {
       return TailspinStrings.concat(prefix,
           TailspinStrings.fromJavaString(Objects.toString(suffix), fromJavaStringNode), concatNode);
-    }
-
-    @Specialization(guards = "ignored == null")
-    TruffleString doAppendNone(TruffleString prefix, Object ignored) {
-      return prefix;
     }
 
     static AppendStringNode create() {

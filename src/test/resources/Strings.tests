@@ -62,3 +62,6 @@ end !
 ---empty interpolation
 5 -> ':$-> if <|=0>;:' !
 =::
+---interpolate first then rest
+[1..5] -> '|$(1);$(2..)...;|' !
+=|12345|
