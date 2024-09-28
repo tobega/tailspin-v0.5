@@ -2,6 +2,7 @@ package tailspin.language.nodes.array;
 
 import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
 
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -9,6 +10,9 @@ import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.RangeIteration;
+import tailspin.language.nodes.value.GetContextFrameNode;
+import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
+import tailspin.language.runtime.IndexedArrayValue;
 import tailspin.language.runtime.TailspinArray;
 
 @NodeChild(value = "array", type = ValueNode.class)
@@ -26,6 +30,16 @@ public abstract class ArrayRangeReadNode extends ValueNode {
   RangeIteration iterationNode;
 
   final int resultSlot;
+
+  @Specialization
+  protected Object doIndexed(VirtualFrame frame, IndexedArrayValue indexedArrayValue,
+      @Cached(inline = true, neverDefault = true) GetContextFrameNode getFrame,
+      @Cached(inline = true) WriteLocalValueNode writeIndex) {
+    VirtualFrame contextFrame = getFrame.execute(frame, this, indexedArrayValue.indexVar().getLevel());
+    writeIndex.executeGeneric(contextFrame, this, indexedArrayValue.indexVar().getSlot(), indexedArrayValue.index());
+    Object result = executeDirect(frame, indexedArrayValue.value());
+    return indexedArrayValue.withValue(result);
+  }
 
   @Specialization
   protected Object doArray(VirtualFrame frame, TailspinArray array) {

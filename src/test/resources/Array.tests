@@ -149,3 +149,6 @@ $i !
     $ * $foo !
 end -> $ + $i) !
 =[16, 20, 24]
+---indexed first to range second dimension
+[1..3 -> [1..3 -> 0]] -> $(.. as i; .. as j; -> $i - $j)!
+=[[0, -1, -2], [1, 0, -1], [2, 1, 0]]
