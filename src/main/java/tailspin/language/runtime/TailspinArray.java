@@ -14,8 +14,8 @@ import java.util.Set;
 
 @ExportLibrary(InteropLibrary.class)
 public class TailspinArray implements TruffleObject {
-  private final Object[] arrayElements;
-  private final long length;
+  private Object[] arrayElements;
+  private long length;
   private boolean isMutable;
 
   private TailspinArray(Object[] arrayElements, long length, boolean isMutable) {
@@ -56,6 +56,28 @@ public class TailspinArray implements TruffleObject {
     if (length == 0) return null;
     if (length == 1) return arrayElements[0];
     return new ArrayList<>(Arrays.asList(arrayElements).subList(0, (int) length));
+  }
+
+  public void append(Object value) {
+    if (!isMutable) throw new IllegalStateException();
+    if (length == arrayElements.length) {
+      grow((int) (length + 1));
+    }
+    arrayElements[(int) length] = value;
+    length += 1;
+  }
+
+  /**
+   * Increases the capacity to ensure that it can hold at least the
+   * number of elements specified by the minimum capacity argument.
+   *
+   * @param minCapacity the desired minimum capacity
+   * @throws OutOfMemoryError if minCapacity is less than zero
+   */
+  private void grow(int minCapacity) {
+    int oldCapacity = arrayElements.length;
+    int newCapacity = Math.max(minCapacity, oldCapacity + (oldCapacity >> 1));
+    arrayElements = Arrays.copyOf(arrayElements, newCapacity);
   }
 
   @ExportMessage

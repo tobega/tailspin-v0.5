@@ -196,3 +196,24 @@ end !
   $@!
 end !
 =[[{ bar: 4, foo: 1 }, { bar: 4, foo: 3 }], [{ bar: 3, foo: 6 }, { bar: 9, foo: 8 }]]
+---append array
+5 -> templates
+  @ set [1];
+  ..|@ set $;
+  $@ !
+end !
+=[1, 5]
+---append next dimension array
+5 -> templates
+  @ set [[1], [1]];
+  ..|@(1) set $;
+  $@ !
+end !
+=[[1, 5], [1]]
+---append array many values
+5 -> templates
+  @ set [1];
+  ..|@ set $..6;
+  $@ !
+end !
+=[1, 5, 6]

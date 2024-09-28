@@ -23,7 +23,7 @@ public class TailspinParser {
      ignorable-text rule (<|WS|comment>+)
      definition rule <|ID> (<|ignorable-text> <|='is'> <|ignorable-text>) <|value-chain> (<|=';'> <|ignorable-text>?)
      type-def rule <|ID> (<|ignorable-text> <|='requires'> <|ignorable-text> <|='<'>) <|='~'>? (<|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
-     set-state rule (<|='@'>) <|ID>? <|lens-expression>? (<|ignorable-text>? <|='set'> <|ignorable-text>?) <|value-chain> (<|=';'> <|ignorable-text>?)
+     set-state rule <|='..|'>? (<|='@'>) <|ID>? <|lens-expression>? (<|ignorable-text>? <|='set'> <|ignorable-text>?) <|value-chain> (<|=';'> <|ignorable-text>?)
      
      terminated-chain rule <|value-chain> <|emit|sink|accumulator-state>
      emit rule (<|ignorable-text>? <|='!'>)

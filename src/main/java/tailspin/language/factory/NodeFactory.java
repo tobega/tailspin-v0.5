@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BinaryOperator;
 import tailspin.language.TailspinLanguage;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.StatementNode;
@@ -55,6 +56,7 @@ import tailspin.language.nodes.numeric.SquareRootNode;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.processor.MessageNode;
+import tailspin.language.nodes.state.AppendStateNode;
 import tailspin.language.nodes.state.ReadStateNode;
 import tailspin.language.nodes.string.CodepointNode;
 import tailspin.language.nodes.string.StringLiteral;
@@ -219,6 +221,7 @@ public class NodeFactory {
   }
 
   private StatementNode visitSetState(Object expr) {
+    enum Mode {SET, APPEND}
     TailspinNode value;
     String scopeId = null;
     int stateLevel;
@@ -230,7 +233,12 @@ public class NodeFactory {
       case List<?> l -> {
         value = visitValueChain((ParseNode) l.getLast());
         l = l.subList(0, l.size() - 1);
-        if (l.getFirst() instanceof ParseNode(String type, String identifier) && type.equals("ID")) {
+        Mode mode = Mode.SET;
+        if (l.getFirst().equals("..|")) {
+          mode = Mode.APPEND;
+          l = l.subList(1, l.size());
+        }
+        if (!l.isEmpty() && l.getFirst() instanceof ParseNode(String type, String identifier) && type.equals("ID")) {
           scopeId = identifier;
           l = l.subList(1, l.size());
         }
@@ -238,10 +246,16 @@ public class NodeFactory {
         ValueNode target = ReadContextValueNode.create(stateLevel, STATE_SLOT);
         if (!l.isEmpty()) {
           if (l.getFirst() instanceof ParseNode(String type, Object lensExpr) && type.equals("lens-expression")) {
-            value = visitWriteLensExpression(target, lensExpr, value);
+            if (mode == Mode.APPEND) {
+              value = visitAppendState(target, lensExpr, asTransformResult(value), AppendStateNode::create);
+            } else {
+              value = visitWriteLensExpression(target, lensExpr, value);
+            }
           } else {
             throw new IllegalStateException("Unexpected value: " + l);
           }
+        } else if (mode == Mode.APPEND) {
+          value = AppendStateNode.create(target, asTransformResult(value));
         }
       }
       default -> throw new IllegalStateException("Unexpected value: " + expr);
@@ -268,6 +282,23 @@ public class NodeFactory {
       }
       default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };
+  }
+
+  private ValueNode visitAppendState(ValueNode target, Object lensExpression, ValueNode value, BinaryOperator<ValueNode> create) {
+    return switch (lensExpression) {
+      case ParseNode(String type, Object lensDimension) when type.equals("lens-dimension")
+          -> visitAppendState(target, lensDimension, value, create);
+      case List<?> dimension -> {
+        Reference indexVar = null;
+        if (dimension.size() > 1 && dimension.get(1) instanceof ParseNode(String type, ParseNode(String ignored, String identifier)) && type.equals("index-variable")) {
+          indexVar = currentScope().defineValue(identifier);
+        }
+        ValueNode thisDimension = visitReadLensDimension(target, dimension.getFirst(), indexVar);
+        ValueNode modifiedTarget = visitAppendState(thisDimension, ((ParseNode) dimension.getLast()).content(), value, create);
+        yield visitWriteLensExpression(target, dimension.getFirst(), modifiedTarget);
+      }
+      default -> visitWriteLensExpression(target, lensExpression, create.apply(visitReadLensDimension(target, lensExpression, null), value));
+     };
   }
 
   private StatementNode visitDefinition(List<?> def) {
