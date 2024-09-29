@@ -18,7 +18,6 @@ import com.oracle.truffle.api.nodes.RepeatingNode;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNode.SetChainCvNode;
@@ -29,12 +28,13 @@ import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
 import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
-import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
+import tailspin.language.runtime.Rational;
+import tailspin.language.runtime.SciNum;
 
 @NodeChild(value = "start", type = ValueNode.class)
 @NodeChild(value = "end", type = ValueNode.class)
@@ -61,8 +61,7 @@ public abstract class RangeIteration extends TransformNode {
 
   @SuppressWarnings("FieldMayBeFinal")
   @Child
-  MatcherNode isGt0Node = GreaterThanMatcherNode.create(false, NumericTypeMatcherNode.create(),
-      IntegerLiteral.create(0L));
+  GtZeroNode isGt0Node = GtZeroNode.create();
 
   protected RangeIteration(int startSlot, int endSlot, int incrementSlot, boolean inclusiveStart, boolean inclusiveEnd) {
     this.startSlot = startSlot;
@@ -114,7 +113,7 @@ public abstract class RangeIteration extends TransformNode {
   public void doIterateInferStart(VirtualFrame frame, Object start, Object end, Object increment,
       @Cached(value = "createGetFirst()", neverDefault = true) @Shared MessageNode getFirst,
       @Cached(value = "createGetLast()", neverDefault = true) @Shared MessageNode getLast) {
-    if (increment == null || isGt0Node.executeMatcherGeneric(frame, increment)) start = getFirst.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
+    if (increment == null || isGt0Node.executeTest(this, increment)) start = getFirst.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
     else start = getLast.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
     executeDirect(frame, start, end, increment);
   }
@@ -123,7 +122,7 @@ public abstract class RangeIteration extends TransformNode {
   public void doIterateInferEnd(VirtualFrame frame, Object start, Object end, Object increment,
       @Cached(value = "createGetFirst()", neverDefault = true) @Shared MessageNode getFirst,
       @Cached(value = "createGetLast()", neverDefault = true) @Shared MessageNode getLast) {
-    if (increment == null || isGt0Node.executeMatcherGeneric(frame, increment)) end = getLast.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
+    if (increment == null || isGt0Node.executeTest(this, increment)) end = getLast.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
     else end = getFirst.executeMessage(frame.getObjectStatic(LENS_CONTEXT_SLOT));
     executeDirect(frame, start, end, increment);
   }
@@ -317,6 +316,16 @@ public abstract class RangeIteration extends TransformNode {
     @Specialization
     boolean compareBigNumber(BigNumber value) {
       return value.compareTo(new BigNumber(BigInteger.ZERO)) > 0;
+    }
+
+    @Specialization
+    boolean compareRational(Rational value) {
+      return value.compareTo(new Rational(BigInteger.ZERO, BigInteger.ONE)) > 0;
+    }
+
+    @Specialization
+    boolean compareSciNum(SciNum value) {
+      return value.compareTo(SciNum.fromLong(0)) > 0;
     }
 
     public static GtZeroNode create() {
