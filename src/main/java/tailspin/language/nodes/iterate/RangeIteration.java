@@ -4,9 +4,11 @@ import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.Executed;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -14,6 +16,7 @@ import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TransformNode;
@@ -30,6 +33,7 @@ import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
+import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 
 @NodeChild(value = "start", type = ValueNode.class)
@@ -233,9 +237,6 @@ public abstract class RangeIteration extends TransformNode {
     @SuppressWarnings("FieldMayBeFinal")
     @Child @Executed
     ValueNode incrementNode;
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child @Executed(with = "incrementNode")
-    MatcherNode isGt0Node = GtZeroNode.create();
 
     final boolean inclusiveEnd;
     final int currentSlot;
@@ -253,7 +254,10 @@ public abstract class RangeIteration extends TransformNode {
     final CountingConditionProfile doneProfile = CountingConditionProfile.create();
 
     @Specialization(guards = "isGt0")
-    Object doIncreasing(VirtualFrame frame, Object current, Object end, Object increment, boolean isGt0,
+    Object doIncreasing(VirtualFrame frame, Object current, Object end, Object increment,
+        @Bind("this") Node node,
+        @Cached(inline = true) @Shared GtZeroNode gtZeroNode,
+        @SuppressWarnings("truffle-neverdefault") @Cached(value = "gtZeroNode.executeTest(node, increment)") boolean isGt0,
         @Cached(value = "createUpperBoundExceeded()", neverDefault = true) GreaterThanMatcherNode upperBoundExceeded,
         @Cached(inline = true) @Shared("current") WriteLocalValueNode writeCurrent,
         @Cached(value = "createAddNode()", neverDefault = true) @Shared AddNode addNode) {
@@ -273,7 +277,10 @@ public abstract class RangeIteration extends TransformNode {
     }
 
     @Specialization
-    Object doDecreasing(VirtualFrame frame, Object current, Object end, Object increment, boolean isGt0,
+    Object doDecreasing(VirtualFrame frame, Object current, Object end, Object increment,
+        @Bind("this") Node node,
+        @Cached(inline = true) @Shared GtZeroNode gtZeroNode,
+        @SuppressWarnings("truffle-neverdefault") @Cached(value = "gtZeroNode.executeTest(node, increment)") boolean isGt0,
         @Cached(value = "createLowerBoundExceeded()", neverDefault = true) LessThanMatcherNode lowerBoundExceeded,
         @Cached(inline = true) @Shared("current") WriteLocalValueNode writeCurrent,
         @Cached(value = "createAddNode()", neverDefault = true) @Shared AddNode addNode) {
@@ -293,18 +300,23 @@ public abstract class RangeIteration extends TransformNode {
     }
   }
 
-  static abstract class GtZeroNode extends MatcherNode {
-    MatcherNode isGt0Node = GreaterThanMatcherNode.create(false, NumericTypeMatcherNode.create(),
-        IntegerLiteral.create(0L));
+  @GenerateInline
+  static abstract class GtZeroNode extends Node {
+    public abstract boolean executeTest(Node node, Object value);
 
     @Specialization
-    boolean compareMeasure(VirtualFrame frame, Measure measure) {
-      return executeMatcherGeneric(frame, measure.value());
+    boolean compareMeasure(Node node, Measure measure) {
+      return executeTest(node, measure.value());
     }
 
     @Specialization
-    boolean compareRaw(VirtualFrame frame, Object raw) {
-      return isGt0Node.executeMatcherGeneric(frame, raw);
+    boolean compareLong(long value) {
+      return value > 0;
+    }
+
+    @Specialization
+    boolean compareBigNumber(BigNumber value) {
+      return value.compareTo(new BigNumber(BigInteger.ZERO)) > 0;
     }
 
     public static GtZeroNode create() {
