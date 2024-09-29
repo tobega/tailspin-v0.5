@@ -41,8 +41,11 @@ public class TailspinArray implements TruffleObject {
     return false;
   }
 
-  public Object getNative(int i) {
-    if (!isArrayElementReadable(i)) throw new IndexOutOfBoundsException();
+  public Object getNative(int i, boolean noFail) {
+    if (!isArrayElementReadable(i)) {
+      if (noFail) return null;
+      throw new IndexOutOfBoundsException();
+    }
     return arrayElements[i];
   }
 

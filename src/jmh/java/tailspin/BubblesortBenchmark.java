@@ -58,7 +58,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
       throw new AssertionError("Too short array " + sorted.getArraySize());
     }
     for (int i = 1; i < sorted.getArraySize(); i++) {
-      if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i)) {
+      if ((long) sorted.getNative(i - 1, false) > (long) sorted.getNative(i, false)) {
         throw new AssertionError("Out of order " + sorted.getArraySize());
       }
     }
@@ -71,7 +71,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
       throw new AssertionError("Too short array " + sorted.getArraySize());
     }
     for (int i = 1; i < sorted.getArraySize(); i++) {
-      if ((long) sorted.getNative(i - 1) > (long) sorted.getNative(i)) {
+      if ((long) sorted.getNative(i - 1, false) > (long) sorted.getNative(i, false)) {
         throw new AssertionError("Out of order " + sorted.getArraySize());
       }
     }

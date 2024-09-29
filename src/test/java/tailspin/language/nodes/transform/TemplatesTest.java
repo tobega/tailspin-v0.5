@@ -107,11 +107,11 @@ public class TemplatesTest {
         ));
     TailspinArray result = (TailspinArray) callTarget.call(null, null, null);
     assertEquals(200, result.getArraySize());
-    assertEquals(100L, result.getNative(0));
-    assertEquals(0L, result.getNative(1));
-    assertEquals(75L, result.getNative(50));
-    assertEquals(25L, result.getNative(51));
-    assertEquals(1L, result.getNative(198));
-    assertEquals(99L, result.getNative(199));
+    assertEquals(100L, result.getNative(0, false));
+    assertEquals(0L, result.getNative(1, false));
+    assertEquals(75L, result.getNative(50, false));
+    assertEquals(25L, result.getNative(51, false));
+    assertEquals(1L, result.getNative(198, false));
+    assertEquals(99L, result.getNative(199, false));
   }
 }

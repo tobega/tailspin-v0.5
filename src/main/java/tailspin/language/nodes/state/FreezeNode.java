@@ -20,7 +20,7 @@ public abstract class FreezeNode extends Node {
     if (ta.needsFreeze()) {
       long length = ta.getArraySize();
       for (int i = 0; i < length; i++) {
-        childFreezer.executeFreeze(this, ta.getNative(i));
+        childFreezer.executeFreeze(this, ta.getNative(i, false));
       }
     }
   }

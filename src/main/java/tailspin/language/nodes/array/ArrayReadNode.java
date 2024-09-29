@@ -18,13 +18,15 @@ import tailspin.language.runtime.TailspinArray;
 
 @NodeChild(value = "array", type = ValueNode.class)
 public abstract class ArrayReadNode extends ValueNode {
+  final boolean noFail;
   final Reference indexVar;
 
   @SuppressWarnings("FieldMayBeFinal")
   @Child
   ValueNode lensNode;
 
-  protected ArrayReadNode(Reference indexVar, ValueNode lensNode) {
+  protected ArrayReadNode(boolean noFail, Reference indexVar, ValueNode lensNode) {
+    this.noFail = noFail;
     this.indexVar = indexVar;
     this.lensNode = lensNode;
   }
@@ -33,11 +35,17 @@ public abstract class ArrayReadNode extends ValueNode {
 
   @GenerateInline(value = false)
   public static abstract class DoArrayReadNode extends Node {
+    final boolean noFail;
+
+    protected DoArrayReadNode(boolean noFail) {
+      this.noFail = noFail;
+    }
+
     public abstract Object executeArrayRead(TailspinArray array, Object index, Reference indexVar);
 
     @Specialization
     protected Object doLong(TailspinArray array, long index, Reference indexVar) {
-      Object value = array.getNative((int) index - 1);
+      Object value = array.getNative((int) index - 1, noFail);
       if (indexVar == null) {
         return value;
       } else {
@@ -47,7 +55,7 @@ public abstract class ArrayReadNode extends ValueNode {
 
     @Specialization
     protected Object doBigNumber(TailspinArray array, BigNumber index, Reference indexVar) {
-      Object value = array.getNative(index.intValueExact() - 1);
+      Object value = array.getNative(index.intValueExact() - 1, noFail);
       if (indexVar == null) {
         return value;
       } else {
@@ -60,7 +68,7 @@ public abstract class ArrayReadNode extends ValueNode {
       long length = selection.getArraySize();
       ArrayList<Object> elements = new ArrayList<>();
       for (int i = 0; i < length; i++) {
-        elements.add(executeArrayRead(array, selection.getNative(i), indexVar));
+        elements.add(executeArrayRead(array, selection.getNative(i, false), indexVar));
       }
       return elements;
     }
@@ -94,7 +102,7 @@ public abstract class ArrayReadNode extends ValueNode {
 
   @Specialization
   protected Object doSimpleRead(VirtualFrame frame, TailspinArray array,
-      @Cached DoArrayReadNode arrayReadNode) {
+      @Cached(parameters = "noFail") DoArrayReadNode arrayReadNode) {
     return arrayReadNode.executeArrayRead(array, lensNode.executeGeneric(frame), indexVar);
   }
 
@@ -103,7 +111,7 @@ public abstract class ArrayReadNode extends ValueNode {
     throw new TypeError("Cannot read " + notArray + " by array lens");
   }
 
-  public static ArrayReadNode create(ValueNode array, ValueNode lens, Reference indexVar) {
-    return ArrayReadNodeGen.create(indexVar, lens, array);
+  public static ArrayReadNode create(boolean noFail, ValueNode array, ValueNode lens, Reference indexVar) {
+    return ArrayReadNodeGen.create(noFail, indexVar, lens, array);
   }
 }

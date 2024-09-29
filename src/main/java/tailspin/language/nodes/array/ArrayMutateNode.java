@@ -36,7 +36,7 @@ public abstract class ArrayMutateNode extends ValueNode {
   protected Object doArray(TailspinArray array, TailspinArray indexes, ArrayList<?> values) {
     TailspinArray result = array.getThawed();
     for (int i = 0; i < indexes.getArraySize(); i++) {
-      executeDirect(result, indexes.getNative(i), values.get(i));
+      executeDirect(result, indexes.getNative(i, false), values.get(i));
     }
     return result;
   }

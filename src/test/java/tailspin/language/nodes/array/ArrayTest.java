@@ -32,7 +32,7 @@ public class ArrayTest {
             ResultAggregatingNode.create(IntegerLiteral.create(6)),
             RangeIteration.create(rangeSlot, ResultAggregatingNode.create(ReadContextValueNode.create(-1, rangeSlot)), startSlot, IntegerLiteral.create(10L),
                 true, endSlot, IntegerLiteral.create(15L), true, incrementSlot, IntegerLiteral.create(5L))));
-    ValueNode readNode = ArrayReadNode.create(array, IntegerLiteral.create(4), null);
+    ValueNode readNode = ArrayReadNode.create(false, array, IntegerLiteral.create(4), null);
     assertEquals(6L, TestUtil.evaluate(readNode, fdb.build(), List.of()));
   }
 
@@ -52,7 +52,7 @@ public class ArrayTest {
             RangeIteration.create(rangeSlot, ResultAggregatingNode.create(ReadContextValueNode.create(-1, rangeSlot)), startSlot, IntegerLiteral.create(10L),
                 true, endSlot, IntegerLiteral.create(15L), true, incrementSlot, IntegerLiteral.create(5L))));
     ValueNode writeNode = ArrayMutateNode.create(array, IntegerLiteral.create(4), IntegerLiteral.create(35));
-    ValueNode readNode = ArrayReadNode.create(writeNode, IntegerLiteral.create(4), null);
+    ValueNode readNode = ArrayReadNode.create(false, writeNode, IntegerLiteral.create(4), null);
     assertEquals(35L, TestUtil.evaluate(readNode, fdb.build(), List.of()));
   }
 
@@ -88,6 +88,6 @@ public class ArrayTest {
     ValueNode arrayNode = ArrayLiteral.create(buildSlot, List.of(contents));
     TailspinArray array = (TailspinArray) TestUtil.evaluate(arrayNode, fdb.build(), List.of());
     assertEquals(3, array.getArraySize());
-    for (int i = 0; i < array.getArraySize(); i++) assertEquals(0L, array.getNative(i));
+    for (int i = 0; i < array.getArraySize(); i++) assertEquals(0L, array.getNative(i, false));
   }
 }

@@ -873,7 +873,7 @@ public class NodeFactory {
   private ValueNode visitReadLensDimension(ValueNode target, Object lensDimension, Reference indexVar) {
     return switch (lensDimension) {
       case ParseNode(String type, ParseNode source) when type.equals("source")
-          -> ArrayReadNode.create(target, asSingleValueNode(visitSource(source)), indexVar);
+          -> ArrayReadNode.create(false, target, asSingleValueNode(visitSource(source)), indexVar);
       case ParseNode(String type, Object bounds) when type.equals("lens-range")
           -> asTransformResult(visitLensRange(target, bounds, indexVar));
       case ParseNode(String type, ParseNode(String ignored, String key)) when type.equals("key")
@@ -966,7 +966,7 @@ public class NodeFactory {
     }
     RangeIteration r = RangeIteration.create(currentScope().newTempSlot(), start, inclusiveStart, currentScope().newTempSlot(), end, inclusiveEnd, currentScope().newTempSlot(), stride);
     pushCvSlot(currentScope().newTempSlot());
-    r.setStage(currentValueSlot(), ResultAggregatingNode.create(ArrayReadNode.create(ReadContextValueNode.create(-1, LENS_CONTEXT_SLOT), ReadContextValueNode.create(-1, currentValueSlot()), indexVar)));
+    r.setStage(currentValueSlot(), ResultAggregatingNode.create(ArrayReadNode.create(true, ReadContextValueNode.create(-1, LENS_CONTEXT_SLOT), ReadContextValueNode.create(-1, currentValueSlot()), indexVar)));
     r.setIsLensRange();
     popCvSlot();
     return ArrayRangeReadNode.create(r, currentScope().newResultSlot(), target);

@@ -40,10 +40,10 @@ public class PascalBenchmark extends TruffleBenchmark {
     TailspinArray triangle = truffleContext.eval("tt", tailspinProgram).as(TailspinArray.class);
     if (triangle.getArraySize() != 51) throw new AssertionError("Wrong number of rows " + triangle.getArraySize());
     for (int i = 1; i < triangle.getArraySize(); i++) {
-      if (((TailspinArray) triangle.getNative(i)).getArraySize() != i + 1) {
+      if (((TailspinArray) triangle.getNative(i, false)).getArraySize() != i + 1) {
         throw new AssertionError("wrong length for row " + i + ". Triangle is " + triangle);
       }
-      if ((Long) ((TailspinArray) triangle.getNative(i)).getNative(1) != i) {
+      if ((Long) ((TailspinArray) triangle.getNative(i, false)).getNative(1, false) != i) {
         throw new AssertionError("Wrong value " + i);
       }
     }
