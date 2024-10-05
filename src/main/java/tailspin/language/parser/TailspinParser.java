@@ -3,6 +3,8 @@ package tailspin.language.parser;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,7 +33,7 @@ public class TailspinParser {
      accumulator-state rule (<|ignorable-text>? <|='->'> <|ignorable-text>?) <|set-state>
      
      value-chain rule <|range|source> <|transform|stream>*
-     source rule <|arithmetic-expression|reference|single-value-chain|array-literal|structure-literal|string-literal> (<|ignorable-text>?)
+     source rule <|reference|single-value-chain|array-literal|structure-literal|string-literal|arithmetic-expression> (<|ignorable-text>?)
      reference rule <|='$'> <|='@'>? <|ID>? <|lens-expression>? <|message-send>?
      single-value-chain rule (<|='('> <|ignorable-text>?) <|value-chain> (<|ignorable-text>? <|=')'>) <|='"1"'|unit>?
      range rule <|range-bound> <|='~'>? <|='..'> <|='~'>? (<|ignorable-text>?) <|range-bound> <|stride>? (<|ignorable-text>?)
@@ -128,5 +130,10 @@ public class TailspinParser {
     Memo end = composer.nibble(s, Memo.root(0));
     if (end.pos != s.length()) throw new AssertionError("Parse failed at \n" + s.substring(end.pos));
     return  (ParseNode) ParseNode.normalizeValues(composer.getValues());
+  }
+
+  public static void main(String[] args) throws IOException {
+    String source = Files.readString(Path.of(args[0]));
+    System.out.println(parse(source));
   }
 }
