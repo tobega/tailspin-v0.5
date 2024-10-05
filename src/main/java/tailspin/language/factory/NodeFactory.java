@@ -30,6 +30,7 @@ import tailspin.language.nodes.iterate.StreamNode;
 import tailspin.language.nodes.matchers.AllOfNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.AnyOfNode;
+import tailspin.language.nodes.matchers.ArrayContentMatcherNode;
 import tailspin.language.nodes.matchers.ArrayTypeMatcherNode;
 import tailspin.language.nodes.matchers.CallDefinedTypeMatcherNode;
 import tailspin.language.nodes.matchers.ConditionNode;
@@ -414,9 +415,8 @@ public class NodeFactory {
       case ParseNode(String type, ParseNode id) when type.equals("templates-call")
           -> SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(),
           currentScope().findTemplates((String) id.content()));
-      case ParseNode(String type, Object membranes) when type.equals("filter")
-          -> FilterNode.create(ReadContextValueNode.create(-1, currentValueSlot()), visitAlternativeMembranes(
-          null, membranes));
+      case ParseNode(String type, ParseNode matcher) when type.equals("filter")
+          -> FilterNode.create(ReadContextValueNode.create(-1, currentValueSlot()), visitMatcher(matcher.content()));
       default -> throw new IllegalStateException("Unexpected value: " + transform);
     };
   }
@@ -464,27 +464,27 @@ public class NodeFactory {
 
   private MatchTemplateNode visitMatchTemplate(List<?> matchTemplate) {
     currentScope().pushTemporaryVariables();
-    MatcherNode matcherNode = visitMatcher((ParseNode) matchTemplate.getFirst());
+    MatcherNode matcherNode = switch (matchTemplate.getFirst()) {
+      case ParseNode(String name, @SuppressWarnings("unused")Object c)
+          when name.equals("otherwise") -> AlwaysTrueMatcherNode.create();
+      case ParseNode(String name, ParseNode matcher)
+          when name.equals("when-do") -> visitMatcher(matcher.content());
+      default -> throw new IllegalStateException("Unexpected value: " + matchTemplate.getFirst());
+    };
     StatementNode block = visitBlock(normalizeValues(matchTemplate.subList(1, matchTemplate.size())));
     currentScope().deleteTemporaryValues();
     return MatchTemplateNode.create(matcherNode, block);
   }
 
-  private MatcherNode visitMatcher(ParseNode matcher) {
-    return switch (matcher) {
-      case ParseNode(String name, @SuppressWarnings("unused") Object c)
-          when name.equals("otherwise") -> AlwaysTrueMatcherNode.create();
-      case ParseNode(String name, List<?> membranes)
-          when name.equals("when-do")
-          && membranes.getFirst() instanceof ParseNode(String tb, Object types)
-          && tb.equals("type-bound") -> {
-        MatcherNode typeBound = visitAlternativeMembranes(null, types);
-        yield visitAlternativeMembranes(typeBound, membranes.subList(1, membranes.size()));
-      }
-      case ParseNode(String name, Object membranes)
-          when name.equals("when-do") -> visitAlternativeMembranes(null, membranes);
-      default -> throw new IllegalStateException("Unexpected value: " + matcher);
-    };
+  private MatcherNode visitMatcher(Object matcherContent) {
+    if (matcherContent instanceof List<?> membranes
+        && membranes.getFirst() instanceof ParseNode(String tb, Object types)
+        && tb.equals("type-bound")) {
+      MatcherNode typeBound = visitAlternativeMembranes(null, types);
+      return visitAlternativeMembranes(typeBound, membranes.subList(1, membranes.size()));
+    } else {
+      return visitAlternativeMembranes(null, matcherContent);
+    }
   }
 
   private MatcherNode visitAlternativeMembranes(MatcherNode typeBound, Object membranes) {
@@ -545,9 +545,10 @@ public class NodeFactory {
   }
 
   private MatcherNode visitCondition(Integer conditionSlot, List<?> condition) {
+    if (condition.size() != 2) throw new IllegalStateException("Unexpected condition " + condition);
     ValueNode toMatch = asSingleValueNode(visitValueChain((ParseNode) condition.getFirst()));
-    MatcherNode matcher = visitAlternativeMembranes(null, condition.subList(1, condition.size()));
-    return ConditionNode.create(conditionSlot, toMatch, matcher);
+    ParseNode matcher = (ParseNode) condition.getLast();
+    return ConditionNode.create(conditionSlot, toMatch, visitMatcher(matcher.content()));
   }
 
   private List<MatcherNode> visitTypeMatch(MatcherNode typeBound, ParseNode typeMatch) {
@@ -567,7 +568,7 @@ public class NodeFactory {
             conditions = conditions.subList(0, conditions.size() - 1);
           }
           if (!conditions.getFirst().equals("[")) throw new IllegalStateException("Unexpected array match: " + conditions.getFirst());
-          if (conditions.size() > 1) throw new UnsupportedOperationException(conditions.toString());
+          if (conditions.size() > 1) conditionNodes.addAll(visitArrayContentMatchers(conditions.subList(1, conditions.size())));
         } else if (!typeMatch.content().equals("[")) throw new IllegalStateException("Unexpected conditions: " + typeMatch.content());
         yield conditionNodes;
       }
@@ -634,6 +635,17 @@ public class NodeFactory {
       }
       default -> throw new IllegalStateException("Unexpected value: " + typeMatch);
     };
+  }
+
+  private List<MatcherNode> visitArrayContentMatchers(List<?> arrayContentMatchers) {
+    List<MatcherNode> contentMatchers = new ArrayList<>();
+    for (Object acm : arrayContentMatchers) {
+      if (acm instanceof ParseNode pn && pn.name().equals("array-content-matcher")) {
+        ParseNode matcher = (ParseNode) pn.content();
+        contentMatchers.add(ArrayContentMatcherNode.create(visitMatcher(matcher.content())));
+      }
+    }
+    return contentMatchers;
   }
 
   private MatcherNode visitArrayLengthCondition(ParseNode content) {

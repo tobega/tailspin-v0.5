@@ -65,7 +65,7 @@ public class TailspinParser {
      templates-call rule <|ID>
      inline-templates-call rule (<|='templates'> <|ignorable-text>) <|templates-body>  (<|='end'> <|ignorable-text>?)
      templates rule (name is <|ID>; <|ignorable-text>) <|='templates'|='source'|='sink'> (<|ignorable-text>) <|templates-body>  (<|='end'> <|ignorable-text>) <|=$name>
-     filter rule (<|='if'> <|ignorable-text>? <|='<'>) <|='~'>? (<|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
+     filter rule (<|='if'> <|ignorable-text>?) <|matcher>
      stream rule <|='...'> (<|ignorable-text>?)
      
      templates-body rule <|with-block|matchers>
@@ -74,16 +74,18 @@ public class TailspinParser {
      matchers rule <|match-template>+
      match-template rule <|when-do|otherwise> <|statement>+
      otherwise rule <|='otherwise'> (<|ignorable-text>?)
-     when-do rule (<|='when'> <|ignorable-text>?) <|type-bound>? (<|='<'>) <|='~'>? (<|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>? <|='do'> <|ignorable-text>?)
+     when-do rule (<|='when'> <|ignorable-text>?) <|matcher>  (<|='do'> <|ignorable-text>?)
+     matcher rule <|type-bound>? (<|='<'>) <|='~'>? (<|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
      membrane rule (<|='|'>) <|literal-match|type-match>? (<|ignorable-text>?) <|condition>*
-     condition rule (<|='?('> <|ignorable-text>?) <|value-chain> (<|='matches'> <|ignorable-text> <|='<'>) <|='~'>? (<|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>? <|=')'> <|ignorable-text>?)
+     condition rule (<|='?('> <|ignorable-text>?) <|value-chain> (<|='matches'> <|ignorable-text>) <|matcher> (<|=')'> <|ignorable-text>?)
      type-bound rule (<|='´'>) <|membrane>+ (<|='´'> <|ignorable-text>?)
 
      literal-match rule (<|='='> <|ignorable-text>?) <|source>
      type-match rule <|range-match|array-match|structure-match|measure-type-match|string-literal>
      range-match rule <|range-bound>? <|='~'>? <|='..'> <|='~'>? (<|ignorable-text>?) <|range-bound>?
      range-bound rule <|arithmetic-expression|reference>
-     array-match rule <|='['> (<|ignorable-text>?) (<|=']'> <|ignorable-text>?) <|array-length-condition>?
+     array-match rule <|='['> (<|ignorable-text>?) <|array-content-matcher>* (<|=']'> <|ignorable-text>?) <|array-length-condition>?
+     array-content-matcher rule <|matcher>
      array-length-condition rule (<|='('> <|ignorable-text>?) <|literal-match|range-match> (<|ignorable-text>? <|=')'> <|ignorable-text>?)
      structure-match rule <|='{'|key-matchers> (<|ignorable-text>?) <|='VOID'>? (<|ignorable-text>? <|='}'> <|ignorable-text>?)
      key-matchers rule (<|='{'> <|ignorable-text>?) <|key-matcher> <|additional-key-matcher>*
