@@ -106,3 +106,12 @@ end !
 ---cast measure all operators
 (√4"a" + 3"b" - 2"c" / 1"d" * 1"e" ~/ 5"f" + 2"g" mod 3"h" - 2"i")"j" !
 =5.00000e0"j"
+---Different measure comparison is type error
+[5"m" -> if <|=3"s">] !
+=*TypeError
+---Different measure comparison within type bound works
+[5"m" -> if ´|""´<|=3"s">] !
+=[]
+---Measure with different numeric types works
+5"m" -> if <|=5.0"m"> !
+=5"m"

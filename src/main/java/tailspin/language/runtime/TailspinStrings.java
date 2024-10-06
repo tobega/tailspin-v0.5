@@ -39,7 +39,7 @@ public final class TailspinStrings {
     return fromCodePointNode.execute(codepoint, TAILSPIN_STRING_ENCODING);
   }
 
-  public static String toJavaString(TruffleString regex, ToJavaStringNode toJavaStringNode) {
-    return toJavaStringNode.execute(regex);
+  public static String toJavaString(TruffleString ts, ToJavaStringNode toJavaStringNode) {
+    return toJavaStringNode.execute(ts);
   }
 }

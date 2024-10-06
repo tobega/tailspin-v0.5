@@ -6,6 +6,7 @@ import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
 import static tailspin.language.runtime.Templates.STATE_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.strings.TruffleString;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,6 +86,7 @@ import tailspin.language.parser.ParseNode;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.TailspinStrings;
 import tailspin.language.runtime.Templates;
 import tailspin.language.runtime.TemplatesInstance;
 import tailspin.language.runtime.VocabularyType;
@@ -689,7 +691,7 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode vc) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc));
       case ParseNode(String name, List<?> cast) when name.equals("single-value-chain") -> {
         ParseNode vc = (ParseNode) cast.getFirst();
-        Object unit = visitUnit(cast.getLast());
+        TruffleString unit = visitUnit(cast.getLast());
         currentScope().setUntypedArithmetic(true);
         ValueNode value = asSingleValueNode(visitValueChain(vc));
         currentScope().setUntypedArithmetic(false);
@@ -810,9 +812,9 @@ public class NodeFactory {
     };
   }
 
-  private final Map<String, String> units = new HashMap<>();
+  private final Map<TruffleString, TruffleString> units = new HashMap<>();
 
-  private Object visitUnit(Object unitSpec) {
+  private TruffleString visitUnit(Object unitSpec) {
     if (unitSpec instanceof String ignored) return Measure.SCALAR;
     if (!(unitSpec instanceof ParseNode p && p.name().equals("unit"))) throw new IllegalStateException("Unexpected value: " + unitSpec);
     List<?> items;
@@ -830,8 +832,8 @@ public class NodeFactory {
         else items = List.of(denominator);
       } else throw new IllegalStateException("Unexpected value: " + item);
     }
-    String s = unit.deleteCharAt(unit.length() - 1).toString();
-    String result = units.putIfAbsent(s, s);
+    TruffleString s = TailspinStrings.fromJavaString(unit.deleteCharAt(unit.length() - 1).toString());
+    TruffleString result = units.putIfAbsent(s, s);
     return result == null ? s : result;
   }
 
