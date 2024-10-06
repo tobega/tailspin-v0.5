@@ -20,9 +20,10 @@ public class TailspinParser {
   static final String tailspinSyntax = """
      program rule (<|ignorable-text>?) <|statement>+
      
-     statement rule <|definition|set-state|templates|type-def|terminated-chain> (<|ignorable-text>?)
+     statement rule <|do-nothing|definition|set-state|templates|type-def|terminated-chain> (<|ignorable-text>?)
      comment rule (<|'--.*(\\R|\\z)'>)
      ignorable-text rule (<|WS|comment>+)
+     do-nothing rule <|='VOID'>
      definition rule <|ID> (<|ignorable-text> <|='is'> <|ignorable-text>) <|value-chain> (<|=';'> <|ignorable-text>?)
      type-def rule <|ID> (<|ignorable-text> <|='requires'> <|ignorable-text> <|='<'>) <|='~'>? (<|ignorable-text>?) <|membrane>+ (<|='>'> <|ignorable-text>?)
      set-state rule <|='..|'>? (<|='@'>) <|ID>? <|lens-expression>? (<|ignorable-text>? <|='set'> <|ignorable-text>?) <|value-chain> (<|=';'> <|ignorable-text>?)

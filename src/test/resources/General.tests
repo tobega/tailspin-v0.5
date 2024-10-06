@@ -18,3 +18,8 @@ $foo !
 4 !
 -- this is a comment
 =4
+---void statement
+[1 -> templates
+  VOID
+end] !
+=[]

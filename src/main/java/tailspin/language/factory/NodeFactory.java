@@ -147,6 +147,7 @@ public class NodeFactory {
   private StatementNode visitStatement(ParseNode statement) {
     return switch (statement) {
       case ParseNode(String name, ParseNode stmt) when name.equals("statement") -> visitStatement(stmt);
+      case ParseNode(String name, String ignored) when name.equals("do-nothing") -> DoNothingNode.create();
       case ParseNode(String name, Object stmt) when name.equals("terminated-chain") -> visitTerminatedChain(stmt);
       case ParseNode(String name, List<?> def) when name.equals("definition") -> visitDefinition(def);
       case ParseNode(String name, Object setExpr) when name.equals("set-state") -> visitSetState(setExpr);
