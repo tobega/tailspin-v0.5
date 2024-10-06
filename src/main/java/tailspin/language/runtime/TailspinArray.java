@@ -83,6 +83,14 @@ public class TailspinArray implements TruffleObject {
     arrayElements = Arrays.copyOf(arrayElements, newCapacity);
   }
 
+  public Object first() {
+    return 1L;
+  }
+
+  public Object last() {
+    return getArraySize();
+  }
+
   @ExportMessage
   public boolean hasArrayElements() {
     return true;
@@ -135,9 +143,9 @@ public class TailspinArray implements TruffleObject {
   @ExportMessage
   public Object readMember(String member) throws UnknownIdentifierException {
     return switch(member) {
-      case "first" -> 1L;
-      case "last" -> length;
-      case "length" -> length;
+      case "first" -> first();
+      case "last" -> last();
+      case "length" -> getArraySize();
       default -> throw UnknownIdentifierException.create(member);
     };
   }

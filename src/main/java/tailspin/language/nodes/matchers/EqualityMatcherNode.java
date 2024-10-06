@@ -20,6 +20,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.VocabularyType;
 
 @NodeChild(value = "dummy", type = ValueNode.class)
@@ -82,6 +83,16 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     protected boolean doString(TruffleString left, TruffleString right) {
       // Note: this requires same encoding to work
       return left.equals(right);
+    }
+
+    @Specialization
+    protected boolean doArray(Node node, TailspinArray left, TailspinArray right) {
+      if (!executeEquals(node, left.first(), right.first())) return false;
+      if (!executeEquals(node, left.getArraySize(), right.getArraySize())) return false;
+      for (int i = 0; i < left.getArraySize(); i++) {
+        if (!executeEquals(node, left.getNative(i, false), right.getNative(i, false))) return false;
+      }
+      return true;
     }
 
     @Fallback
