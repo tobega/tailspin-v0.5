@@ -129,3 +129,12 @@ foo is 7/8;
 bar is 1/5;
 $foo ~/ $bar !
 =4
+---Rationals autotype numeric
+{ foo: 1 / 5 } -> { foo: 3 } !
+={ foo: 3 }
+---autotyped numeric accepts Rational
+{ foo: 1 } -> { foo: 1 / 5 } !
+={ foo: 1/5 }
+---Rationals do not autotype string
+{ foo: 1 / 5 } -> { foo: '3' } !
+=*TypeError

@@ -145,3 +145,9 @@ end !
   otherwise 0!
 end !
 =1
+---Rational is a number
+1 / 3 -> templates
+  when <|..> do 1!
+  otherwise 0!
+end !
+=1
