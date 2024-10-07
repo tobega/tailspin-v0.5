@@ -100,13 +100,13 @@ public abstract class RangeIteration extends TransformNode {
   public abstract void executeDirect(VirtualFrame frame, Object start, Object end, Object increment);
 
   @Specialization(guards = "increment == null")
-  public void doIterateLongDefault(VirtualFrame frame, Long start, Long end, Object increment) {
-    executeDirect(frame, start, end, 1L);
+  public void doIterateMeasureDefault(VirtualFrame frame, Measure start, Measure end, Object increment) {
+    executeDirect(frame, start, end, new Measure(1L, start.unit()));
   }
 
   @Specialization(guards = "increment == null")
-  public void doIterateMeasureDefault(VirtualFrame frame, Measure start, Measure end, Object increment) {
-    executeDirect(frame, start, end, new Measure(1L, start.unit()));
+  public void doIterateNumberDefault(VirtualFrame frame, Object start, Object end, Object increment) {
+    executeDirect(frame, start, end, 1L);
   }
 
   @Specialization(guards = "start == null")
