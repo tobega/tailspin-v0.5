@@ -335,7 +335,7 @@ public class NodeFactory {
           case ParseNode(String name, List<?> bounds) when name.equals("range") -> visitRange(bounds);
           case ParseNode(String name, ParseNode transform) when name.equals("source") -> visitSource(transform);
           case ParseNode(String name, String ignored) when name.equals("stream") -> StreamNode.create(ReadContextValueNode.create(-1, currentValueSlot()));
-          case ParseNode(String name, ParseNode setState) when name.equals("set-state") -> visitSetState(setState);
+          case ParseNode(String name, Object setState) when name.equals("set-state") -> visitSetState(setState);
           case String v when v.equals("VOID") -> VoidValue.create();
           default -> throw new IllegalStateException("Unexpected value: " + stage);
         };

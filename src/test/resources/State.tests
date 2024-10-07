@@ -39,6 +39,17 @@ end outer
 
 1 -> outer !
 =6
+---write state to outer templates at end of chain
+outer templates
+  $ -> templates
+    $ -> @outer set $ + 1;
+    $ + 2!
+  end
+  -> $ * $@!
+end outer
+
+1 -> outer !
+=6
 ---read single value index of state array
 [2, 3, 4, 5] -> templates
   @ set $;
