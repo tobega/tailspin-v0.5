@@ -115,3 +115,9 @@ end !
 ---Measure with different numeric types works
 5"m" -> if <|=5.0"m"> !
 =5"m"
+---cast measure
+0"m" -> ($)"1" !
+=0"1"
+---Recast measure
+0"1" -> ($)"1" !
+=0"1"

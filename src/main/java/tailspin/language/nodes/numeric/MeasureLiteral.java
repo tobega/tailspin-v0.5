@@ -21,6 +21,11 @@ public abstract class MeasureLiteral extends ValueNode {
   }
 
   @Specialization
+  Object doCast(Measure value) {
+    return new Measure(value.value(), unit);
+  }
+
+  @Specialization
   Object doMeasure(Object value) {
     return new Measure(value, unit);
   }
