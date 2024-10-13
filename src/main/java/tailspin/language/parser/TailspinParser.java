@@ -34,7 +34,7 @@ public class TailspinParser {
      accumulator-state rule (<|ignorable-text>? <|='->'> <|ignorable-text>?) <|set-state>
      
      value-chain rule <|range|source> <|transform|stream>*
-     source rule <|reference|single-value-chain|array-literal|structure-literal|string-literal|arithmetic-expression> (<|ignorable-text>?)
+     source rule <|type-cast|reference|single-value-chain|array-literal|structure-literal|string-literal|arithmetic-expression> (<|ignorable-text>?)
      reference rule <|='$'> <|='@'>? <|ID>? <|lens-expression>? <|message-send>?
      single-value-chain rule (<|='('> <|ignorable-text>?) <|value-chain> (<|ignorable-text>? <|=')'>) <|='"1"'|unit>?
      range rule <|range-bound> <|='~'>? <|='..'> <|='~'>? (<|ignorable-text>?) <|range-bound> <|stride>? (<|ignorable-text>?)
@@ -44,6 +44,8 @@ public class TailspinParser {
      unicode-bytes rule (<|='$#U+'>) <|'[0-9a-fA-F]+'> (<|=';'>)
      codepoint rule (<|='$#'> <|ignorable-text>?) <|value-chain> (<|=';'>)
      interpolate rule (<|='$:'|'(?=\\$)'> <|ignorable-text>?) <|value-chain> (<|=';'>)
+     
+     type-cast rule <|ID> (<|='´'>) <|numeric-literal|structure-literal>
      
      lens-expression rule (<|='('> <|ignorable-text>?) <|lens-dimension>  <|lens-transform>? (<|=')'>)
      lens-transform rule (<|=';'> <|ignorable-text>?) <|transform>+

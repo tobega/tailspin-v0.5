@@ -46,6 +46,7 @@ Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.c
 ## New features
 - Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `if <.....>`
 - Assert a single value from a chain by surrounding with parentheses, `($source -> filter)`, previously only for arithmetic value
+- Type assertions by tagging values, e.g. `foo´{bar: 5}` checks that the structure-literal is of type `foo`
 
 ## Performance check
 See the [performance tests](src/jmh/README.md) for how Tailspin performs relative to java

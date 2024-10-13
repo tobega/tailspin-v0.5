@@ -1,0 +1,8 @@
+---tagged structure type check passes
+struct requires <|{foo:}>
+struct´{foo: 1} !
+={ foo: 1 }
+---tagged structure type check fails
+struct requires <|{foo:}>
+struct´{bar: 1} !
+=*TypeError

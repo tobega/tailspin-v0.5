@@ -78,6 +78,7 @@ import tailspin.language.nodes.transform.SinkNode;
 import tailspin.language.nodes.value.ConsolidateLensResultNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
+import tailspin.language.nodes.value.TagNode;
 import tailspin.language.nodes.value.TransformLensNode;
 import tailspin.language.nodes.value.TransformResultNode;
 import tailspin.language.nodes.value.VoidValue;
@@ -688,7 +689,6 @@ public class NodeFactory {
     return switch (source) {
       case ParseNode(String name, ParseNode ae) when name.equals("arithmetic-expression") -> visitArithmeticExpression(ae);
       case ParseNode(String name, Object ref) when name.equals("reference") -> visitReference(ref);
-      case ParseNode(String name, ParseNode literal) when name.equals("numeric-literal") -> visitNumericLiteral(literal);
       case ParseNode(String name, ParseNode vc) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc));
       case ParseNode(String name, List<?> cast) when name.equals("single-value-chain") -> {
         ParseNode vc = (ParseNode) cast.getFirst();
@@ -701,8 +701,19 @@ public class NodeFactory {
       case ParseNode(String name, Object contents) when name.equals("array-literal") -> visitArrayLiteral(contents);
       case ParseNode(String name, Object contents) when name.equals("structure-literal") -> visitStructureLiteral(contents);
       case ParseNode(String name, Object contents) when name.equals("string-literal") -> visitStringLiteral(contents);
+      case ParseNode(String name, List<?> contents) when name.equals("type-cast") && contents.size() == 2 -> visitTypeCast((ParseNode) contents.getFirst(), (ParseNode) contents.getLast());
       default -> throw new IllegalStateException("Unexpected value: " + source);
     };
+  }
+
+  private ValueNode visitTypeCast(ParseNode tag, ParseNode value) {
+    ValueNode valueNode = switch (value) {
+      case ParseNode(String name, Object content) when name.equals("numeric-literal") -> visitNumericLiteral(content);
+      case ParseNode(String name, Object content) when name.equals("structure-literal") -> visitStructureLiteral(content);
+      default -> throw new IllegalStateException("Unexpected value: " + value);
+    };
+    String key = (String) tag.content();
+    return TagNode.create(currentScope().getVocabularyType(key), valueNode);
   }
 
   private ValueNode visitStringLiteral(Object contents) {
@@ -953,8 +964,7 @@ public class NodeFactory {
     int separator = bounds.indexOf("..");
     ValueNode stride;
     if (bounds.getLast() instanceof ParseNode(String name, ParseNode content) && name.equals("stride")) {
-      stride = asSingleValueNode(visitSource((ParseNode) (
-          (ParseNode) content.content()).content()));
+      stride = asSingleValueNode(visitSource((ParseNode) content.content()));
       bounds = bounds.subList(0, bounds.size() - 1);
     } else {
       stride = VoidValue.create();
