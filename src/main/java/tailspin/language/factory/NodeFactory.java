@@ -710,6 +710,9 @@ public class NodeFactory {
     ValueNode valueNode = switch (value) {
       case ParseNode(String name, Object content) when name.equals("numeric-literal") -> visitNumericLiteral(content);
       case ParseNode(String name, Object content) when name.equals("structure-literal") -> visitStructureLiteral(content);
+      case ParseNode(String name, Object content) when name.equals("string-literal") -> visitStringLiteral(content);
+      case ParseNode(String name, Object content) when name.equals("array-literal") -> visitArrayLiteral(content);
+      case ParseNode(String name, ParseNode content) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(content));
       default -> throw new IllegalStateException("Unexpected value: " + value);
     };
     String key = (String) tag.content();

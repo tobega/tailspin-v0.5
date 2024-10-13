@@ -45,7 +45,7 @@ public class TailspinParser {
      codepoint rule (<|='$#'> <|ignorable-text>?) <|value-chain> (<|=';'>)
      interpolate rule (<|='$:'|'(?=\\$)'> <|ignorable-text>?) <|value-chain> (<|=';'>)
      
-     type-cast rule <|ID> (<|='´'>) <|numeric-literal|structure-literal>
+     type-cast rule <|ID> (<|='´'>) <|numeric-literal|structure-literal|string-literal|array-literal|single-value-chain>
      
      lens-expression rule (<|='('> <|ignorable-text>?) <|lens-dimension>  <|lens-transform>? (<|=')'>)
      lens-transform rule (<|=';'> <|ignorable-text>?) <|transform>+
