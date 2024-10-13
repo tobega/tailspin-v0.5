@@ -55,3 +55,7 @@ foo´2 -> if <|=bar´2> !
 ---tagged number equals tagged
 foo´2 -> if <|=foo´2> !
 =foo´2
+---tag is type bound
+fooey requires <|{foo:}>
+[{ foo: 1 } -> if <|=fooey´{ foo: 1, bar: 2 }>] !
+=[]

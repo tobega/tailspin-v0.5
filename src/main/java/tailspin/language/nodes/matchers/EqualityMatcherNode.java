@@ -10,7 +10,9 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import com.oracle.truffle.api.strings.TruffleString;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.MatcherNode;
@@ -20,6 +22,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.TaggedValue;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.VocabularyType;
@@ -97,6 +100,18 @@ public abstract class EqualityMatcherNode extends MatcherNode {
       if (!executeEquals(node, left.getArraySize(), right.getArraySize())) return false;
       for (int i = 0; i < left.getArraySize(); i++) {
         if (!executeEquals(node, left.getNative(i, false), right.getNative(i, false))) return false;
+      }
+      return true;
+    }
+
+    @Specialization
+    protected boolean doStructure(Node node, Structure left, Structure right,
+        @CachedLibrary(limit = "2") DynamicObjectLibrary leftLibrary,
+        @CachedLibrary(limit = "2") DynamicObjectLibrary rightLibrary) {
+      Object[] rightKeys = rightLibrary.getKeyArray(right);
+      if (leftLibrary.getKeyArray(left).length != rightKeys.length) return false;
+      for (Object key : rightKeys) {
+        if (!executeEquals(node, leftLibrary.getOrDefault(left, key, null), rightLibrary.getOrDefault(right, key, null))) return false;
       }
       return true;
     }

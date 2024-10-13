@@ -52,3 +52,9 @@ end !
   otherwise 0 !
 end !
 =*TypeError
+---structure equals without required fields is error
+{ foo: 1 } -> if <|={ foo: 1, bar: 2 }> !
+=*TypeError
+---structure equals without required fields within type bounds works
+[{ foo: 1 } -> if ´|{foo:}´<|={ foo: 1, bar: 2 }>] !
+=[]
