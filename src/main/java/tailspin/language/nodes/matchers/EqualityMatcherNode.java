@@ -20,6 +20,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.TaggedValue;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.VocabularyType;
 
@@ -77,6 +78,11 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     @Specialization
     protected boolean doMeasure(Node node, Measure left, Measure right) {
       return executeEquals(node, left.unit(), right.unit()) && executeEquals(node, left.value(), right.value());
+    }
+
+    @Specialization
+    protected boolean doTaggedValue(Node node, TaggedValue left, TaggedValue right) {
+      return left.type().equals(right.type()) && executeEquals(node, left.value(), right.value());
     }
 
     @Specialization

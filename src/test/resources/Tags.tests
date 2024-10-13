@@ -9,7 +9,7 @@ struct´{bar: 1} !
 ---tagged number type check passes
 roll requires <|1..6>
 roll´5 !
-=5
+=roll´5
 ---tagged number type check fails
 roll requires <|1..6>
 roll´7 !
@@ -41,8 +41,17 @@ has1´[2..4] !
 ---tagged single value type check passes
 is2 requires <|=2>
 is2´(1..3 -> if <~|=1|=3>) !
-=2
+=is2´2
 ---tagged single value type check fails
 is2 requires <|=2>
 is2´(1..3 -> if <~|=2|=3>) !
 =*TypeError
+---tagged number is not raw
+foo´2 -> if <|=2> !
+=*TypeError
+---tagged number is not other tag
+foo´2 -> if <|=bar´2> !
+=*TypeError
+---tagged number equals tagged
+foo´2 -> if <|=foo´2> !
+=foo´2

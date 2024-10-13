@@ -2,6 +2,7 @@ package tailspin.language.runtime;
 
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import java.util.Arrays;
+import java.util.Optional;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.matchers.AlwaysTrueMatcherNode;
 import tailspin.language.nodes.matchers.ArrayTypeMatcherNode;
@@ -54,5 +55,9 @@ public class VocabularyType implements Comparable<VocabularyType> {
   public void setConstraint(MatcherNode constraint) {
     if (this.constraint != null) throw new IllegalStateException("Cannot redefine type " + key);
     this.constraint = constraint;
+  }
+
+  public Optional<MatcherNode> getConstraint() {
+    return Optional.ofNullable(constraint);
   }
 }
