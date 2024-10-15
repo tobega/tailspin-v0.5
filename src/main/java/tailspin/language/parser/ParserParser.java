@@ -67,15 +67,15 @@ public class ParserParser {
             new NamedComposition("tokenMatcher"),
             new NamedComposition("sourceReference")
         ))),
-        // tokenMatcher rule (<|='<'>) <|='~'>? (<|WS>?) <|compositionToken>+ (<|WS>? <|='>'>) <|multiplier>? (<|WS>?)
+        // tokenMatcher rule ?<|multiplier> (<|='<'>) ?<|='~'> (?<|WS>) +<|compositionToken> (?<|WS> <|='>'>) (?<|WS>)
         "tokenMatcher", List.of(
+            new MultiplierComposition(new NamedComposition("multiplier"), RangeMatch.AT_MOST_ONE),
             new SkipComposition(List.of(new LiteralComposition((s) -> "<"))),
             new MultiplierComposition(new LiteralComposition((s) -> "~"), RangeMatch.AT_MOST_ONE),
             new NamedComposition("optionalWhitespace"),
             new MultiplierComposition(new NamedComposition("compositionToken"), RangeMatch.AT_LEAST_ONE),
             new NamedComposition("optionalWhitespace"),
             new SkipComposition(List.of(new LiteralComposition((s) -> ">"))),
-            new MultiplierComposition(new NamedComposition("multiplier"), RangeMatch.AT_MOST_ONE),
             new NamedComposition("optionalWhitespace")
         ),
         // compositionToken rule (<|='|'> <|WS>?) <|literalComposition|localIdentifier|stringLiteral> (<|WS>?)
@@ -206,23 +206,23 @@ public class ParserParser {
       return visitCompositionToken(c);
     }
     if (tm instanceof List<?> l) {
-      if (l.getLast() instanceof ParseNode(String name, String c) && name.equals("multiplier")) {
+      if (l.getFirst() instanceof ParseNode(String name, String c) && name.equals("multiplier")) {
         RangeMatch multiplier = switch (c) {
           case "?" -> RangeMatch.AT_MOST_ONE;
           case "+" -> RangeMatch.AT_LEAST_ONE;
           case "*" -> RangeMatch.ANY_AMOUNT;
           default -> throw new IllegalStateException("Unexpected value: " + c);
         };
-        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(0, l.size() - 1))), multiplier);
+        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(1, l.size()))), multiplier);
       }
-      if (l.getLast() instanceof ParseNode(String name, ParseNode(String cm, ParseNode(
+      if (l.getFirst() instanceof ParseNode(String name, ParseNode(String cm, ParseNode(
           String type, Long value))) && name.equals("multiplier") && cm.equals("customMultiplier") && type.equals("INT")) {
-        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(0, l.size() - 1))), RangeMatch.exactly(new Constant<>(value)));
+        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(1, l.size()))), RangeMatch.exactly(new Constant<>(value)));
       }
-      if (l.getLast() instanceof ParseNode(String name, ParseNode(String cm, ParseNode(
+      if (l.getFirst() instanceof ParseNode(String name, ParseNode(String cm, ParseNode(
           String type, ParseNode(String li, String ref)))) && name.equals("multiplier") && cm.equals("customMultiplier")
               && type.equals("sourceReference") && li.equals("localIdentifier")) {
-        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(0, l.size() - 1))), RangeMatch.exactly(new Reference<>(ref)));
+        return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(1, l.size()))), RangeMatch.exactly(new Reference<>(ref)));
       }
       if (l.getFirst() instanceof String c && c.equals("~")) {
         return new InverseComposition(visitTokenMatcher(normalizeValues(l.subList(1, l.size()))));

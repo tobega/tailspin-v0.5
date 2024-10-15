@@ -33,6 +33,7 @@ Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.c
 - Inline templates will no longer be written as `\(......\)`, instead just `templates ........ end`. This unifies syntax and opens up for inline composer, etc.
 - Probably an underscore `_` will be introduced as a way to reference a transform without applying it, so passing templates as parameters would be prefixed by `_`
 - Since `#` is a transform call, I will experimentally try to disable named recursion. All recursion will then have to be on matchers. This makes sense from a usability perspective.
+- Multipliers for array contant and composers come before instead of after, so `?<=2>`, not `<=2>?`
 
 ### Matchers
 - In structure matchers, just a key is sufficient to denote existence (no `<>` needed), so `when <{name:}>` instead of `when <{name: <>}>`
@@ -42,7 +43,7 @@ Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.c
 - Line comments will start with `--` instead of `//` because it just looks lighter and cleaner
 - Key-values will have to be wrapped in a structure, so `{ foo: 1 }` instead of an independent `(foo:1)`, this just removes an unnecessary special case
 - Type bounds are listed outside the angle brackets, e.g. `´|""´<|=5"s">`
-- Array start indexes are given as `@0[]` instead of `0:[]`
+- Array start indexes are given as `&0[]` instead of `0:[]`, to work better together with type assertions (below)
 
 ## New features
 - Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `if <.....>`
