@@ -49,6 +49,22 @@ public class FibonacciBenchmark extends TruffleBenchmark {
       end !
       """;
 
+  private static final String tailspinStructureProgram = """
+      {n: 20"n"} -> templates
+        when <|={n:0"n"}> do 0 !
+        when <|={n:1"n"}> do 1 !
+        otherwise ({n: $(n:) - 1"n"} -> #) + ({n:$(n:) - 2"n"} -> #) !
+      end !
+      """;
+
+  private static final String tailspinArrayProgram = """
+      [20] -> templates
+        when <|=[0]> do 0 !
+        when <|=[1]> do 1 !
+        otherwise ([$(1) - 1] -> #) + ([$(1) - 2] -> #) !
+      end !
+      """;
+
   @Benchmark
   public void recursive_tailspin_raw_long() {
     int value = truffleContext.eval("tt", tailspinProgram).asInt();
@@ -77,6 +93,18 @@ public class FibonacciBenchmark extends TruffleBenchmark {
   public void recursive_tailspin_measure_long() {
     Measure value = truffleContext.eval("tt", tailspinMeasureProgram).as(Measure.class);
     if ((long) value.value() != 6765) throw new AssertionError("value " + value);
+  }
+
+  @Benchmark
+  public void recursive_tailspin_structure_measure() {
+    int value = truffleContext.eval("tt", tailspinStructureProgram).asInt();
+    if (value != 6765) throw new AssertionError("value " + value);
+  }
+
+  @Benchmark
+  public void recursive_tailspin_array_long() {
+    int value = truffleContext.eval("tt", tailspinArrayProgram).asInt();
+    if (value != 6765) throw new AssertionError("value " + value);
   }
 
   @Benchmark

@@ -2,6 +2,7 @@ package tailspin.language.nodes.matchers;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Exclusive;
 import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateInline;
@@ -76,13 +77,15 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     }
 
     @Specialization
-    protected boolean doMeasure(Node node, Measure left, Measure right) {
-      return (left.unit() == right.unit()) && executeEquals(node, left.value(), right.value());
+    protected boolean doMeasure(Node node, Measure left, Measure right,
+        @Cached(inline = false) @Shared DoEqualityNode doEqualityNode) {
+      return left.unit() == right.unit() && doEqualityNode.executeEquals(node, left.value(), right.value());
     }
 
     @Specialization
-    protected boolean doTaggedValue(Node node, TaggedValue left, TaggedValue right) {
-      return left.type().equals(right.type()) && executeEquals(node, left.value(), right.value());
+    protected boolean doTaggedValue(Node node, TaggedValue left, TaggedValue right,
+        @Cached(inline = false) @Shared DoEqualityNode doEqualityNode) {
+      return left.type() == right.type() && doEqualityNode.executeEquals(node, left.value(), right.value());
     }
 
     @Specialization
@@ -92,11 +95,14 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     }
 
     @Specialization
-    protected boolean doArray(Node node, TailspinArray left, TailspinArray right) {
-      if (!executeEquals(node, left.first(), right.first())) return false;
-      if (!executeEquals(node, left.getArraySize(), right.getArraySize())) return false;
+    protected boolean doArray(Node node, TailspinArray left, TailspinArray right,
+        @Cached(inline = false) @Exclusive DoEqualityNode indexEqualityNode,
+        @Cached(inline = false) @Exclusive DoEqualityNode sizeEqualityNode,
+        @Cached(inline = false) @Shared DoEqualityNode doEqualityNode) {
+      if (!indexEqualityNode.executeEquals(node, left.first(), right.first())) return false;
+      if (!sizeEqualityNode.executeEquals(node, left.getArraySize(), right.getArraySize())) return false;
       for (int i = 0; i < left.getArraySize(); i++) {
-        if (!executeEquals(node, left.getNative(i, false), right.getNative(i, false))) return false;
+        if (!doEqualityNode.executeEquals(node, left.getNative(i, false), right.getNative(i, false))) return false;
       }
       return true;
     }
@@ -104,11 +110,12 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     @Specialization
     protected boolean doStructure(Node node, Structure left, Structure right,
         @CachedLibrary(limit = "2") DynamicObjectLibrary leftLibrary,
-        @CachedLibrary(limit = "2") DynamicObjectLibrary rightLibrary) {
+        @CachedLibrary(limit = "2") DynamicObjectLibrary rightLibrary,
+        @Cached(inline = false) @Shared DoEqualityNode doEqualityNode) {
       Object[] rightKeys = rightLibrary.getKeyArray(right);
       if (leftLibrary.getKeyArray(left).length != rightKeys.length) return false;
       for (Object key : rightKeys) {
-        if (!executeEquals(node, leftLibrary.getOrDefault(left, key, null), rightLibrary.getOrDefault(right, key, null))) return false;
+        if (!doEqualityNode.executeEquals(node, leftLibrary.getOrDefault(left, key, null), rightLibrary.getOrDefault(right, key, null))) return false;
       }
       return true;
     }
@@ -125,9 +132,8 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     return doEqualityNode.executeEquals(this, toMatch, value);
   }
 
-  @Specialization(guards = {"!isTypeChecked", "value == cachedValue"}, limit = "3")
+  @Specialization(guards = {"!isTypeChecked", "dynamicBound.executeMatcherGeneric(frame, value)"}, limit = "3")
   protected boolean doDynamicCachedBound(VirtualFrame frame, Object toMatch, Object value,
-      @Cached("value") Object cachedValue,
       @Cached(inline = true) @Shared DoEqualityNode doEqualityNode,
       @Cached("autoType(value)") MatcherNode dynamicBound) {
     if (doEqualityNode.executeEquals(this, toMatch, value)) return true;
