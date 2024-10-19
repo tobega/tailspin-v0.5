@@ -532,3 +532,26 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |NBodyBenchmark.nbody_tailspin                         |avgt  |  5  |16837,929 |± 1589,935  |us/op|
 |PascalBenchmark.triangle_java                         |avgt  |  5  |   12,452 |±    0,830  |us/op|
 |PascalBenchmark.triangle_tailspin                     |avgt  |  5  |   22,478 |±    1,565  |us/op|
+
+2024-10-19 NBody benchmark with 6 digits precision
+|Benchmark                                                |Mode  |Cnt  |    Score |     Error  |Units|
+|---------------------------------------------------------|------|-----|----------|-----------|-----|
+|BubblesortBenchmark.sort_java                            |avgt  |  5  |   19,794 |±    0,461  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate                |avgt  |  5  |   37,016 |±    5,206  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse                |avgt  |  5  |   43,222 |±    1,176  |us/op|
+|FibonacciBenchmark.recursive_java                        |avgt  |  5  |   37,144 |±    3,399  |us/op|
+|FibonacciBenchmark.recursive_tailspin_array_long         |avgt  |  5  | 1680,381 |±  130,767  |us/op|
+|FibonacciBenchmark.recursive_tailspin_bignumber          |avgt  |  5  |  563,183 |±   47,514  |us/op|
+|FibonacciBenchmark.recursive_tailspin_measure_long       |avgt  |  5  |  144,868 |±    5,740  |us/op|
+|FibonacciBenchmark.recursive_tailspin_rational           |avgt  |  5  | 9939,808 |± 1056,514  |us/op|
+|FibonacciBenchmark.recursive_tailspin_raw_long           |avgt  |  5  |   75,823 |±    5,052  |us/op|
+|FibonacciBenchmark.recursive_tailspin_scinum             |avgt  |  5  | 1015,674 |±   61,221  |us/op|
+|FibonacciBenchmark.recursive_tailspin_structure_measure  |avgt  |  5  | 8284,492 |±  198,145  |us/op|
+|ListBenchmark.list_java                                  |avgt  |  5  |   25,065 |±    0,744  |us/op|
+|ListBenchmark.list_tailspin_empty                        |avgt  |  5  | 1000,585 |±  125,102  |us/op|
+|ListBenchmark.list_tailspin_optional                     |avgt  |  5  |  935,499 |±   85,166  |us/op|
+|NBodyBenchmark.nbody_java                                |avgt  |  5  |   16,636 |±    0,801  |us/op|
+|NBodyBenchmark.nbody_tailspin_18digits                   |avgt  |  5  |18761,450 |± 3020,980  |us/op|
+|NBodyBenchmark.nbody_tailspin_6digits                    |avgt  |  5  |10273,871 |±  449,656  |us/op|
+|PascalBenchmark.triangle_java                            |avgt  |  5  |   12,931 |±    0,278  |us/op|
+|PascalBenchmark.triangle_tailspin                        |avgt  |  5  |   23,404 |±    0,346  |us/op|

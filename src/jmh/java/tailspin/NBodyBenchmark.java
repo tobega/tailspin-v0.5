@@ -143,10 +143,150 @@ public class NBodyBenchmark extends TruffleBenchmark {
   250 -> n-body-system !
   """;
 
+  private static final String tailspinProgram6digits = """
+  PI is 3.14159;
+  SOLAR_MASS is 4 * $PI * $PI;
+  DAYS_PER_YEAR is 365.240;
+
+  jupiter is {
+    x: 4.84143e+00,
+    y: -1.16032e+00,
+    z: -1.03622e-01,
+    vx: 1.66008e-03 * $DAYS_PER_YEAR,
+    vy: 7.69901e-03 * $DAYS_PER_YEAR,
+    vz: -6.90460e-05 * $DAYS_PER_YEAR,
+    mass: 9.54792e-04 * $SOLAR_MASS
+  };
+
+  saturn is {
+    x: 8.34337e+00,
+    y: 4.12480e+00,
+    z: -4.03523e-01,
+    vx: -2.76742e-03 * $DAYS_PER_YEAR,
+    vy: 4.99853e-03 * $DAYS_PER_YEAR,
+    vz: 2.30417e-05 * $DAYS_PER_YEAR,
+    mass:2.85886e-04 * $SOLAR_MASS
+  };
+
+  uranus is {
+    x: 1.28944e+01,
+    y: -1.51112e+01,
+    z: -2.23308e-01,
+    vx: 2.96460e-03 * $DAYS_PER_YEAR,
+    vy: 2.37847e-03 * $DAYS_PER_YEAR,
+    vz: -2.96590e-05 * $DAYS_PER_YEAR,
+    mass: 4.366248e-05 * $SOLAR_MASS
+  };
+
+  neptune is {
+    x: 1.53797e+01,
+    y: -2.59193e+01,
+    z: 1.79259e-01,
+    vx: 2.68068e-03 * $DAYS_PER_YEAR,
+    vy: 1.62824e-03 * $DAYS_PER_YEAR,
+    vz: -9.51592e-05 * $DAYS_PER_YEAR,
+    mass: 5.15139e-05 * $SOLAR_MASS
+  };
+
+  sun is {
+    x: 0,
+    y: 0,
+    z: 0,
+    vx: 0,
+    vy: 0,
+    vz: 0,
+    mass: $SOLAR_MASS
+  };
+  
+  n-body-system templates
+    @ set [$sun, $jupiter, $saturn, $uranus, $neptune];
+    $@ -> templates
+      @ set {px: 0, py: 0, pz: 0};
+      $... -> @ set {
+        px: $@(px:) + $(vx:) * $(mass:),
+        py: $@(py:) + $(vy:) * $(mass:),
+        pz: $@(pz:) + $(vz:) * $(mass:)
+      };
+      @n-body-system(1; vx:) set 0 - ($@(px:) / $SOLAR_MASS);
+      @n-body-system(1; vy:) set 0 - ($@(py:) / $SOLAR_MASS);
+      @n-body-system(1; vz:) set 0 - ($@(pz:) / $SOLAR_MASS);
+    end -> !VOID
+
+    advance sink
+      dt is $;
+      1..$@n-body-system::length -> templates
+        i is $;
+        iBody is $@n-body-system($);
+        $~..$@n-body-system::length -> templates
+          j is $;
+          jBody is $@n-body-system($);
+          dx is $iBody(x:) - $jBody(x:);
+          dy is $iBody(y:) - $jBody(y:);
+          dz is $iBody(z:) - $jBody(z:);
+
+          dSquared is $dx * $dx + $dy * $dy + $dz * $dz;
+          distance is √$dSquared;
+          mag is $dt / ($dSquared * $distance);
+
+          @n-body-system($i; vx:) set $@n-body-system($i; vx:) - $dx * $@n-body-system($j; mass:) * $mag;
+          @n-body-system($i; vy:) set $@n-body-system($i; vy:) - $dy * $@n-body-system($j; mass:) * $mag;
+          @n-body-system($i; vz:) set $@n-body-system($i; vz:) - $dz * $@n-body-system($j; mass:) * $mag;
+
+          @n-body-system($j; vx:) set $@n-body-system($j; vx:) + $dx * $@n-body-system($i; mass:) * $mag;
+          @n-body-system($j; vy:) set $@n-body-system($j; vy:) + $dy * $@n-body-system($i; mass:) * $mag;
+          @n-body-system($j; vz:) set $@n-body-system($j; vz:) + $dz * $@n-body-system($i; mass:) * $mag;
+        end -> !VOID
+      end -> !VOID
+
+      1..$@n-body-system::length -> templates
+          @n-body-system($; x:) set $@n-body-system($; x:) + $dt * $@n-body-system($; vx:);
+          @n-body-system($; y:) set $@n-body-system($; y:) + $dt * $@n-body-system($; vy:);
+          @n-body-system($; z:) set $@n-body-system($; z:) + $dt * $@n-body-system($; vz:);
+      end -> !VOID
+    end advance
+
+    energy source
+      @ set 0;
+
+      1..$@n-body-system::length -> templates
+        i is $;
+        iBody is $@n-body-system($);
+        @energy set $@energy + 0.500000 * $iBody(mass:) * ($iBody(vx:) * $iBody(vx:) +
+          $iBody(vy:) * $iBody(vy:) +
+          $iBody(vz:) * $iBody(vz:));
+
+        $~..$@n-body-system::length -> templates
+          j is $;
+          jBody is $@n-body-system($);
+          dx is $iBody(x:) - $jBody(x:);
+          dy is $iBody(y:) - $jBody(y:);
+          dz is $iBody(z:) - $jBody(z:);
+
+          distance is √($dx * $dx + $dy * $dy + $dz * $dz);
+          @energy set $@energy - ($iBody(mass:) * $jBody(mass:)) / $distance;
+        end -> !VOID
+      end -> !VOID
+  
+      $@ !
+    end energy
+
+    1..$ -> 0.010000 -> !advance
+    $energy !
+  end n-body-system
+  
+  250 -> n-body-system !
+  """;
+
   @Benchmark
-  public void nbody_tailspin() {
+  public void nbody_tailspin_18digits() {
     SciNum energy = truffleContext.eval("tt", tailspinProgram).as(SciNum.class);
     if (energy.compareTo(SciNum.fromDigits("-1690184748576635", -16)) != 0) throw new AssertionError("Wrong result " + energy);
+  }
+
+  @Benchmark
+  public void nbody_tailspin_6digits() {
+    SciNum energy = truffleContext.eval("tt", tailspinProgram6digits).as(SciNum.class);
+    if (energy.compareTo(SciNum.fromDigits("-169054", -6)) != 0) throw new AssertionError("Wrong result " + energy);
   }
 
   @Benchmark
