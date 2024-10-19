@@ -26,7 +26,6 @@ import tailspin.language.nodes.iterate.RangeIterationNodeGen.InitializeRangeIter
 import tailspin.language.nodes.iterate.RangeIterationNodeGen.RangeIteratorNodeGen;
 import tailspin.language.nodes.matchers.GreaterThanMatcherNode;
 import tailspin.language.nodes.matchers.LessThanMatcherNode;
-import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
@@ -268,7 +267,7 @@ public abstract class RangeIteration extends TransformNode {
     }
 
     GreaterThanMatcherNode createUpperBoundExceeded() {
-      return GreaterThanMatcherNode.create(!inclusiveEnd, NumericTypeMatcherNode.create(), null);
+      return GreaterThanMatcherNode.create(true, !inclusiveEnd, null);
     }
 
     AddNode createAddNode() {
@@ -291,7 +290,7 @@ public abstract class RangeIteration extends TransformNode {
     }
 
     LessThanMatcherNode createLowerBoundExceeded() {
-      return LessThanMatcherNode.create(!inclusiveEnd, NumericTypeMatcherNode.create(), null);
+      return LessThanMatcherNode.create(true, !inclusiveEnd, null);
     }
 
     public static RangeIteratorNode create(int currentSlot, int endSlot, int incrementSlot, boolean inclusiveEnd) {

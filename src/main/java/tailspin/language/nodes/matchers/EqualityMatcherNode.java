@@ -5,7 +5,6 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateInline;
-import com.oracle.truffle.api.dsl.Idempotent;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
@@ -30,12 +29,10 @@ import tailspin.language.runtime.VocabularyType;
 @NodeChild(value = "dummy", type = ValueNode.class)
 @NodeChild(value = "valueNode", type = ValueNode.class)
 public abstract class EqualityMatcherNode extends MatcherNode {
-  @SuppressWarnings("FieldMayBeFinal")
-  @Child
-  private MatcherNode typeBound;
+  protected final boolean isTypeChecked;
 
-  protected EqualityMatcherNode(MatcherNode typeBound) {
-    this.typeBound = typeBound;
+  protected EqualityMatcherNode(boolean isTypeChecked) {
+    this.isTypeChecked = isTypeChecked;
   }
 
   @GenerateInline
@@ -80,7 +77,7 @@ public abstract class EqualityMatcherNode extends MatcherNode {
 
     @Specialization
     protected boolean doMeasure(Node node, Measure left, Measure right) {
-      return executeEquals(node, left.unit(), right.unit()) && executeEquals(node, left.value(), right.value());
+      return (left.unit() == right.unit()) && executeEquals(node, left.value(), right.value());
     }
 
     @Specialization
@@ -118,25 +115,19 @@ public abstract class EqualityMatcherNode extends MatcherNode {
 
     @Fallback
     protected boolean objectEquals(Object toMatch, Object value) {
-      throw new TypeError(toMatch + " not comparable to " + value);
+      return false;
     }
   }
 
-  @Specialization(guards = "hasStaticTypeBound()")
+  @Specialization(guards = "isTypeChecked")
   protected boolean doStaticBound(VirtualFrame frame, Object toMatch, Object value,
       @Cached(inline = true) @Shared DoEqualityNode doEqualityNode) {
-    if (doEqualityNode.executeEquals(this, toMatch, value)) return true;
-    if (typeBound.executeMatcherGeneric(frame, toMatch)) return false;
-    throw new TypeError("Incompatible type comparison " + toMatch + " = " + value);
+    return doEqualityNode.executeEquals(this, toMatch, value);
   }
 
-  @Idempotent
-  boolean hasStaticTypeBound() {
-    return typeBound != null;
-  }
-
-  @Specialization(guards = {"!hasStaticTypeBound()", "dynamicBound.executeMatcherGeneric(frame, value)"}, limit = "3")
+  @Specialization(guards = {"!isTypeChecked", "value == cachedValue"}, limit = "3")
   protected boolean doDynamicCachedBound(VirtualFrame frame, Object toMatch, Object value,
+      @Cached("value") Object cachedValue,
       @Cached(inline = true) @Shared DoEqualityNode doEqualityNode,
       @Cached("autoType(value)") MatcherNode dynamicBound) {
     if (doEqualityNode.executeEquals(this, toMatch, value)) return true;
@@ -148,7 +139,7 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     return VocabularyType.autoType(value);
   }
 
-  @Specialization(guards = "!hasStaticTypeBound()")
+  @Specialization(guards = "!isTypeChecked")
   protected boolean doDynamicBound(VirtualFrame frame, Object toMatch, Object value,
       @Cached(inline = true) @Shared DoEqualityNode doEqualityNode) {
     if (doEqualityNode.executeEquals(this, toMatch, value)) return true;
@@ -157,8 +148,7 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     throw new TypeError("Incompatible type comparison " + toMatch + " = " + value);
   }
 
-  public static EqualityMatcherNode create(MatcherNode typeBound, ValueNode valueNode) {
-    if (typeBound == null) typeBound = valueNode.getTypeMatcher();
-    return EqualityMatcherNodeGen.create(typeBound, null, valueNode);
+  public static EqualityMatcherNode create(boolean isTypeChecked, ValueNode valueNode) {
+    return EqualityMatcherNodeGen.create(isTypeChecked, null, valueNode);
   }
 }

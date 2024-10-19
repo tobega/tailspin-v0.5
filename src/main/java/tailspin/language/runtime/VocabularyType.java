@@ -9,6 +9,7 @@ import tailspin.language.nodes.matchers.ArrayTypeMatcherNode;
 import tailspin.language.nodes.matchers.MeasureTypeMatcher;
 import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
 import tailspin.language.nodes.matchers.StructureTypeMatcherNode;
+import tailspin.language.nodes.matchers.TagMatcherNode;
 
 public class VocabularyType implements Comparable<VocabularyType> {
   private final String key;
@@ -42,6 +43,7 @@ public class VocabularyType implements Comparable<VocabularyType> {
       case Rational ignored -> NumericTypeMatcherNode.create();
       case SciNum ignored -> NumericTypeMatcherNode.create();
       case Measure(Object ignored, Object unit) -> MeasureTypeMatcher.create(unit);
+      case TaggedValue(VocabularyType type, Object ignored) -> TagMatcherNode.create(type);
       case TailspinArray ignored -> ArrayTypeMatcherNode.create();
       case Structure s -> {
         Object[] keyArray = DynamicObjectLibrary.getUncached().getKeyArray(s);

@@ -5,7 +5,6 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateInline;
-import com.oracle.truffle.api.dsl.Idempotent;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
@@ -26,14 +25,12 @@ import tailspin.language.runtime.VocabularyType;
 public abstract class GreaterThanMatcherNode extends MatcherNode {
   public abstract boolean executeComparison(VirtualFrame frame, Object toMatch, Object value);
 
+  protected final boolean isTypeChecked;
   private final boolean inclusive;
-  @SuppressWarnings("FieldMayBeFinal")
-  @Child
-  private MatcherNode typeBound;
 
-  protected GreaterThanMatcherNode(boolean inclusive, MatcherNode typeBound) {
+  protected GreaterThanMatcherNode(boolean isTypeChecked, boolean inclusive) {
+    this.isTypeChecked = isTypeChecked;
     this.inclusive = inclusive;
-    this.typeBound = typeBound;
   }
 
   @GenerateInline
@@ -89,21 +86,15 @@ public abstract class GreaterThanMatcherNode extends MatcherNode {
     return doGreaterThanNode.executeGreaterThan(frame, this, toMatch.value(), value.value(), inclusive);
   }
 
-  @Specialization(guards = "hasStaticTypeBound()")
+  @Specialization(guards = "isTypeChecked")
   protected boolean doStaticBound(VirtualFrame frame, Object toMatch, Object value,
       @Cached(inline = true) @Shared DoGreaterThanNode doGreaterThanNode) {
-    if (doGreaterThanNode.executeGreaterThan(frame, this, toMatch, value, inclusive)) return true;
-    if (typeBound.executeMatcherGeneric(frame, toMatch)) return false;
-    throw new TypeError("Incompatible type comparison " + toMatch + " >= " + value);
+    return doGreaterThanNode.executeGreaterThan(frame, this, toMatch, value, inclusive);
   }
 
-  @Idempotent
-  boolean hasStaticTypeBound() {
-    return typeBound != null;
-  }
-
-  @Specialization(guards = {"!hasStaticTypeBound()", "dynamicBound.executeMatcherGeneric(frame, value)"}, limit = "3")
+  @Specialization(guards = {"!isTypeChecked", "value == cachedValue"}, limit = "3")
   protected boolean doDynamicCachedBound(VirtualFrame frame, Object toMatch, Object value,
+      @Cached("value") Object cachedValue,
       @Cached(inline = true) @Shared DoGreaterThanNode doGreaterThanNode,
       @Cached("autoType(value)") MatcherNode dynamicBound) {
     if (doGreaterThanNode.executeGreaterThan(frame, this, toMatch, value, inclusive)) return true;
@@ -115,7 +106,7 @@ public abstract class GreaterThanMatcherNode extends MatcherNode {
     return VocabularyType.autoType(value);
   }
 
-  @Specialization(guards = "!hasStaticTypeBound()")
+  @Specialization(guards = "!isTypeChecked")
   protected boolean doDynamicBound(VirtualFrame frame, Object toMatch, Object value,
       @Cached(inline = true) @Shared DoGreaterThanNode doGreaterThanNode) {
     if (doGreaterThanNode.executeGreaterThan(frame, this, toMatch, value, inclusive)) return true;
@@ -124,8 +115,7 @@ public abstract class GreaterThanMatcherNode extends MatcherNode {
     throw new TypeError("Incompatible type comparison " + toMatch + " >= " + value);
   }
 
-  public static GreaterThanMatcherNode create(boolean inclusive, MatcherNode typeBound, ValueNode valueNode) {
-    if (typeBound == null) typeBound = valueNode.getTypeMatcher();
-    return GreaterThanMatcherNodeGen.create(inclusive, typeBound, null, valueNode);
+  public static GreaterThanMatcherNode create(boolean isTypeChecked, boolean inclusive, ValueNode valueNode) {
+    return GreaterThanMatcherNodeGen.create(isTypeChecked, inclusive, null, valueNode);
   }
 }

@@ -86,7 +86,7 @@ public class TailspinParser {
      type-bound rule (<|='´'>) +<|membrane> (<|='´'> ?<|ignorable-text>)
 
      literal-match rule (<|='='> ?<|ignorable-text>) <|source>
-     type-match rule <|range-match|array-match|structure-match|measure-type-match|string-literal>
+     type-match rule <|range-match|array-match|structure-match|measure-type-match|string-literal|ID>
      range-match rule ?<|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) ?<|range-bound>
      range-bound rule <|arithmetic-expression|reference>
      array-match rule <|='['> (?<|ignorable-text>) *<|array-content-matcher> (<|=']'> ?<|ignorable-text>) ?<|array-length-condition>

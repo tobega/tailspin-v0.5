@@ -69,11 +69,6 @@ public abstract class TagNode extends ValueNode {
     throw new TypeError(value.toString() + " is not of type " + type.toString());
   }
 
-  @Override
-  public MatcherNode getTypeMatcher() {
-    return type.getConstraint().orElse(valueNode.getTypeMatcher());
-  }
-
   public static TagNode create(VocabularyType type, ValueNode valueNode) {
     return TagNodeGen.create(type, valueNode);
   }
