@@ -1070,6 +1070,14 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode negated) when name.equals("negated-term") -> NegateNode.create(visitTerm(negated));
       case ParseNode(String name, Object ref) when name.equals("reference") -> asSingleValueNode(visitReference(ref));
       case ParseNode(String name, ParseNode vc) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc));
+      case ParseNode(String name, List<?> cast) when name.equals("single-value-chain") -> {
+        ParseNode vc = (ParseNode) cast.getFirst();
+        TruffleString unit = visitUnit(cast.getLast());
+        currentScope().setUntypedArithmetic(true);
+        ValueNode value = asSingleValueNode(visitValueChain(vc));
+        currentScope().setUntypedArithmetic(false);
+        yield MeasureLiteral.create(value, unit);
+      }
       case ParseNode(String name, ParseNode(String ignored, ParseNode square)) when name.equals("square-root") -> SquareRootNode.create(visitTerm(square), currentScope().isUntypedRegion());
       default -> throw new IllegalStateException("Unexpected value: " + term);
     };

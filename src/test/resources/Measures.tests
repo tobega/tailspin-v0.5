@@ -121,3 +121,6 @@ end !
 ---Recast measure
 0"1" -> ($)"1" !
 =0"1"
+---cast term in arithmetic expression
+3"J" + (4"N" * 2"m")"J" !
+=11"J"

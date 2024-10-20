@@ -46,6 +46,9 @@ Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.c
 - Array start indexes are given as `&0[]` instead of `0:[]`, to work better together with type assertions (below)
 - Tagged values will be printed with their tags.
 - It will not be possible to create ranges of tagged values, since they cannot be manipulated mathematically. Instead, do `1..5 -> tag´$`. It will still be possible to do a range comparison, `<|tag´1..tag´5>`.
+- Multiplication and division of measures by raw numbers is not allowed, it needs to be a scalar.
+- The mod operator on measures needs to have the same measure on both sides
+- Dividing by the same measure gives a scalar.
 
 ## New features
 - Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `if <.....>`
