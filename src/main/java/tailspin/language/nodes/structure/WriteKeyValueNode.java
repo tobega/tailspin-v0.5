@@ -1,27 +1,31 @@
 package tailspin.language.nodes.structure;
 
-import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import java.util.ArrayList;
 import tailspin.language.TypeError;
-import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.value.TagNode;
 import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.VocabularyType;
 
 @NodeChild(value = "target", type = ValueNode.class)
 @NodeChild(value = "value", type = ValueNode.class)
 public abstract class WriteKeyValueNode extends ValueNode {
-  public abstract Object executeDirect(Object target, Object value);
+  public abstract Object executeDirect(VirtualFrame frame, Object target, Object value);
 
   final VocabularyType type;
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child
+  protected TagNode typeCheck;
 
   protected WriteKeyValueNode(VocabularyType type) {
     this.type = type;
+    this.typeCheck = TagNode.create(type, null);
   }
 
   public static WriteKeyValueNode create(VocabularyType key, ValueNode target, ValueNode value) {
@@ -29,22 +33,19 @@ public abstract class WriteKeyValueNode extends ValueNode {
   }
 
   @Specialization
-  Structure doWrite(Structure target, Object value,
-      @Cached(value = "type.getConstraint(value)", neverDefault = true) MatcherNode typeConstraint,
+  Structure doWrite(VirtualFrame frame, Structure target, Object value,
       @CachedLibrary(limit = "1") DynamicObjectLibrary dynamicObjectLibrary) {
     target = target.getThawed();
-    if (!typeConstraint.executeMatcherGeneric(null, value)) {
-      throw new TypeError(type.toString() + " cannot be " + value);
-    }
+    value = typeCheck.executeDirect(frame, value);
     dynamicObjectLibrary.put(target, type, value);
     return target;
   }
 
   @Specialization(guards = "targets.size() == values.size()")
   @SuppressWarnings("unchecked")
-  protected Object doMany(ArrayList<?> targets, ArrayList<?> values) {
+  protected Object doMany(VirtualFrame frame, ArrayList<?> targets, ArrayList<?> values) {
     for (int i = 0; i < targets.size(); i++) {
-      ((ArrayList<Object>) targets).set(i, executeDirect(targets.get(i), values.get(i)));
+      ((ArrayList<Object>) targets).set(i, executeDirect(frame, targets.get(i), values.get(i)));
     }
     return targets;
   }

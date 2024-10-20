@@ -56,6 +56,9 @@ public class Structure extends DynamicObject implements TruffleObject {
     StringBuilder result = new StringBuilder("{");
     for (Object key : ordered) {
       Object value = thisObjectLibrary.getOrDefault(this, key, null);
+      if (value instanceof TaggedValue(VocabularyType type, Object taggedValue) && type == key) {
+        value = taggedValue;
+      }
       if (value instanceof TruffleString ts) {
         value = TailspinStrings.escapeAndQuote(ts);
       }

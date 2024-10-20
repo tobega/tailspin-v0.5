@@ -52,8 +52,8 @@ end !
 end !
 =2
 ---match condition of property
-{ foo: 6 } -> templates
-  when <|{ foo: <|?($ mod 2 matches <|=0>)>}> do 1 !
+{ foo: 6"s" } -> templates
+  when <|{ foo: <|?($ mod 2"s" matches <|=0"s">)>}> do 1 !
 end !
 =1
 ---match length of array property

@@ -1,7 +1,7 @@
 package tailspin.language.nodes.value;
 
 import com.oracle.truffle.api.dsl.Cached;
-import com.oracle.truffle.api.dsl.Executed;
+import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import tailspin.language.TypeError;
@@ -13,15 +13,14 @@ import tailspin.language.runtime.SciNum;
 import tailspin.language.runtime.TaggedValue;
 import tailspin.language.runtime.VocabularyType;
 
+@NodeChild(value = "value", type = ValueNode.class)
 public abstract class TagNode extends ValueNode {
-  final VocabularyType type;
-  @SuppressWarnings("FieldMayBeFinal")
-  @Child @Executed
-  protected ValueNode valueNode;
+  public abstract Object executeDirect(VirtualFrame frame, Object value);
 
-  protected TagNode(VocabularyType type, ValueNode valueNode) {
+  final VocabularyType type;
+
+  protected TagNode(VocabularyType type) {
     this.type = type;
-    this.valueNode = valueNode;
   }
 
   @Specialization

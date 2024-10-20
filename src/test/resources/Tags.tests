@@ -90,3 +90,9 @@ foo´2 -> if <|foo´2..> !
 ---tagged number not greater than tagged
 [foo´2 -> if <|foo´2~..>] !
 =[]
+---numeric structure field is not raw
+{foo: 2} -> $(foo:) -> if <|=2> !
+=*TypeError
+---numeric structure field is tagged
+{foo: 2} -> $(foo:) -> if <|=foo´2> !
+=foo´2

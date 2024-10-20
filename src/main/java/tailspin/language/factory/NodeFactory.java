@@ -170,7 +170,7 @@ public class NodeFactory {
         VocabularyType type = currentScope().getVocabularyType(((ParseNode) def.getFirst()).content().toString());
         enterNewScope(null);
         currentScope().setBlock(null);
-        MatcherNode constraint = visitAlternativeMembranes(true, def.subList(1, def.size()));
+        MatcherNode constraint = visitAlternativeMembranes(null, true, def.subList(1, def.size()));
         Scope definedScope = exitScope();
         Templates templates = definedScope.getOrCreateMatcherTemplates();
         if (templates.needsScope()) {
@@ -486,14 +486,14 @@ public class NodeFactory {
     if (matcherContent instanceof List<?> membranes
         && membranes.getFirst() instanceof ParseNode(String tb, Object types)
         && tb.equals("type-bound")) {
-      MatcherNode typeBound = visitAlternativeMembranes(true, types);
-      return TypeCheckedMatcherNode.create(typeBound, visitAlternativeMembranes(true, membranes.subList(1, membranes.size())));
+      MatcherNode typeBound = visitAlternativeMembranes(null, true, types);
+      return TypeCheckedMatcherNode.create(typeBound, visitAlternativeMembranes(null, true, membranes.subList(1, membranes.size())));
     } else {
-      return visitAlternativeMembranes(false, matcherContent);
+      return visitAlternativeMembranes(null, false, matcherContent);
     }
   }
 
-  private MatcherNode visitAlternativeMembranes(boolean isTypeChecked, Object membranes) {
+  private MatcherNode visitAlternativeMembranes(VocabularyType contextType, boolean isTypeChecked, Object membranes) {
     List<MatcherNode> alternatives = new ArrayList<>();
     List<?> membraneSpecs;
     if (membranes instanceof List<?> l) {
@@ -502,12 +502,12 @@ public class NodeFactory {
       membraneSpecs = List.of(membranes);
     }
     if (membraneSpecs.getFirst().equals("~")) {
-      return InvertNode.create(visitAlternativeMembranes(isTypeChecked,
+      return InvertNode.create(visitAlternativeMembranes(contextType, isTypeChecked,
           membraneSpecs.subList(1, membraneSpecs.size())));
     }
     for (Object membraneSpec : membraneSpecs) {
       if (membraneSpec instanceof ParseNode(String m, Object conditions) && m.equals("membrane")) {
-        alternatives.add(visitMembrane(isTypeChecked, conditions));
+        alternatives.add(visitMembrane(contextType, isTypeChecked, conditions));
       } else {
         throw new IllegalStateException("Unknown membrane " + membraneSpec);
       }
@@ -518,7 +518,7 @@ public class NodeFactory {
     return AnyOfNode.create(alternatives);
   }
 
-  private MatcherNode visitMembrane(boolean isTypeChecked, Object conditions) {
+  private MatcherNode visitMembrane(VocabularyType contextType, boolean isTypeChecked, Object conditions) {
     Integer conditionSlot = null;
     List<MatcherNode> conjunction = new ArrayList<>();
     List<?> conditionSpecs;
@@ -530,9 +530,15 @@ public class NodeFactory {
     for (Object conditionSpec : conditionSpecs) {
       switch (conditionSpec) {
         case ParseNode(String type, ParseNode typeMatch) when type.equals("type-match")
-            -> conjunction.addAll(visitTypeMatch(isTypeChecked, typeMatch));
+            -> conjunction.addAll(visitTypeMatch(contextType, isTypeChecked, typeMatch));
         case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
-            -> conjunction.add(EqualityMatcherNode.create(isTypeChecked, asSingleValueNode(visitSource(value))));
+            -> {
+          ValueNode valueNode = asSingleValueNode(visitSource(value));
+          if (contextType != null) {
+            valueNode = TagNode.create(contextType, valueNode);
+          }
+          conjunction.add(EqualityMatcherNode.create(isTypeChecked, valueNode));
+        }
         case ParseNode(String type, List<?> condition) when type.equals("condition") -> {
           if (conditionSlot == null) {
             conditionSlot = currentScope().newTempSlot();
@@ -557,11 +563,11 @@ public class NodeFactory {
     return ConditionNode.create(conditionSlot, toMatch, visitMatcher(matcher.content()));
   }
 
-  private List<MatcherNode> visitTypeMatch(boolean isTypeChecked, ParseNode typeMatch) {
+  private List<MatcherNode> visitTypeMatch(VocabularyType contextType, boolean isTypeChecked, ParseNode typeMatch) {
     return switch (typeMatch.name()) {
       case "range-match" -> {
         if (typeMatch.content() instanceof List<?> bounds)
-          yield visitRangeMatch(isTypeChecked, bounds);
+          yield visitRangeMatch(contextType, isTypeChecked, bounds);
         else yield List.of(NumericTypeMatcherNode.create());
       }
       case "array-match" -> {
@@ -616,7 +622,7 @@ public class NodeFactory {
                 requiredKeys.add(type);
               }
               if (km.size() > 1) {
-                MatcherNode matcher = visitAlternativeMembranes(
+                MatcherNode matcher = visitAlternativeMembranes(type,
                     true, ((ParseNode) km.getLast()).content());
                 conditionNodes.addLast(StructureKeyMatcherNode.create(type, matcher, isOptional));
               }
@@ -664,7 +670,8 @@ public class NodeFactory {
     List<MatcherNode> lengthCondition = switch (content) {
       case ParseNode(String type, ParseNode(String name, ParseNode value)) when type.equals("literal-match") && name.equals("source")
           -> List.of(EqualityMatcherNode.create(isTypeChecked, asSingleValueNode(visitSource(value))));
-      case ParseNode(String type, List<?> range) when type.equals("range-match") -> visitRangeMatch(isTypeChecked, range);
+      case ParseNode(String type, List<?> range) when type.equals("range-match") -> visitRangeMatch(
+          null, isTypeChecked, range);
       default -> throw new IllegalStateException("Unexpected value: " + content);
     };
     popCvSlot();
@@ -673,7 +680,7 @@ public class NodeFactory {
         lengthCondition.size() == 1 ? lengthCondition.getFirst() : AllOfNode.create(lengthCondition));
   }
 
-  private List<MatcherNode> visitRangeMatch(boolean isTypeChecked, List<?> content) {
+  private List<MatcherNode> visitRangeMatch(VocabularyType contextType, boolean isTypeChecked, List<?> content) {
     List<MatcherNode> bounds = new ArrayList<>();
     int separator = content.indexOf("..");
     if (separator > 0) {
@@ -683,6 +690,9 @@ public class NodeFactory {
       if (content.getFirst() instanceof ParseNode(String type, ParseNode(String id, String key)) && type.equals("tag")) {
         low = TagNode.create(currentScope().getVocabularyType(key), low);
       }
+      if (contextType != null) {
+        low = TagNode.create(contextType, low);
+      }
       bounds.add(GreaterThanMatcherNode.create(isTypeChecked, inclusive, low));
     }
     if (separator + 1 < content.size()) {
@@ -691,6 +701,9 @@ public class NodeFactory {
           (ParseNode) ((ParseNode) content.getLast()).content()));
       if (content.get(separator + (inclusive ? 1 : 2)) instanceof ParseNode(String type, ParseNode(String id, String key)) && type.equals("tag")) {
         high = TagNode.create(currentScope().getVocabularyType(key), high);
+      }
+      if (contextType != null) {
+        high = TagNode.create(contextType, high);
       }
       bounds.add(LessThanMatcherNode.create(isTypeChecked, inclusive, high));
     }
