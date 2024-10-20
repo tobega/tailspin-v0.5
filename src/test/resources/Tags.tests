@@ -66,3 +66,27 @@ fooey requires <|{foo:}>
 fooey requires <|0..|{foo:}>
 [{ foo: 1 } -> if <|fooey>] !
 =[{ foo: 1 }]
+---tagged number less than tagged
+foo´2 -> if <|..~foo´3> !
+=foo´2
+---tagged number less or equal to tagged
+foo´2 -> if <|..foo´2> !
+=foo´2
+---tagged number not less or equal to tagged
+[foo´4 -> if <|..foo´3>] !
+=[]
+---tagged number not less than tagged
+[foo´3 -> if <|..~foo´3>] !
+=[]
+---tagged number greater than tagged
+foo´3 -> if <|foo´2~..> !
+=foo´3
+---tagged number greater or equal tagged
+foo´2 -> if <|foo´2..> !
+=foo´2
+---tagged number not greater or equal tagged
+[foo´1 -> if <|foo´2..>] !
+=[]
+---tagged number not greater than tagged
+[foo´2 -> if <|foo´2~..>] !
+=[]

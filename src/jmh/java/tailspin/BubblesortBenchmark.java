@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.LongStream;
 import org.openjdk.jmh.annotations.Benchmark;
+import tailspin.language.runtime.Measure;
+import tailspin.language.runtime.TaggedValue;
 import tailspin.language.runtime.TailspinArray;
 
 /**
@@ -14,6 +16,14 @@ public class BubblesortBenchmark extends TruffleBenchmark {
 
   private static final String tailspinMain = """
       [50..1:-1 -> templates $! 100 - $! end] -> sortedCopy !
+      """;
+
+  private static final String tailspinMeasureMain = """
+      [50"m"..1"m":-1"m" -> templates $! 100"m" - $! end] -> sortedCopy !
+      """;
+
+  private static final String tailspinTaggedMain = """
+      [50..1:-1 -> templates tag´($)! tag´(100 - $)! end] -> sortedCopy !
       """;
 
   private static final String tailspinIterate = """
@@ -59,6 +69,32 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     }
     for (int i = 1; i < sorted.getArraySize(); i++) {
       if ((long) sorted.getNative(i - 1, false) > (long) sorted.getNative(i, false)) {
+        throw new AssertionError("Out of order " + sorted.getArraySize());
+      }
+    }
+  }
+
+  @Benchmark
+  public void sort_tailspin_iterate_measure() {
+    TailspinArray sorted = truffleContext.eval("tt", tailspinIterate + tailspinMeasureMain).as(TailspinArray.class);
+    if (sorted.getArraySize() != 100) {
+      throw new AssertionError("Too short array " + sorted.getArraySize());
+    }
+    for (int i = 1; i < sorted.getArraySize(); i++) {
+      if ((long) ((Measure) sorted.getNative(i - 1, false)).value() > (long) ((Measure) sorted.getNative(i, false)).value()) {
+        throw new AssertionError("Out of order " + sorted.getArraySize());
+      }
+    }
+  }
+
+  @Benchmark
+  public void sort_tailspin_iterate_tagged_long() {
+    TailspinArray sorted = truffleContext.eval("tt", tailspinIterate + tailspinTaggedMain).as(TailspinArray.class);
+    if (sorted.getArraySize() != 100) {
+      throw new AssertionError("Too short array " + sorted.getArraySize());
+    }
+    for (int i = 1; i < sorted.getArraySize(); i++) {
+      if ((long) ((TaggedValue) sorted.getNative(i - 1, false)).value() > (long) ((TaggedValue) sorted.getNative(i, false)).value()) {
         throw new AssertionError("Out of order " + sorted.getArraySize());
       }
     }

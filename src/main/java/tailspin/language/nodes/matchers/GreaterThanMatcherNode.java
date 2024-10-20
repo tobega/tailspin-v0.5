@@ -18,6 +18,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.TaggedValue;
 import tailspin.language.runtime.VocabularyType;
 
 @NodeChild(value = "dummy", type = ValueNode.class)
@@ -86,20 +87,25 @@ public abstract class GreaterThanMatcherNode extends MatcherNode {
     return doGreaterThanNode.executeGreaterThan(frame, this, toMatch.value(), value.value(), inclusive);
   }
 
+  @Specialization(guards = "toMatch.type() == value.type()")
+  protected boolean doTaggedValue(VirtualFrame frame, TaggedValue toMatch, TaggedValue value,
+      @Cached(inline = true) @Shared DoGreaterThanNode doGreaterThanNode) {
+    return doGreaterThanNode.executeGreaterThan(frame, this, toMatch.value(), value.value(), inclusive);
+  }
+
   @Specialization(guards = "isTypeChecked")
   protected boolean doStaticBound(VirtualFrame frame, Object toMatch, Object value,
       @Cached(inline = true) @Shared DoGreaterThanNode doGreaterThanNode) {
     return doGreaterThanNode.executeGreaterThan(frame, this, toMatch, value, inclusive);
   }
 
-  @Specialization(guards = {"!isTypeChecked", "value == cachedValue"}, limit = "3")
+  @Specialization(guards = {"!isTypeChecked", "dynamicBound.executeMatcherGeneric(frame, value)"}, limit = "3")
   protected boolean doDynamicCachedBound(VirtualFrame frame, Object toMatch, Object value,
-      @Cached("value") Object cachedValue,
       @Cached(inline = true) @Shared DoGreaterThanNode doGreaterThanNode,
       @Cached("autoType(value)") MatcherNode dynamicBound) {
     if (doGreaterThanNode.executeGreaterThan(frame, this, toMatch, value, inclusive)) return true;
     if (dynamicBound.executeMatcherGeneric(frame, toMatch)) return false;
-    throw new TypeError("Incompatible type comparison " + toMatch + " >= " + value);
+    throw new TypeError("Incompatible type comparison " + toMatch + (inclusive ? " >= " : " > ") + value);
   }
 
   MatcherNode autoType(Object value) {
@@ -112,7 +118,7 @@ public abstract class GreaterThanMatcherNode extends MatcherNode {
     if (doGreaterThanNode.executeGreaterThan(frame, this, toMatch, value, inclusive)) return true;
     MatcherNode dynamicBound = autoType(value);
     if (dynamicBound.executeMatcherGeneric(frame, toMatch)) return false;
-    throw new TypeError("Incompatible type comparison " + toMatch + " >= " + value);
+    throw new TypeError("Incompatible type comparison " + toMatch + (inclusive ? " >= " : " > ") + value);
   }
 
   public static GreaterThanMatcherNode create(boolean isTypeChecked, boolean inclusive, ValueNode valueNode) {

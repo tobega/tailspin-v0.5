@@ -677,15 +677,21 @@ public class NodeFactory {
     List<MatcherNode> bounds = new ArrayList<>();
     int separator = content.indexOf("..");
     if (separator > 0) {
-      boolean inclusive = separator == 1;
+      boolean inclusive = !content.get(separator - 1).equals("~");
       ValueNode low = asSingleValueNode(visitSource(
-          (ParseNode) ((ParseNode) content.getFirst()).content()));
+          (ParseNode) ((ParseNode) content.get(separator - (inclusive ? 1 : 2))).content()));
+      if (content.getFirst() instanceof ParseNode(String type, ParseNode(String id, String key)) && type.equals("tag")) {
+        low = TagNode.create(currentScope().getVocabularyType(key), low);
+      }
       bounds.add(GreaterThanMatcherNode.create(isTypeChecked, inclusive, low));
     }
     if (separator + 1 < content.size()) {
-      boolean inclusive = separator + 2 == content.size();
+      boolean inclusive = !content.get(separator + 1).equals("~");
       ValueNode high = asSingleValueNode(visitSource(
           (ParseNode) ((ParseNode) content.getLast()).content()));
+      if (content.get(separator + (inclusive ? 1 : 2)) instanceof ParseNode(String type, ParseNode(String id, String key)) && type.equals("tag")) {
+        high = TagNode.create(currentScope().getVocabularyType(key), high);
+      }
       bounds.add(LessThanMatcherNode.create(isTypeChecked, inclusive, high));
     }
     return bounds;
@@ -721,7 +727,7 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode content) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(content));
       default -> throw new IllegalStateException("Unexpected value: " + value);
     };
-    String key = (String) tag.content();
+    String key = (String) ((ParseNode) tag.content()).content();
     return TagNode.create(currentScope().getVocabularyType(key), valueNode);
   }
 

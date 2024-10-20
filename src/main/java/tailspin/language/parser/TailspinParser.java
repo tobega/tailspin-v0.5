@@ -45,7 +45,8 @@ public class TailspinParser {
      codepoint rule (<|='$#'> ?<|ignorable-text>) <|value-chain> (<|=';'>)
      interpolate rule (<|='$:'|'(?=\\$)'> ?<|ignorable-text>) <|value-chain> (<|=';'>)
      
-     type-cast rule <|ID> (<|='´'>) <|numeric-literal|structure-literal|string-literal|array-literal|single-value-chain>
+     type-cast rule <|tag> <|numeric-literal|structure-literal|string-literal|array-literal|single-value-chain>
+     tag rule <|ID> (<|='´'>)
      
      lens-expression rule (<|='('> ?<|ignorable-text>) <|lens-dimension>  ?<|lens-transform> (<|=')'>)
      lens-transform rule (<|=';'> ?<|ignorable-text>) +<|transform>
@@ -87,7 +88,7 @@ public class TailspinParser {
 
      literal-match rule (<|='='> ?<|ignorable-text>) <|source>
      type-match rule <|range-match|array-match|structure-match|measure-type-match|string-literal|ID>
-     range-match rule ?<|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) ?<|range-bound>
+     range-match rule ?<|tag> ?<|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) ?<|tag> ?<|range-bound>
      range-bound rule <|arithmetic-expression|reference>
      array-match rule <|='['> (?<|ignorable-text>) *<|array-content-matcher> (<|=']'> ?<|ignorable-text>) ?<|array-length-condition>
      array-content-matcher rule <|matcher>
