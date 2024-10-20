@@ -97,7 +97,7 @@ public class ParserParserTest {
   @MethodSource
   void multiplier(String multiplier, RangeMatch matcher) {
     String parserDefinition = """
-    a rule <|b>%s
+    a rule %s<|b>
     """;
     assertEquals(Map.of("a", List.of(new MultiplierComposition(
         new NamedComposition("b"), matcher))),
@@ -115,7 +115,7 @@ public class ParserParserTest {
   @Test
   void custom_int_multiplier() {
     String parserDefinition = """
-    a rule <|b>=5
+    a rule =5<|b>
     """;
     Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(
         parserDefinition);
@@ -136,7 +136,7 @@ public class ParserParserTest {
   @Test
   void custom_reference_multiplier() {
     String parserDefinition = """
-    a rule <|b>=$ref
+    a rule =$ref<|b>
     """;
     Map<String, List<CompositionSpec>> syntaxRules = ParserParser.createSyntaxRules(
         parserDefinition);
