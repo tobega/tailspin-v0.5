@@ -91,6 +91,12 @@ public abstract class TruncateDivideNode extends ValueNode {
     return unit == Measure.SCALAR;
   }
 
+  @Specialization(guards = "left.unit() == right.unit()")
+  protected Measure doSameMeasure(VirtualFrame frame, Measure left, Measure right,
+      @Cached(inline = true) @Shared DoTruncateDivideNode doTruncateDivideNode) {
+    return new Measure(doTruncateDivideNode.executeTruncateDivide(frame, this, left.value(), right.value()), Measure.SCALAR);
+  }
+
   @Specialization(guards = "isUntypedRegion")
   protected Object doUntypedMeasures(VirtualFrame frame, Measure left, Measure right,
       @Cached(inline = true) @Shared DoTruncateDivideNode doDivideNode) {

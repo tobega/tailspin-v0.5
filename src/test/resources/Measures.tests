@@ -124,3 +124,9 @@ end !
 ---cast term in arithmetic expression
 3"J" + (4"N" * 2"m")"J" !
 =11"J"
+---truncate divide same unit gives scalar
+7"m" ~/ 3"m" !
+=2"1"
+---divide same unit gives scalar
+7"m" / 3"m" !
+=7/3"1"

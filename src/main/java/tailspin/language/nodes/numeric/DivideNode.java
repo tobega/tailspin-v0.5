@@ -91,6 +91,12 @@ public abstract class DivideNode extends ValueNode {
     return unit == Measure.SCALAR;
   }
 
+  @Specialization(guards = "left.unit() == right.unit()")
+  protected Measure doSameMeasure(VirtualFrame frame, Measure left, Measure right,
+      @Cached(inline = true) @Shared DoDivideNode doDivideNode) {
+    return new Measure(doDivideNode.executeDivide(frame, this, left.value(), right.value()), Measure.SCALAR);
+  }
+
   @Specialization(guards = "isUntypedRegion")
   protected Object doUntypedMeasures(VirtualFrame frame, Measure left, Measure right,
       @Cached(inline = true) @Shared DoDivideNode doDivideNode) {
