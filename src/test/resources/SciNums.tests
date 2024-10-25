@@ -241,3 +241,6 @@ $foo ~/ 0.25!
 ---negated square root in expression
 2 * -√25.0 !
 =-1.00e1
+---raw message
+3.5e0 -> $::raw !
+=3.5e0

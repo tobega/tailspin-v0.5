@@ -170,3 +170,9 @@ end !
   otherwise 0!
 end !
 =0
+---message first
+[5..7] -> $::first !
+=1
+---message last
+[5..7] -> $::last !
+=3

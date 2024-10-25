@@ -96,3 +96,6 @@ foo´2 -> if <|foo´2..> !
 ---numeric structure field is tagged
 {foo: 2} -> $(foo:) -> if <|=foo´2> !
 =foo´2
+---raw message
+foo´5 -> $::raw !
+=5

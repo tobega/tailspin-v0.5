@@ -130,3 +130,6 @@ end !
 ---divide same unit gives scalar
 7"m" / 3"m" !
 =7/3"1"
+---raw message
+7"m" -> $::raw !
+=7

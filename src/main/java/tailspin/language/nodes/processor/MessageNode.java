@@ -19,6 +19,14 @@ public abstract class MessageNode extends ValueNode {
     this.message = message;
   }
 
+  @Specialization
+  protected Object doLong(long value) {
+    return switch (message) {
+      case "raw" -> value;
+      default -> throw new TypeError("Can't send message " + message + " to long " + value);
+    };
+  }
+
   @Specialization(guards = "processorInteropLibrary.hasMembers(processor)", limit = "2")
   protected Object doProcessor(Object processor,
       @CachedLibrary("processor") InteropLibrary processorInteropLibrary) {
@@ -31,7 +39,7 @@ public abstract class MessageNode extends ValueNode {
 
   @Specialization
   protected Object doUnknown(Object value) {
-    throw new TypeError("Can't send message to " + value.getClass());
+    throw new TypeError("Can't send message " + message + " to " + value.getClass());
   }
 
   public static MessageNode create(String message, ValueNode processor) {

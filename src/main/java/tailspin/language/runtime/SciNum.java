@@ -2,13 +2,19 @@ package tailspin.language.runtime;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.CompilerDirectives.ValueType;
+import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.Set;
 
 @ValueType
+@ExportLibrary(InteropLibrary.class)
 public class SciNum implements TruffleObject {
   private final BigDecimal value;
   private final boolean isExact;
@@ -163,5 +169,30 @@ public class SciNum implements TruffleObject {
 
   public int compareTo(Rational right) {
     return value.multiply(new BigDecimal(right.denominator(), 0)).compareTo(new BigDecimal(right.numerator(), 0));
+  }
+
+  @ExportMessage
+  public boolean hasMembers() {
+    return true;
+  }
+
+  static final Set<String> supportedMessages = Set.of("raw");
+
+  @ExportMessage
+  public boolean isMemberReadable(String member) {
+    return supportedMessages.contains(member);
+  }
+
+  @ExportMessage
+  public Object readMember(String member) throws UnknownIdentifierException {
+    return switch(member) {
+      case "raw" -> this;
+      default -> throw UnknownIdentifierException.create(member);
+    };
+  }
+
+  @ExportMessage
+  public Object getMembers(@SuppressWarnings("unused") boolean includeInternal) {
+    return TailspinArray.value(new String[]{"raw"});
   }
 }

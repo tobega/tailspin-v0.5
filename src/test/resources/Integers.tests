@@ -199,3 +199,9 @@ end !
 ---negated parens
 2 * -(2 + 3) !
 =-10
+---raw message big number
+10000000000000000000 -> $::raw !
+=10000000000000000000
+---raw message long
+3 -> $::raw !
+=3

@@ -4,11 +4,13 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.CompilerDirectives.ValueType;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Set;
 
 @ExportLibrary(InteropLibrary.class)
 @ValueType
@@ -199,5 +201,30 @@ public class BigNumber implements TruffleObject, Comparable<BigNumber> {
   @Override
   public int compareTo(BigNumber right) {
     return value.compareTo(right.value);
+  }
+
+  @ExportMessage
+  public boolean hasMembers() {
+    return true;
+  }
+
+  static final Set<String> supportedMessages = Set.of("raw");
+
+  @ExportMessage
+  public boolean isMemberReadable(String member) {
+    return supportedMessages.contains(member);
+  }
+
+  @ExportMessage
+  public Object readMember(String member) throws UnknownIdentifierException {
+    return switch(member) {
+      case "raw" -> this;
+      default -> throw UnknownIdentifierException.create(member);
+    };
+  }
+
+  @ExportMessage
+  public Object getMembers(@SuppressWarnings("unused") boolean includeInternal) {
+    return TailspinArray.value(new String[]{"raw"});
   }
 }

@@ -152,7 +152,7 @@ public class TailspinArray implements TruffleObject {
 
   @ExportMessage
   public Object getMembers(@SuppressWarnings("unused") boolean includeInternal) {
-    return TailspinArray.value(new String[]{"length"});
+    return TailspinArray.value(new String[]{"first", "last", "length"});
   }
 
   @Override
