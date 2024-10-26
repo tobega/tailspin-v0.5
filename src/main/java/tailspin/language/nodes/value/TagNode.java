@@ -23,6 +23,11 @@ public abstract class TagNode extends ValueNode {
     this.type = type;
   }
 
+  @Specialization(guards = "type == value.type()")
+  TaggedValue doAlreadyTagged(VirtualFrame frame, TaggedValue value) {
+    return value;
+  }
+
   @Specialization
   TaggedValue doTagLong(VirtualFrame frame, long value,
       @Cached(value = "type.getConstraint(value)", neverDefault = true) MatcherNode typeConstraint) {
