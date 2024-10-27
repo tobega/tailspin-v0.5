@@ -33,7 +33,7 @@ public class TemplatesRootNode extends RootNode {
   private TemplatesRootNode(TruffleLanguage<?> language,
       FrameDescriptor frameDescriptor, FrameDescriptor scopeDescriptor, StatementNode statement) {
     super(language, frameDescriptor);
-    this.createScope = scopeDescriptor == null ? CopyScopeNode.create() : CreateScopeNode.create(scopeDescriptor);
+    this.createScope = CreateScopeNode.create(scopeDescriptor);
     this.setCurrentValue = WriteContextValueNode.create(-1, CV_SLOT, new ReadArgumentNode(CV_ARG));
     this.statement = statement;
   }
@@ -64,18 +64,6 @@ public class TemplatesRootNode extends RootNode {
     @Override
     public Object executeGeneric(VirtualFrame frame) {
       return frame.getArguments()[argIndex];
-    }
-  }
-
-  public static class CopyScopeNode extends StatementNode {
-
-    @Override
-    public void executeVoid(VirtualFrame frame) {
-      frame.setObjectStatic(SCOPE_SLOT, frame.getArguments()[DEFINING_SCOPE_ARG]);
-    }
-
-    public static CopyScopeNode create() {
-      return new CopyScopeNode();
     }
   }
 

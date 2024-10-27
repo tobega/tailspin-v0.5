@@ -175,14 +175,15 @@ public class NodeFactory {
         enterNewScope(null);
         currentScope().setMatcherTemplates(matchTemplates);
         MatcherNode constraint = visitAlternativeMembranes(null, true, def.subList(1, def.size()));
+        currentScope().setBlock(MatchBlockNode.create(List.of(
+            MatchTemplateNode.create(constraint, EmitNode.create(asTransformNode(ReadContextValueNode.create(-1, CV_SLOT))))
+        )));
+        currentScope().getTemplates();
         exitScope();
         Scope definedScope = exitScope();
         Templates templates = definedScope.getTemplates();
         if (templates.needsScope()) {
           definedScope.getOrCreateMatcherTemplates().setDefinitionLevel(scopes.size());
-          definedScope.makeMatcherCallTarget(MatchBlockNode.create(List.of(
-              MatchTemplateNode.create(constraint, EmitNode.create(asTransformNode(ReadContextValueNode.create(-1, CV_SLOT))))
-          )));
           TemplatesInstance definedTemplates = new TemplatesInstance(null, templates.getCallTarget());
           type.setConstraint(CallDefinedTypeMatcherNode.create(definedTemplates));
           yield DefineTypeConstraintNode.create(definedTemplates);
@@ -475,7 +476,8 @@ public class NodeFactory {
       default -> throw new IllegalStateException("Unexpected value: " + matchers);
     };
     currentScope().getOrCreateMatcherTemplates().setDefinitionLevel(scopes.size() - 2);
-    currentScope().makeMatcherCallTarget(matchBlockNode);
+    currentScope().setBlock(matchBlockNode);
+    currentScope().getTemplates();
     exitScope();
   }
 

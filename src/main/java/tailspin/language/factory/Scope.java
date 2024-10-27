@@ -12,7 +12,6 @@ import java.util.Set;
 import tailspin.language.TailspinLanguage;
 import tailspin.language.nodes.ProgramRootNode;
 import tailspin.language.nodes.StatementNode;
-import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
 import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.Reference.Slot;
@@ -68,13 +67,6 @@ public class Scope {
     return matcherTemplates;
   }
 
-  public void makeMatcherCallTarget(MatchBlockNode matchBlockNode) {
-    getOrCreateMatcherTemplates();
-    assignReferences();
-    if (needsScope) matcherTemplates.setNeedsScope();
-    matcherTemplates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), scopeFdb.build(), matchBlockNode));
-  }
-
   private void assignReferences() {
     definitions.values().stream().filter(Slot.class::isInstance).map(Slot.class::cast)
         .filter(Slot::isUndefined)
@@ -91,7 +83,7 @@ public class Scope {
   boolean needsScope;
   public Templates getTemplates() {
     assignReferences();
-    Templates templates = new Templates();
+    Templates templates = isInMatcher? matcherTemplates : new Templates();
     if (needsScope) templates.setNeedsScope();
     templates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), scopeFdb.build(), block));
     return templates;
