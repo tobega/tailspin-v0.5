@@ -172,9 +172,9 @@ end !
 [ 5..7 ] -> templates
   otherwise
     foo is 3;
-    $(.. as i; -> $i + $) -> $foo !
+    $(.. as i; -> $i + $foo) !
 end !
-=3
+=[4, 5, 6]
 ---nested temporary variables work match,match
 [ 5..7 ] -> templates
   otherwise
@@ -182,3 +182,13 @@ end !
     $(.. as i; -> $i + $) -> $foo !
 end !
 =3
+---call templates needing scope from templates that don't directly need scope
+inc is 1;
+foo templates
+  $ + $inc !
+end foo
+
+1 -> templates
+  $ -> foo !
+end !
+=2

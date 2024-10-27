@@ -46,21 +46,17 @@ public class Scope {
     return  rootFdb.addSlot(FrameSlotKind.Static, null, null);
   }
 
-  boolean hasBlock = true;
+  boolean isTypeDef = false;
   StatementNode block;
   Builder blockRootFdb;
   public void setBlock(StatementNode blockNode) {
     if (blockNode == null) {
-      hasBlock = false;
+      isTypeDef = true;
       return;
     }
     block = blockNode;
     blockRootFdb = rootFdb;
     rootFdb = Templates.createBasicFdb();
-  }
-
-  public boolean hasBlock() {
-    return hasBlock;
   }
 
   Templates matcherTemplates;
@@ -74,11 +70,8 @@ public class Scope {
   }
 
   public void makeMatcherCallTarget(MatchBlockNode matchBlockNode) {
-    if (block == null) {
-      assignReferences(rootFdb);
-    }
     getOrCreateMatcherTemplates();
-    matcherTemplates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), hasBlock ? null : scopeFdb.build(), matchBlockNode));
+    matcherTemplates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), isTypeDef ? scopeFdb.build() : null, matchBlockNode));
   }
 
   private void assignReferences(Builder fdb) {
@@ -96,7 +89,6 @@ public class Scope {
 
   boolean needsScope;
   public Templates getTemplates() {
-    if (block == null) return matcherTemplates;
     assignReferences(blockRootFdb);
     Templates templates = new Templates();
     if (needsScope) templates.setNeedsScope();
@@ -112,7 +104,7 @@ public class Scope {
   public Reference defineValue(String identifier) {
     Slot defined = new Slot();
     definitions.put(identifier, defined);
-    if (block != null || !hasBlock) {
+    if (block != null) { // in matcher
       // TODO: We should be able to have local matcher values
       markTemporary(identifier);
       getOrCreateMatcherTemplates().setNeedsScope();
@@ -140,7 +132,7 @@ public class Scope {
   }
 
   public Object getSource(String identifier, int level) {
-    if (block != null || !hasBlock) {
+    if (block != null || isTypeDef) {
       // TODO: We should be able to have local matcher values
       getOrCreateMatcherTemplates().setNeedsScope();
       if (level == -1) level = 0;
@@ -165,7 +157,7 @@ public class Scope {
   }
 
   public int accessState(String scopeId) {
-    if (block != null || !hasBlock) {
+    if (block != null) { // in matcher
       getOrCreateMatcherTemplates().setNeedsScope();
     }
     if (scopeId == null || scopeId.equals(this.scopeId)) {
@@ -186,12 +178,15 @@ public class Scope {
   }
 
   public Templates findTemplates(String name) {
-    if (block != null) {
+    if (block != null) { // in matcher
       matcherTemplates.setNeedsScope();
     }
     if (definitions.containsKey(name)) return (Templates) definitions.get(name);
     else if (parent == null) throw new IllegalStateException("Cannot find templates " + name);
-    else return parent.findTemplates(name);
+    else {
+      needsScope = true;
+      return parent.findTemplates(name);
+    }
   }
 
   public VocabularyType getVocabularyType(String key) {
