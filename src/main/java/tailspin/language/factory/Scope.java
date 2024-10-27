@@ -47,11 +47,8 @@ public class Scope {
   }
 
   StatementNode block;
-  Builder blockRootFdb;
   public void setBlock(StatementNode blockNode) {
     block = blockNode;
-    blockRootFdb = rootFdb;
-    rootFdb = Templates.createBasicFdb();
   }
 
   boolean isInMatcher = false;
@@ -73,35 +70,35 @@ public class Scope {
 
   public void makeMatcherCallTarget(MatchBlockNode matchBlockNode) {
     getOrCreateMatcherTemplates();
-    assignReferences(rootFdb);
+    assignReferences();
     if (needsScope) matcherTemplates.setNeedsScope();
     matcherTemplates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), scopeFdb.build(), matchBlockNode));
   }
 
-  private void assignReferences(Builder fdb) {
+  private void assignReferences() {
     definitions.values().stream().filter(Slot.class::isInstance).map(Slot.class::cast)
         .filter(Slot::isUndefined)
-        .forEach((s) -> assignSlot(s, fdb));
+        .forEach(this::assignSlot);
   }
 
-  private void assignSlot(Slot s, Builder fdb) {
+  private void assignSlot(Slot s) {
       int slot = s.isExported()
           ? scopeFdb.addSlot(FrameSlotKind.Static, null, null)
-          : fdb.addSlot(FrameSlotKind.Static, null, null);
+          : rootFdb.addSlot(FrameSlotKind.Static, null, null);
       s.setSlot(slot);
   }
 
   boolean needsScope;
   public Templates getTemplates() {
-    assignReferences(blockRootFdb);
+    assignReferences();
     Templates templates = new Templates();
     if (needsScope) templates.setNeedsScope();
-    templates.setCallTarget(TemplatesRootNode.create(blockRootFdb.build(), scopeFdb.build(), block));
+    templates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), scopeFdb.build(), block));
     return templates;
   }
 
   public CallTarget createProgramRootNode(TailspinLanguage language, StatementNode programBody) {
-    assignReferences(rootFdb);
+    assignReferences();
     return ProgramRootNode.create(language, rootFdb.build(), scopeFdb.build(), programBody);
   }
 
@@ -120,10 +117,9 @@ public class Scope {
   }
 
   public void deleteTemporaryValues() {
-    Builder fdb = blockRootFdb == null ? rootFdb : blockRootFdb;
     Set<String> toDelete = temporaryIdentifiers.removeLast();
     for (String identifier : toDelete) {
-      assignSlot((Slot) definitions.get(identifier), fdb);
+      assignSlot((Slot) definitions.get(identifier));
       definitions.remove(identifier);
     }
   }
