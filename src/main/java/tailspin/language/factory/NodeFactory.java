@@ -172,7 +172,10 @@ public class NodeFactory {
         Templates matchTemplates = currentScope().getOrCreateMatcherTemplates();
         StatementNode passThrough = EmitNode.create(SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size() - 1, matchTemplates));
         currentScope().setBlock(passThrough);
+        enterNewScope(null);
+        currentScope().setMatcherTemplates(matchTemplates);
         MatcherNode constraint = visitAlternativeMembranes(null, true, def.subList(1, def.size()));
+        exitScope();
         Scope definedScope = exitScope();
         Templates templates = definedScope.getTemplates();
         if (templates.needsScope()) {
@@ -444,7 +447,6 @@ public class NodeFactory {
         StatementNode blockNode = visitBlock(block);
         currentScope().setBlock(blockNode);
         if (matchBlock != null) {
-          currentScope().verifyMatcherIsCalled();
           visitMatchers(matchBlock);
         }
       break;
@@ -460,6 +462,9 @@ public class NodeFactory {
   }
 
   private void visitMatchers(Object matchers) {
+    Templates matcherTemplates = currentScope().getCalledMatcherTemplates();
+    enterNewScope(null);
+    currentScope().setMatcherTemplates(matcherTemplates);
     MatchBlockNode matchBlockNode = switch (matchers) {
       case ParseNode(String name, List<?> matchTemplate) when name.equals("match-template") -> MatchBlockNode.create(List.of(visitMatchTemplate(matchTemplate)));
       case List<?> matchTemplates -> MatchBlockNode.create(matchTemplates.stream()
@@ -469,8 +474,9 @@ public class NodeFactory {
           }).toList());
       default -> throw new IllegalStateException("Unexpected value: " + matchers);
     };
-    currentScope().getOrCreateMatcherTemplates().setDefinitionLevel(scopes.size() - 1);
+    currentScope().getOrCreateMatcherTemplates().setDefinitionLevel(scopes.size() - 2);
     currentScope().makeMatcherCallTarget(matchBlockNode);
+    exitScope();
   }
 
   private MatchTemplateNode visitMatchTemplate(List<?> matchTemplate) {
@@ -692,7 +698,7 @@ public class NodeFactory {
       boolean inclusive = !content.get(separator - 1).equals("~");
       ValueNode low = asSingleValueNode(visitSource(
           (ParseNode) ((ParseNode) content.get(separator - (inclusive ? 1 : 2))).content()));
-      if (content.getFirst() instanceof ParseNode(String type, ParseNode(String id, String key)) && type.equals("tag")) {
+      if (content.getFirst() instanceof ParseNode(String type, ParseNode(String ignored, String key)) && type.equals("tag")) {
         low = TagNode.create(currentScope().getVocabularyType(key), low);
       }
       if (contextType != null) {
@@ -704,7 +710,7 @@ public class NodeFactory {
       boolean inclusive = !content.get(separator + 1).equals("~");
       ValueNode high = asSingleValueNode(visitSource(
           (ParseNode) ((ParseNode) content.getLast()).content()));
-      if (content.get(separator + (inclusive ? 1 : 2)) instanceof ParseNode(String type, ParseNode(String id, String key)) && type.equals("tag")) {
+      if (content.get(separator + (inclusive ? 1 : 2)) instanceof ParseNode(String type, ParseNode(String ignored, String key)) && type.equals("tag")) {
         high = TagNode.create(currentScope().getVocabularyType(key), high);
       }
       if (contextType != null) {

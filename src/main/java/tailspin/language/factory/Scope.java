@@ -54,19 +54,28 @@ public class Scope {
     rootFdb = Templates.createBasicFdb();
   }
 
+  boolean isInMatcher = false;
   Templates matcherTemplates;
   public Templates getOrCreateMatcherTemplates() {
     if (matcherTemplates == null) matcherTemplates = new Templates();
     return matcherTemplates;
   }
 
-  public void verifyMatcherIsCalled() {
+  public void setMatcherTemplates(Templates matcherTemplates) {
+    isInMatcher = true;
+    this.matcherTemplates = matcherTemplates;
+  }
+
+  public Templates getCalledMatcherTemplates() {
     if (matcherTemplates == null && block != null) throw new IllegalStateException("Matchers defined but never called");
+    return matcherTemplates;
   }
 
   public void makeMatcherCallTarget(MatchBlockNode matchBlockNode) {
     getOrCreateMatcherTemplates();
-    matcherTemplates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), null, matchBlockNode));
+    assignReferences(rootFdb);
+    if (needsScope) matcherTemplates.setNeedsScope();
+    matcherTemplates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), scopeFdb.build(), matchBlockNode));
   }
 
   private void assignReferences(Builder fdb) {
@@ -99,11 +108,8 @@ public class Scope {
   public Reference defineValue(String identifier) {
     Slot defined = new Slot();
     definitions.put(identifier, defined);
-    if (block != null) { // in matcher
-      // TODO: We should be able to have local matcher values
+    if (isInMatcher) {
       markTemporary(identifier);
-      getOrCreateMatcherTemplates().setNeedsScope();
-      return defined.atLevel(0);
     }
     return defined.atLevel(-1);
   }
@@ -127,11 +133,6 @@ public class Scope {
   }
 
   public Object getSource(String identifier, int level) {
-    if (block != null) {
-      // TODO: We should be able to have local matcher values
-      getOrCreateMatcherTemplates().setNeedsScope();
-      if (level == -1) level = 0;
-    }
     Object defined = definitions.get(identifier);
     switch (defined) {
       case null -> {
@@ -152,10 +153,7 @@ public class Scope {
   }
 
   public int accessState(String scopeId) {
-    if (block != null) { // in matcher
-      getOrCreateMatcherTemplates().setNeedsScope();
-    }
-    if (scopeId == null || scopeId.equals(this.scopeId)) {
+    if (!isInMatcher && (scopeId == null || scopeId.equals(this.scopeId))) {
       return 0;
     } else {
       needsScope = true;
@@ -173,9 +171,6 @@ public class Scope {
   }
 
   public Templates findTemplates(String name) {
-    if (block != null) { // in matcher
-      matcherTemplates.setNeedsScope();
-    }
     if (definitions.containsKey(name)) return (Templates) definitions.get(name);
     else if (parent == null) throw new IllegalStateException("Cannot find templates " + name);
     else {

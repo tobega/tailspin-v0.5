@@ -192,3 +192,21 @@ end foo
   $ -> foo !
 end !
 =2
+---recursed temporary matcher variables work without template block
+[1 -> templates
+  when <|..3> do
+    n is $;
+    $ + 1 -> # !
+    $n !
+end] !
+=[3, 2, 1]
+---recursed temporary matcher variables work with template block
+[1 -> templates
+  foo is 2;
+  $ -> # !
+  when <|..3> do
+    n is $;
+    $ + 1 -> # !
+    $n + $foo !
+end] !
+=[5, 4, 3]
