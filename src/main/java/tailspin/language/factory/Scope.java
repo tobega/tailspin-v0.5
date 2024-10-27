@@ -46,14 +46,9 @@ public class Scope {
     return  rootFdb.addSlot(FrameSlotKind.Static, null, null);
   }
 
-  boolean isTypeDef = false;
   StatementNode block;
   Builder blockRootFdb;
   public void setBlock(StatementNode blockNode) {
-    if (blockNode == null) {
-      isTypeDef = true;
-      return;
-    }
     block = blockNode;
     blockRootFdb = rootFdb;
     rootFdb = Templates.createBasicFdb();
@@ -71,7 +66,7 @@ public class Scope {
 
   public void makeMatcherCallTarget(MatchBlockNode matchBlockNode) {
     getOrCreateMatcherTemplates();
-    matcherTemplates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), isTypeDef ? scopeFdb.build() : null, matchBlockNode));
+    matcherTemplates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), null, matchBlockNode));
   }
 
   private void assignReferences(Builder fdb) {
@@ -132,7 +127,7 @@ public class Scope {
   }
 
   public Object getSource(String identifier, int level) {
-    if (block != null || isTypeDef) {
+    if (block != null) {
       // TODO: We should be able to have local matcher values
       getOrCreateMatcherTemplates().setNeedsScope();
       if (level == -1) level = 0;

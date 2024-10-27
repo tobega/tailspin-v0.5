@@ -169,11 +169,14 @@ public class NodeFactory {
       case ParseNode(String stmtType, List<?> def) when stmtType.equals("type-def") -> {
         VocabularyType type = currentScope().getVocabularyType(((ParseNode) def.getFirst()).content().toString());
         enterNewScope(null);
-        currentScope().setBlock(null);
+        Templates matchTemplates = currentScope().getOrCreateMatcherTemplates();
+        StatementNode passThrough = EmitNode.create(SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size() - 1, matchTemplates));
+        currentScope().setBlock(passThrough);
         MatcherNode constraint = visitAlternativeMembranes(null, true, def.subList(1, def.size()));
         Scope definedScope = exitScope();
-        Templates templates = definedScope.getOrCreateMatcherTemplates();
+        Templates templates = definedScope.getTemplates();
         if (templates.needsScope()) {
+          definedScope.getOrCreateMatcherTemplates().setDefinitionLevel(scopes.size());
           definedScope.makeMatcherCallTarget(MatchBlockNode.create(List.of(
               MatchTemplateNode.create(constraint, EmitNode.create(asTransformNode(ReadContextValueNode.create(-1, CV_SLOT))))
           )));
