@@ -423,7 +423,7 @@ public class NodeFactory {
       }
       case String crosshatch when crosshatch.equals("#") -> {
         Templates matchers = currentScope().getOrCreateMatcherTemplates();
-        yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size() - 1, matchers);
+        yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(), matchers);
       }
       case ParseNode(String type, ParseNode id) when type.equals("templates-call")
           -> SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(),
@@ -454,7 +454,7 @@ public class NodeFactory {
       case ParseNode(@SuppressWarnings("unused") String bodyName, ParseNode(String name, Object matchers))
           when name.equals("matchers"):
         Templates matchTemplates = currentScope().getOrCreateMatcherTemplates();
-        StatementNode passThrough = EmitNode.create(SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size() - 1, matchTemplates));
+        StatementNode passThrough = EmitNode.create(SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(), matchTemplates));
         currentScope().setBlock(passThrough);
         visitMatchers(matchers);
       break;
@@ -464,6 +464,7 @@ public class NodeFactory {
 
   private void visitMatchers(Object matchers) {
     Templates matcherTemplates = currentScope().getCalledMatcherTemplates();
+    matcherTemplates.setDefinitionLevel(scopes.size());
     enterNewScope(null);
     currentScope().setMatcherTemplates(matcherTemplates);
     MatchBlockNode matchBlockNode = switch (matchers) {
@@ -475,7 +476,6 @@ public class NodeFactory {
           }).toList());
       default -> throw new IllegalStateException("Unexpected value: " + matchers);
     };
-    currentScope().getOrCreateMatcherTemplates().setDefinitionLevel(scopes.size() - 2);
     currentScope().setBlock(matchBlockNode);
     currentScope().getTemplates();
     exitScope();

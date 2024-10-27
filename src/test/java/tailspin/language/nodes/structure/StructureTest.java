@@ -11,6 +11,7 @@ import tailspin.language.nodes.TestUtil;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.runtime.Structure;
+import tailspin.language.runtime.TaggedValue;
 import tailspin.language.runtime.VocabularyType;
 
 public class StructureTest {
@@ -29,7 +30,7 @@ public class StructureTest {
     VocabularyType fooType = new VocabularyType("foo");
     ValueNode structureNode = StructureLiteral.create(rootShape, List.of(fooType, new VocabularyType("bar")), List.of(IntegerLiteral.create(3L), IntegerLiteral.create(5L)));
     ValueNode readNode = StructureReadNode.create(structureNode, fooType);
-    Long foo = (Long) TestUtil.evaluate(readNode, fdb.build(), List.of());
-    assertEquals(3, foo);
+    TaggedValue foo = (TaggedValue) TestUtil.evaluate(readNode, fdb.build(), List.of());
+    assertEquals(3L, foo.value());
   }
 }
