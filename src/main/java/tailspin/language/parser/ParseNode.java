@@ -3,7 +3,7 @@ package tailspin.language.parser;
 import java.util.List;
 import java.util.Objects;
 
-public record ParseNode(String name, Object content) {
+public record ParseNode(String name, Object content, int start, int end) {
 
   public static Object normalizeValues(Object values) {
     if (values == null) {

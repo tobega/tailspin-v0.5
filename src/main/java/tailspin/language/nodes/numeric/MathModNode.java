@@ -9,8 +9,8 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
-import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
@@ -29,7 +29,9 @@ public abstract class MathModNode extends ValueNode {
 
   protected final boolean isUntypedRegion;
 
-  MathModNode(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
+  MathModNode(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.leftNode = leftNode;
     this.rightNode = rightNode;
     this.isUntypedRegion = isUntypedRegion;
@@ -77,7 +79,7 @@ public abstract class MathModNode extends ValueNode {
 
     @Specialization
     protected Object typeError(Object left, Object right) {
-      throw new TypeError("Cannot math mod " + left + " and " + right);
+      throw new TypeError("Cannot math mod " + left + " and " + right, this);
     }
   }
 
@@ -111,14 +113,8 @@ public abstract class MathModNode extends ValueNode {
     return doMathModNode.executeMathMod(frame, this, left, right);
   }
 
-  public static MathModNode create(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
-    return MathModNodeGen.create(leftNode, rightNode, isUntypedRegion);
-  }
-
-  @Override
-  public MatcherNode getTypeMatcher() {
-    MatcherNode typeMatcher = leftNode.getTypeMatcher();
-    if (typeMatcher == null) typeMatcher = rightNode.getTypeMatcher();
-    return typeMatcher;
+  public static MathModNode create(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion,
+      SourceSection section) {
+    return MathModNodeGen.create(leftNode, rightNode, isUntypedRegion, section);
   }
 }

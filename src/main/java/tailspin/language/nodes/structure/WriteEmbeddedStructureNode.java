@@ -6,6 +6,7 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.Structure;
@@ -13,6 +14,10 @@ import tailspin.language.runtime.Structure;
 @NodeChild(value = "target", type = ValueNode.class)
 @NodeChild(value = "value", type = ValueNode.class)
 public abstract class WriteEmbeddedStructureNode extends ValueNode {
+
+  public WriteEmbeddedStructureNode(SourceSection sourceSection) {
+    super(sourceSection);
+  }
 
   @Specialization(guards = {"novalue == null"})
   protected Structure writeNone(Structure target, @SuppressWarnings("unused") Object novalue) {
@@ -47,7 +52,8 @@ public abstract class WriteEmbeddedStructureNode extends ValueNode {
     throw new IllegalStateException("Attempted structure write to " + target);
   }
 
-  public static WriteEmbeddedStructureNode create(ValueNode target, ValueNode value) {
-    return WriteEmbeddedStructureNodeGen.create(target, value);
+  public static WriteEmbeddedStructureNode create(ValueNode target, ValueNode value,
+      SourceSection sourceSection) {
+    return WriteEmbeddedStructureNodeGen.create(sourceSection, target, value);
   }
 }

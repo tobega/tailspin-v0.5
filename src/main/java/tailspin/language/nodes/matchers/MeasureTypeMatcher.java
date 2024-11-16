@@ -2,6 +2,7 @@ package tailspin.language.nodes.matchers;
 
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.runtime.Measure;
 
@@ -9,7 +10,8 @@ import tailspin.language.runtime.Measure;
 public abstract class MeasureTypeMatcher extends MatcherNode {
   final Object unit;
 
-  protected MeasureTypeMatcher(Object unit) {
+  protected MeasureTypeMatcher(Object unit, SourceSection sourceSection) {
+    super(sourceSection);
     this.unit = unit;
   }
 
@@ -23,7 +25,7 @@ public abstract class MeasureTypeMatcher extends MatcherNode {
     return false;
   }
 
-  public static MeasureTypeMatcher create(Object unit) {
-    return MeasureTypeMatcherNodeGen.create(unit);
+  public static MeasureTypeMatcher create(Object unit, SourceSection sourceSection) {
+    return MeasureTypeMatcherNodeGen.create(unit, sourceSection);
   }
 }

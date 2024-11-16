@@ -5,6 +5,7 @@ import com.oracle.truffle.api.dsl.Cached.Exclusive;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
@@ -24,7 +25,9 @@ public abstract class TransformLensNode extends ValueNode {
 
   private final int resultSlot;
 
-  protected TransformLensNode(int cvSlot, TransformNode transformNode, int resultSlot) {
+  protected TransformLensNode(int cvSlot, TransformNode transformNode, int resultSlot,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.cvSlot = cvSlot;
     this.transformNode = transformNode;
     this.resultSlot = resultSlot;
@@ -64,7 +67,8 @@ public abstract class TransformLensNode extends ValueNode {
     return result;
   }
 
-  public static TransformLensNode create(ValueNode lensResult, int cvSlot, TransformNode transform, int resultSlot) {
-    return TransformLensNodeGen.create(cvSlot, transform, resultSlot, lensResult);
+  public static TransformLensNode create(ValueNode lensResult, int cvSlot, TransformNode transform, int resultSlot,
+      SourceSection sourceSection) {
+    return TransformLensNodeGen.create(cvSlot, transform, resultSlot, sourceSection, lensResult);
   }
 }

@@ -4,6 +4,7 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
@@ -19,12 +20,13 @@ public abstract class TagNode extends ValueNode {
 
   final VocabularyType type;
 
-  protected TagNode(VocabularyType type) {
+  protected TagNode(VocabularyType type, SourceSection sourceSection) {
+    super(sourceSection);
     this.type = type;
   }
 
   @Specialization(guards = "type == value.type()")
-  TaggedValue doAlreadyTagged(VirtualFrame frame, TaggedValue value) {
+  TaggedValue doAlreadyTagged(VirtualFrame ignored, TaggedValue value) {
     return value;
   }
 
@@ -34,7 +36,7 @@ public abstract class TagNode extends ValueNode {
     if (typeConstraint.executeMatcherGeneric(frame, value)) {
       return new TaggedValue(type, value);
     }
-    throw new TypeError(value + " is not of type " + type.toString());
+    throw new TypeError(value + " is not of type " + type.toString(), this);
   }
 
   @Specialization
@@ -43,7 +45,7 @@ public abstract class TagNode extends ValueNode {
     if (typeConstraint.executeMatcherGeneric(frame, value)) {
       return new TaggedValue(type, value);
     }
-    throw new TypeError(value + " is not of type " + type.toString());
+    throw new TypeError(value + " is not of type " + type.toString(), this);
   }
 
   @Specialization
@@ -52,7 +54,7 @@ public abstract class TagNode extends ValueNode {
     if (typeConstraint.executeMatcherGeneric(frame, value)) {
       return new TaggedValue(type, value);
     }
-    throw new TypeError(value + " is not of type " + type.toString());
+    throw new TypeError(value + " is not of type " + type.toString(), this);
   }
 
   @Specialization
@@ -61,7 +63,7 @@ public abstract class TagNode extends ValueNode {
     if (typeConstraint.executeMatcherGeneric(frame, value)) {
       return new TaggedValue(type, value);
     }
-    throw new TypeError(value + " is not of type " + type.toString());
+    throw new TypeError(value + " is not of type " + type.toString(), this);
   }
 
   @Specialization
@@ -70,10 +72,11 @@ public abstract class TagNode extends ValueNode {
     if (typeConstraint.executeMatcherGeneric(frame, value)) {
       return value;
     }
-    throw new TypeError(value.toString() + " is not of type " + type.toString());
+    throw new TypeError(value.toString() + " is not of type " + type.toString(), this);
   }
 
-  public static TagNode create(VocabularyType type, ValueNode valueNode) {
-    return TagNodeGen.create(type, valueNode);
+  public static TagNode create(VocabularyType type, ValueNode valueNode,
+      SourceSection sourceSection) {
+    return TagNodeGen.create(type, sourceSection, valueNode);
   }
 }

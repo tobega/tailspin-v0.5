@@ -6,6 +6,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
@@ -23,13 +24,14 @@ public abstract class WriteKeyValueNode extends ValueNode {
   @Child
   protected TagNode typeCheck;
 
-  protected WriteKeyValueNode(VocabularyType type) {
+  protected WriteKeyValueNode(VocabularyType type, SourceSection sourceSection) {
+    super(sourceSection);
     this.type = type;
-    this.typeCheck = TagNode.create(type, null);
+    this.typeCheck = TagNode.create(type, null, sourceSection);
   }
 
-  public static WriteKeyValueNode create(VocabularyType key, ValueNode target, ValueNode value) {
-    return WriteKeyValueNodeGen.create(key, target, value);
+  public static WriteKeyValueNode create(VocabularyType key, ValueNode target, ValueNode value, SourceSection sourceSection) {
+    return WriteKeyValueNodeGen.create(key, sourceSection, target, value);
   }
 
   @Specialization
@@ -52,6 +54,6 @@ public abstract class WriteKeyValueNode extends ValueNode {
 
   @Fallback
   protected Object doIllegal(Object target, Object ignored) {
-    throw new TypeError(String.format("Cannot write %s by %s", target.getClass(), type));
+    throw new TypeError(String.format("Cannot write %s by %s", target.getClass(), type), this);
   }
 }

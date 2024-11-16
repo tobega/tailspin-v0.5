@@ -2,6 +2,7 @@ package tailspin.language.nodes.matchers;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.List;
 import tailspin.language.nodes.MatcherNode;
 
@@ -9,12 +10,13 @@ public class AnyOfNode extends MatcherNode {
   @Children
   private final MatcherNode[] conditions;
 
-  private AnyOfNode(List<MatcherNode> conditions) {
+  private AnyOfNode(List<MatcherNode> conditions, SourceSection sourceSection) {
+    super(sourceSection);
     this.conditions = conditions.toArray(new MatcherNode[0]);
   }
 
-  public static AnyOfNode create(List<MatcherNode> conditions) {
-    return new AnyOfNode(conditions);
+  public static AnyOfNode create(List<MatcherNode> conditions, SourceSection sourceSection) {
+    return new AnyOfNode(conditions, sourceSection);
   }
 
   @Override

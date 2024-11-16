@@ -9,8 +9,8 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
-import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
@@ -29,7 +29,9 @@ public abstract class AddNode extends ValueNode {
 
   protected final boolean isUntypedRegion;
 
-  AddNode(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
+  AddNode(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.leftNode = leftNode;
     this.rightNode = rightNode;
     this.isUntypedRegion = isUntypedRegion;
@@ -79,7 +81,7 @@ public abstract class AddNode extends ValueNode {
 
     @Specialization
     protected Object typeError(Object left, Object right) {
-      throw new TypeError("Cannot add " + left + " and " + right);
+      throw new TypeError("Cannot add " + left + " and " + right, this);
     }
   }
 
@@ -113,14 +115,7 @@ public abstract class AddNode extends ValueNode {
     return doAddNode.executeAdd(frame, this, left, right);
   }
 
-  public static AddNode create(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
-    return AddNodeGen.create(leftNode, rightNode, isUntypedRegion);
-  }
-
-  @Override
-  public MatcherNode getTypeMatcher() {
-    MatcherNode typeMatcher = leftNode.getTypeMatcher();
-    if (typeMatcher == null) typeMatcher = rightNode.getTypeMatcher();
-    return typeMatcher;
+  public static AddNode create(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion, SourceSection sourceSection) {
+    return AddNodeGen.create(leftNode, rightNode, isUntypedRegion, sourceSection);
   }
 }

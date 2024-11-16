@@ -2,9 +2,11 @@ package tailspin.language.nodes.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +26,7 @@ import tailspin.language.nodes.value.TransformResultNode;
 import tailspin.language.runtime.Templates;
 
 public class ChainTest {
+  SourceSection sourceSection = INTERNAL_CODE_SOURCE;
   @Test
   void expression_chain_stage() {
     FrameDescriptor.Builder fdb = Templates.createBasicFdb();
@@ -33,13 +36,17 @@ public class ChainTest {
     int incrementSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode expr = AddNode.create(
-            IntegerLiteral.create(12),
-            ReadContextValueNode.create(-1, rangeSlot), false);
-    RangeIteration source = RangeIteration.create(rangeSlot, ResultAggregatingNode.create(expr), startSlot, IntegerLiteral.create(1L),
-        true, endSlot, IntegerLiteral.create(3L), true, incrementSlot, IntegerLiteral.create(1L));
+            IntegerLiteral.create(12, sourceSection),
+            ReadContextValueNode.create(-1, rangeSlot), false, sourceSection);
+    RangeIteration source = RangeIteration.create(rangeSlot, ResultAggregatingNode.create(expr
+        ), startSlot, IntegerLiteral.create(1L, sourceSection),
+        true, endSlot, IntegerLiteral.create(3L,
+            sourceSection), true, incrementSlot, IntegerLiteral.create(1L, sourceSection),
+        sourceSection);
     source.setResultSlot(resultSlot);
     @SuppressWarnings("unchecked")
-    Iterator<Object> result = ((ArrayList<Object>) TestUtil.evaluate(new TransformResultNode(source), fdb.build(),
+    Iterator<Object> result = ((ArrayList<Object>) TestUtil.evaluate(new TransformResultNode(source,
+            sourceSection), fdb.build(),
         List.of())).iterator();
     assertEquals(13L, result.next());
     assertEquals(14L, result.next());
@@ -54,11 +61,12 @@ public class ChainTest {
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     ValueNode expr = AddNode.create(
-            IntegerLiteral.create(12),
-            ReadContextValueNode.create(-1, cvSlot), false);
-    ValueNode source = IntegerLiteral.create(1L);
+            IntegerLiteral.create(12, sourceSection),
+            ReadContextValueNode.create(-1, cvSlot), false, sourceSection);
+    ValueNode source = IntegerLiteral.create(1L, sourceSection);
     ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(
-        ResultAggregatingNode.create(source), ResultAggregatingNode.create(expr)));
+        ResultAggregatingNode.create(source), ResultAggregatingNode.create(expr
+        )));
     assertEquals(13L, TestUtil.evaluate(SingleValueNode.create(chain), fdb.build(), List.of()));
   }
 
@@ -69,10 +77,14 @@ public class ChainTest {
     int valuesSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int buildSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    ValueNode source = ArrayLiteral.create(buildSlot, List.of(ResultAggregatingNode.create(IntegerLiteral.create(12))));
-    ValueNode expr = ArrayReadNode.create(false, ReadContextValueNode.create(-1, cvSlot), IntegerLiteral.create(1), null);
+    ValueNode source = ArrayLiteral.create(buildSlot, List.of(ResultAggregatingNode.create(IntegerLiteral.create(12,
+            sourceSection)
+    )), sourceSection);
+    ValueNode expr = ArrayReadNode.create(false, ReadContextValueNode.create(-1, cvSlot), IntegerLiteral.create(1,
+        sourceSection), null, sourceSection);
     ChainNode chain = ChainNode.create(valuesSlot, cvSlot, resultSlot, List.of(
-        ResultAggregatingNode.create(source), ResultAggregatingNode.create(expr)));
+        ResultAggregatingNode.create(source), ResultAggregatingNode.create(expr
+        )));
     assertEquals(12L, TestUtil.evaluate(SingleValueNode.create(chain), fdb.build(),
         List.of()));
   }

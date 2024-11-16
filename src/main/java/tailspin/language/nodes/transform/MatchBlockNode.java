@@ -6,6 +6,7 @@ import com.oracle.truffle.api.dsl.Executed;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.List;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
@@ -20,7 +21,9 @@ public abstract class MatchBlockNode extends StatementNode {
   @Children
   private final MatchTemplateNode[] matchTemplates;
 
-  MatchBlockNode(ValueNode toMatchNode, List<MatchTemplateNode> matchTemplates) {
+  MatchBlockNode(ValueNode toMatchNode, List<MatchTemplateNode> matchTemplates,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.toMatchNode = toMatchNode;
     this.matchTemplates = matchTemplates.toArray(new MatchTemplateNode[0]);
   }
@@ -41,7 +44,8 @@ public abstract class MatchBlockNode extends StatementNode {
     }
   }
 
-  public static MatchBlockNode create(List<MatchTemplateNode> matchTemplates) {
-    return MatchBlockNodeGen.create(ReadContextValueNode.create(-1, CV_SLOT), matchTemplates);
+  public static MatchBlockNode create(List<MatchTemplateNode> matchTemplates,
+      SourceSection sourceSection) {
+    return MatchBlockNodeGen.create(ReadContextValueNode.create(-1, CV_SLOT), matchTemplates, sourceSection);
   }
 }

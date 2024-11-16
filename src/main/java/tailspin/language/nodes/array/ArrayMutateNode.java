@@ -2,6 +2,7 @@ package tailspin.language.nodes.array;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
@@ -12,10 +13,16 @@ import tailspin.language.runtime.TailspinArray;
 @NodeChild(value = "lens", type = ValueNode.class)
 @NodeChild(value = "value", type = ValueNode.class)
 public abstract class ArrayMutateNode extends ValueNode {
+
+  public ArrayMutateNode(SourceSection sourceSection) {
+    super(sourceSection);
+  }
+
   public abstract Object executeDirect(Object target, Object index, Object value);
 
-  public static ArrayMutateNode create(ValueNode array, ValueNode index, ValueNode value) {
-    return ArrayMutateNodeGen.create(array, index, value);
+  public static ArrayMutateNode create(ValueNode array, ValueNode index, ValueNode value,
+      SourceSection sourceSection) {
+    return ArrayMutateNodeGen.create(sourceSection, array, index, value);
   }
 
   @Specialization
@@ -53,6 +60,7 @@ public abstract class ArrayMutateNode extends ValueNode {
   @Specialization
   @SuppressWarnings("unused")
   protected Object doIllegal(Object receiver, Object lens, Object value) {
-    throw new TypeError(String.format("Cannot read %s by %s", receiver.getClass(), lens.getClass()));
+    throw new TypeError(String.format("Cannot access %s by %s", receiver.getClass(), lens.getClass()),
+        this);
   }
 }

@@ -1,6 +1,7 @@
 package tailspin.language.nodes.value;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
@@ -11,7 +12,8 @@ public class TransformResultNode extends ValueNode {
   @Child
   private TransformNode transform;
 
-  public TransformResultNode(TransformNode transform) {
+  public TransformResultNode(TransformNode transform, SourceSection sourceSection) {
+    super(sourceSection);
     if (transform instanceof ResultAggregatingNode) throw new IllegalArgumentException("No double conversion of transforms and values");
     this.transform = transform;
   }

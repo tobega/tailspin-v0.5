@@ -3,6 +3,7 @@ package tailspin.language.nodes.matchers;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.strings.TruffleString;
 import java.util.regex.Pattern;
 import tailspin.language.TypeError;
@@ -15,7 +16,8 @@ import tailspin.language.runtime.TailspinStrings;
 public abstract class RegexMatcherNode extends MatcherNode {
   private final boolean isTypeChecked;
 
-  protected RegexMatcherNode(boolean isTypeChecked) {
+  protected RegexMatcherNode(boolean isTypeChecked, SourceSection sourceSection) {
+    super(sourceSection);
     this.isTypeChecked = isTypeChecked;
   }
 
@@ -29,11 +31,12 @@ public abstract class RegexMatcherNode extends MatcherNode {
   @Specialization
   @SuppressWarnings("unused")
   boolean doIllegal(Object toMatch, TruffleString regex) {
-    if (!isTypeChecked) throw new TypeError("Can't regex match " + toMatch);
+    if (!isTypeChecked) throw new TypeError("Can't regex match " + toMatch, this);
     return false;
   }
 
-  public static RegexMatcherNode create(boolean isTypeChecked, ValueNode valueNode) {
-    return RegexMatcherNodeGen.create(isTypeChecked, null, valueNode);
+  public static RegexMatcherNode create(boolean isTypeChecked, ValueNode valueNode,
+      SourceSection sourceSection) {
+    return RegexMatcherNodeGen.create(isTypeChecked, sourceSection, null, valueNode);
   }
 }

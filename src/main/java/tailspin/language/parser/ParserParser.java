@@ -168,22 +168,22 @@ public class ParserParser {
   private static CompositionSpec visitCompositionComponent(ParseNode compositionComponent) {
     if (!compositionComponent.name().equals("compositionComponent")) throw new AssertionError("Got unexpected " + compositionComponent);
     return switch ((ParseNode) compositionComponent.content()) {
-      case ParseNode(String name, ParseNode cm) when name.equals("compositionMatcher") -> visitCompositionMatcher(cm);
-      case ParseNode(String name, Object skipped) when name.equals("compositionSkipRule") -> new SkipComposition(visitSkipped(skipped));
+      case ParseNode(String name, ParseNode cm, int start, int end) when name.equals("compositionMatcher") -> visitCompositionMatcher(cm);
+      case ParseNode(String name, Object skipped, int start, int end) when name.equals("compositionSkipRule") -> new SkipComposition(visitSkipped(skipped));
       default -> throw new IllegalStateException("Unexpected value: " + compositionComponent.content());
     };
   }
 
   private static CompositionSpec visitCompositionMatcher(ParseNode compositionMatcher) {
     return switch (compositionMatcher) {
-      case ParseNode(String type, Object tm) when type.equals("tokenMatcher") -> visitTokenMatcher(tm);
-      case ParseNode(String type, ParseNode localIdentifier) when type.equals("sourceReference") -> new DereferenceComposition(localIdentifier.content().toString());
+      case ParseNode(String type, Object tm, int start, int end) when type.equals("tokenMatcher") -> visitTokenMatcher(tm);
+      case ParseNode(String type, ParseNode localIdentifier, int start, int end) when type.equals("sourceReference") -> new DereferenceComposition(localIdentifier.content().toString());
       default -> throw new IllegalStateException("Unexpected value: " + compositionMatcher);
     };
   }
 
   private static List<CompositionSpec> visitSkipped(Object skipped) {
-    if (skipped instanceof ParseNode(String name, ParseNode p) && name.equals("skipComposition")) {
+    if (skipped instanceof ParseNode(String name, ParseNode p, int start, int end) && name.equals("skipComposition")) {
       return List.of(visitSkipComposition(p));
     }
     if (skipped instanceof List<?> list) {
@@ -194,19 +194,19 @@ public class ParserParser {
 
   private static CompositionSpec visitSkipComposition(ParseNode p) {
     return switch (p) {
-      case ParseNode(String name, Object c) when name.equals("tokenMatcher") -> visitTokenMatcher(c);
-      case ParseNode(String name, Object c) when name.equals("tokenCapture")
+      case ParseNode(String name, Object c, int start, int end) when name.equals("tokenMatcher") -> visitTokenMatcher(c);
+      case ParseNode(String name, Object c, int start, int end) when name.equals("tokenCapture")
           -> visitTokenCapture((List<?>) c);
       default -> throw new IllegalStateException("Unexpected value: " + p);
     };
   }
 
   private static CompositionSpec visitTokenMatcher(Object tm) {
-    if (tm instanceof ParseNode(String name, ParseNode c) && name.equals("compositionToken")) {
+    if (tm instanceof ParseNode(String name, ParseNode c, int start, int end) && name.equals("compositionToken")) {
       return visitCompositionToken(c);
     }
     if (tm instanceof List<?> l) {
-      if (l.getFirst() instanceof ParseNode(String name, String c) && name.equals("multiplier")) {
+      if (l.getFirst() instanceof ParseNode(String name, String c, int start, int end) && name.equals("multiplier")) {
         RangeMatch multiplier = switch (c) {
           case "?" -> RangeMatch.AT_MOST_ONE;
           case "+" -> RangeMatch.AT_LEAST_ONE;
@@ -216,11 +216,11 @@ public class ParserParser {
         return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(1, l.size()))), multiplier);
       }
       if (l.getFirst() instanceof ParseNode(String name, ParseNode(String cm, ParseNode(
-          String type, Long value))) && name.equals("multiplier") && cm.equals("customMultiplier") && type.equals("INT")) {
+          String type, Long value, int ts, int te), int cs, int ce), int start, int end) && name.equals("multiplier") && cm.equals("customMultiplier") && type.equals("INT")) {
         return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(1, l.size()))), RangeMatch.exactly(new Constant<>(value)));
       }
       if (l.getFirst() instanceof ParseNode(String name, ParseNode(String cm, ParseNode(
-          String type, ParseNode(String li, String ref)))) && name.equals("multiplier") && cm.equals("customMultiplier")
+          String type, ParseNode(String li, String ref, int ls, int le), int ts, int te), int cs, int ce), int start, int end) && name.equals("multiplier") && cm.equals("customMultiplier")
               && type.equals("sourceReference") && li.equals("localIdentifier")) {
         return new MultiplierComposition(visitTokenMatcher(normalizeValues(l.subList(1, l.size()))), RangeMatch.exactly(new Reference<>(ref)));
       }
@@ -244,8 +244,8 @@ public class ParserParser {
 
   private static Value<String> visitLiteralValue(Object v) {
     return switch (v) {
-      case ParseNode(String type, String value) when type.equals("stringLiteral") -> new Constant<>(value);
-      case ParseNode(String type, ParseNode(String ignored, String identifier)) when type.equals("sourceReference")
+      case ParseNode(String type, String value, int start, int end) when type.equals("stringLiteral") -> new Constant<>(value);
+      case ParseNode(String type, ParseNode(String ignored, String identifier, int is, int ie), int start, int end) when type.equals("sourceReference")
           -> new Reference<>(identifier);
       default -> throw new IllegalStateException("Unexpected value: " + v);
     };

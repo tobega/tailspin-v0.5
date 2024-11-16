@@ -1,5 +1,7 @@
 package tailspin.language.nodes.transform;
 
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
+
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -7,6 +9,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.TemplatesInstance;
@@ -15,8 +18,12 @@ import tailspin.language.runtime.TemplatesInstance;
 @NodeChild(value = "templates", type = ValueNode.class)
 public abstract class CallDefinedTemplatesNode extends TransformNode {
 
+  public CallDefinedTemplatesNode(SourceSection sourceSection) {
+    super(sourceSection);
+  }
+
   public static CallDefinedTemplatesNode create(ValueNode value, ValueNode templates) {
-    return CallDefinedTemplatesNodeGen.create(value, templates);
+    return CallDefinedTemplatesNodeGen.create(INTERNAL_CODE_SOURCE, value, templates);
   }
 
   @Specialization

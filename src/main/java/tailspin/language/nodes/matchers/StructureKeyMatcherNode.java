@@ -5,6 +5,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.VocabularyType;
@@ -17,7 +18,9 @@ public abstract class StructureKeyMatcherNode extends MatcherNode {
   MatcherNode matcher;
   final boolean isOptional;
 
-  protected StructureKeyMatcherNode(VocabularyType key, MatcherNode matcher, boolean isOptional) {
+  protected StructureKeyMatcherNode(VocabularyType key, MatcherNode matcher, boolean isOptional,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.key = key;
     this.matcher = matcher;
     this.isOptional = isOptional;
@@ -31,7 +34,8 @@ public abstract class StructureKeyMatcherNode extends MatcherNode {
     return matcher.executeMatcherGeneric(frame, value);
   }
 
-  public static StructureKeyMatcherNode create(VocabularyType key, MatcherNode matcher, boolean isOptional) {
-    return StructureKeyMatcherNodeGen.create(key, matcher, isOptional);
+  public static StructureKeyMatcherNode create(VocabularyType key, MatcherNode matcher, boolean isOptional,
+      SourceSection sourceSection) {
+    return StructureKeyMatcherNodeGen.create(key, matcher, isOptional, sourceSection);
   }
 }

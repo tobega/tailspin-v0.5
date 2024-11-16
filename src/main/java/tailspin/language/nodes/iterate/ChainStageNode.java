@@ -1,5 +1,7 @@
 package tailspin.language.nodes.iterate;
 
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
+
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
@@ -14,6 +16,7 @@ import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
@@ -34,12 +37,15 @@ public abstract class ChainStageNode extends TransformNode {
   @Child
   private LoopNode loop;
 
-  protected ChainStageNode(int valuesSlot, int cvSlot, TransformNode stage) {
+  protected ChainStageNode(int valuesSlot, int cvSlot, TransformNode stage,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.valuesSlot = valuesSlot;
     this.cvSlot = cvSlot;
     this.stage = stage;
-    values = StaticReferenceNode.create(valuesSlot);
-    loop = Truffle.getRuntime().createLoopNode(new ChainStageRepeatingNode(valuesSlot, cvSlot, stage));
+    values = StaticReferenceNode.create(valuesSlot, sourceSection);
+    loop = Truffle.getRuntime().createLoopNode(new ChainStageRepeatingNode(valuesSlot, cvSlot, stage,
+        sourceSection));
   }
 
   @Override
@@ -76,7 +82,7 @@ public abstract class ChainStageNode extends TransformNode {
   }
 
   static ChainStageNode create(int chainValuesSlot, int chainCvSlot, TransformNode stage) {
-    return ChainStageNodeGen.create(chainValuesSlot, chainCvSlot, stage);
+    return ChainStageNodeGen.create(chainValuesSlot, chainCvSlot, stage, INTERNAL_CODE_SOURCE);
   }
 
   private static class ChainStageRepeatingNode extends Node implements RepeatingNode {
@@ -92,9 +98,10 @@ public abstract class ChainStageNode extends TransformNode {
     @Child
     TransformNode stage;
 
-    ChainStageRepeatingNode(int chainValuesSlot, int chainCvSlot, TransformNode stage) {
+    ChainStageRepeatingNode(int chainValuesSlot, int chainCvSlot, TransformNode stage,
+        SourceSection sourceSection) {
       this.setCurrentValue = SetChainCvNode.create(chainCvSlot);
-      this.getNextStreamValueNode = GetNextStreamValueNode.create(chainValuesSlot);
+      this.getNextStreamValueNode = GetNextStreamValueNode.create(chainValuesSlot, sourceSection);
       this.stage = stage;
     }
 
@@ -142,8 +149,8 @@ public abstract class ChainStageNode extends TransformNode {
       return stream.removeFirst();
     }
 
-    public static GetNextStreamValueNode create(int valuesSlot) {
-      return GetNextStreamValueNodeGen.create(StaticReferenceNode.create(valuesSlot));
+    public static GetNextStreamValueNode create(int valuesSlot, SourceSection sourceSection) {
+      return GetNextStreamValueNodeGen.create(StaticReferenceNode.create(valuesSlot, sourceSection));
     }
   }
 
@@ -151,12 +158,13 @@ public abstract class ChainStageNode extends TransformNode {
 
     private final int slot;
 
-    private StaticReferenceNode(int slot) {
+    private StaticReferenceNode(int slot, SourceSection sourceSection) {
+      super(sourceSection);
       this.slot = slot;
     }
 
-    public static StaticReferenceNode create(int valuesSlot) {
-      return new StaticReferenceNode(valuesSlot);
+    public static StaticReferenceNode create(int valuesSlot, SourceSection sourceSection) {
+      return new StaticReferenceNode(valuesSlot, sourceSection);
     }
 
     @Override

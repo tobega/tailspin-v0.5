@@ -9,8 +9,8 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
-import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
@@ -29,7 +29,9 @@ public abstract class SubtractNode extends ValueNode {
 
   protected final boolean isUntypedRegion;
 
-  SubtractNode(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
+  SubtractNode(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.leftNode = leftNode;
     this.rightNode = rightNode;
     this.isUntypedRegion = isUntypedRegion;
@@ -77,7 +79,7 @@ public abstract class SubtractNode extends ValueNode {
 
     @Specialization
     protected Object typeError(Object left, Object right) {
-      throw new TypeError("Cannot subtract " + left + " and " + right);
+      throw new TypeError("Cannot subtract " + left + " and " + right, this);
     }
   }
 
@@ -111,14 +113,8 @@ public abstract class SubtractNode extends ValueNode {
     return doSubtractNode.executeSubtract(frame, this, left, right);
   }
 
-  public static SubtractNode create(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion) {
-    return SubtractNodeGen.create(leftNode, rightNode, isUntypedRegion);
-  }
-
-  @Override
-  public MatcherNode getTypeMatcher() {
-    MatcherNode typeMatcher = leftNode.getTypeMatcher();
-    if (typeMatcher == null) typeMatcher = rightNode.getTypeMatcher();
-    return typeMatcher;
+  public static SubtractNode create(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion,
+      SourceSection section) {
+    return SubtractNodeGen.create(leftNode, rightNode, isUntypedRegion, section);
   }
 }

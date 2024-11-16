@@ -4,6 +4,7 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.runtime.TaggedValue;
@@ -24,14 +25,15 @@ public abstract class TagMatcherNode extends MatcherNode {
   }
 
   MatcherNode getConstraint() {
-    return type.getConstraint().orElseThrow(() -> new TypeError(type + "is not defined"));
+    return type.getConstraint().orElseThrow(() -> new TypeError(type + "is not defined", this));
   }
 
-  protected TagMatcherNode(VocabularyType type) {
+  protected TagMatcherNode(VocabularyType type, SourceSection sourceSection) {
+    super(sourceSection);
     this.type = type;
   }
 
-  static public TagMatcherNode create(VocabularyType key) {
-    return TagMatcherNodeGen.create(key);
+  static public TagMatcherNode create(VocabularyType key, SourceSection sourceSection) {
+    return TagMatcherNodeGen.create(key, sourceSection);
   }
 }

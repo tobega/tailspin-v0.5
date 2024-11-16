@@ -10,6 +10,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TailspinTypes;
@@ -29,7 +30,9 @@ public abstract class LessThanMatcherNode extends MatcherNode {
   protected final boolean isTypeChecked;
   private final boolean inclusive;
 
-  protected LessThanMatcherNode(boolean isTypeChecked, boolean inclusive) {
+  protected LessThanMatcherNode(boolean isTypeChecked, boolean inclusive,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.isTypeChecked = isTypeChecked;
     this.inclusive = inclusive;
   }
@@ -105,7 +108,8 @@ public abstract class LessThanMatcherNode extends MatcherNode {
       @Cached("autoType(value)") MatcherNode dynamicBound) {
     if (doLessThanNode.executeLessThan(frame, this, toMatch, value, inclusive)) return true;
     if (dynamicBound.executeMatcherGeneric(frame, toMatch)) return false;
-    throw new TypeError("Incompatible type comparison " + toMatch + (inclusive ? " <= " : " < ") + value);
+    throw new TypeError("Incompatible type comparison " + toMatch + (inclusive ? " <= " : " < ") + value,
+        this);
   }
 
   MatcherNode autoType(Object value) {
@@ -118,10 +122,12 @@ public abstract class LessThanMatcherNode extends MatcherNode {
     if (doLessThanNode.executeLessThan(frame, this, toMatch, value, inclusive)) return true;
     MatcherNode dynamicBound = autoType(value);
     if (dynamicBound.executeMatcherGeneric(frame, toMatch)) return false;
-    throw new TypeError("Incompatible type comparison " + toMatch + (inclusive ? " <= " : " < ") + value);
+    throw new TypeError("Incompatible type comparison " + toMatch + (inclusive ? " <= " : " < ") + value,
+        this);
   }
 
-  public static LessThanMatcherNode create(boolean isTypeChecked, boolean inclusive, ValueNode valueNode) {
-    return LessThanMatcherNodeGen.create(isTypeChecked, inclusive, null, valueNode);
+  public static LessThanMatcherNode create(boolean isTypeChecked, boolean inclusive, ValueNode valueNode,
+      SourceSection sourceSection) {
+    return LessThanMatcherNodeGen.create(isTypeChecked, inclusive, sourceSection, null, valueNode);
   }
 }

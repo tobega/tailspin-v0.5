@@ -2,6 +2,7 @@ package tailspin.language.nodes.matchers;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.runtime.TailspinArray;
 
@@ -10,7 +11,8 @@ public abstract class ArrayContentMatcherNode extends MatcherNode {
   @Child
   MatcherNode contentMatcher;
 
-  ArrayContentMatcherNode(MatcherNode contentMatcher) {
+  ArrayContentMatcherNode(MatcherNode contentMatcher, SourceSection sourceSection) {
+    super(sourceSection);
     this.contentMatcher = contentMatcher;
   }
 
@@ -22,7 +24,8 @@ public abstract class ArrayContentMatcherNode extends MatcherNode {
     return false;
   }
 
-  public static ArrayContentMatcherNode create(MatcherNode elementMatcher) {
-    return ArrayContentMatcherNodeGen.create(elementMatcher);
+  public static ArrayContentMatcherNode create(MatcherNode elementMatcher,
+      SourceSection sourceSection) {
+    return ArrayContentMatcherNodeGen.create(elementMatcher, sourceSection);
   }
 }

@@ -11,6 +11,7 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.WriteContextValueNode;
@@ -31,10 +32,12 @@ public class TemplatesRootNode extends RootNode {
   @Child
   private StatementNode statement;
   private TemplatesRootNode(TruffleLanguage<?> language,
-      FrameDescriptor frameDescriptor, FrameDescriptor scopeDescriptor, StatementNode statement) {
+      FrameDescriptor frameDescriptor, FrameDescriptor scopeDescriptor, StatementNode statement,
+      SourceSection sourceSection) {
     super(language, frameDescriptor);
-    this.createScope = CreateScopeNode.create(scopeDescriptor);
-    this.setCurrentValue = WriteContextValueNode.create(-1, CV_SLOT, new ReadArgumentNode(CV_ARG));
+    this.createScope = CreateScopeNode.create(scopeDescriptor, sourceSection);
+    this.setCurrentValue = WriteContextValueNode.create(-1, CV_SLOT, new ReadArgumentNode(CV_ARG,
+        sourceSection));
     this.statement = statement;
   }
 
@@ -50,14 +53,16 @@ public class TemplatesRootNode extends RootNode {
   }
 
   // scopeDescriptor is null for matchers and fake range templates
-  public static CallTarget create(FrameDescriptor frameDescriptor, FrameDescriptor scopeDescriptor, StatementNode body) {
-    return new TemplatesRootNode(null, frameDescriptor, scopeDescriptor, body).getCallTarget();
+  public static CallTarget create(FrameDescriptor frameDescriptor, FrameDescriptor scopeDescriptor, StatementNode body,
+      SourceSection sourceSection) {
+    return new TemplatesRootNode(null, frameDescriptor, scopeDescriptor, body, sourceSection).getCallTarget();
   }
 
   public static class ReadArgumentNode extends ValueNode {
     final int argIndex;
 
-    public ReadArgumentNode(int argIndex) {
+    public ReadArgumentNode(int argIndex, SourceSection sourceSection) {
+      super(sourceSection);
       this.argIndex = argIndex;
     }
 
@@ -71,12 +76,14 @@ public class TemplatesRootNode extends RootNode {
 
     private final FrameDescriptor scopeDescriptor;
 
-    private CreateScopeNode(FrameDescriptor scopeDescriptor) {
+    private CreateScopeNode(FrameDescriptor scopeDescriptor, SourceSection sourceSection) {
+      super(sourceSection);
       this.scopeDescriptor = scopeDescriptor;
     }
 
-    public static CreateScopeNode create(FrameDescriptor scopeDescriptor) {
-      return new CreateScopeNode(scopeDescriptor);
+    public static CreateScopeNode create(FrameDescriptor scopeDescriptor,
+        SourceSection sourceSection) {
+      return new CreateScopeNode(scopeDescriptor, sourceSection);
     }
 
     @Override

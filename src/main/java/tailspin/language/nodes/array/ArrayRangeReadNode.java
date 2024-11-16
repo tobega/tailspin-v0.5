@@ -6,6 +6,7 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
@@ -18,7 +19,9 @@ import tailspin.language.runtime.TailspinArray;
 @NodeChild(value = "array", type = ValueNode.class)
 public abstract class ArrayRangeReadNode extends ValueNode {
 
-  protected ArrayRangeReadNode(RangeIteration iterationNode, int resultSlot) {
+  protected ArrayRangeReadNode(RangeIteration iterationNode, int resultSlot,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.iterationNode = iterationNode;
     this.resultSlot = resultSlot;
   }
@@ -58,11 +61,12 @@ public abstract class ArrayRangeReadNode extends ValueNode {
 
   @Specialization
   protected Object doIllegal(Object receiver) {
-    throw new TypeError(String.format("Cannot read %s by range", receiver.getClass()));
+    throw new TypeError(String.format("Cannot read %s by range", receiver.getClass()), this);
   }
 
-  public static ArrayRangeReadNode create(RangeIteration iteration, int resultSlot, ValueNode array) {
+  public static ArrayRangeReadNode create(RangeIteration iteration, int resultSlot, ValueNode array,
+      SourceSection sourceSection) {
     iteration.setResultSlot(resultSlot);
-    return ArrayRangeReadNodeGen.create(iteration, resultSlot, array);
+    return ArrayRangeReadNodeGen.create(iteration, resultSlot, sourceSection, array);
   }
 }

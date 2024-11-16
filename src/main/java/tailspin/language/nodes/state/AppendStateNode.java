@@ -2,6 +2,7 @@ package tailspin.language.nodes.state;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
@@ -10,6 +11,11 @@ import tailspin.language.runtime.TailspinArray;
 @NodeChild(value = "target", type = ValueNode.class)
 @NodeChild(value = "value", type = ValueNode.class)
 public abstract class AppendStateNode extends ValueNode {
+
+  public AppendStateNode(SourceSection sourceSection) {
+    super(sourceSection);
+  }
+
   public abstract Object executeDirect(Object target, Object value);
 
   @Specialization
@@ -30,10 +36,11 @@ public abstract class AppendStateNode extends ValueNode {
 
   @Specialization
   Object cannotAppend(Object target, Object ignored) {
-    throw new TypeError("Cannot append to " + target);
+    throw new TypeError("Cannot append to " + target, this);
   }
 
-  public static AppendStateNode create(ValueNode target, ValueNode value) {
-    return AppendStateNodeGen.create(target, value);
+  public static AppendStateNode create(ValueNode target, ValueNode value,
+      SourceSection sourceSection) {
+    return AppendStateNodeGen.create(sourceSection, target, value);
   }
 }

@@ -9,11 +9,10 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
-import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
@@ -25,7 +24,8 @@ public abstract class SquareRootNode extends ValueNode {
 
   protected final boolean isUntypedRegion;
 
-  SquareRootNode(ValueNode squareNode, boolean isUntypedRegion) {
+  SquareRootNode(ValueNode squareNode, boolean isUntypedRegion, SourceSection sourceSection) {
+    super(sourceSection);
     this.squareNode = squareNode;
     this.isUntypedRegion = isUntypedRegion;
   }
@@ -49,7 +49,7 @@ public abstract class SquareRootNode extends ValueNode {
 
     @Specialization
     protected Object typeError(Object square) {
-      throw new TypeError("Cannot take square root of " + square);
+      throw new TypeError("Cannot take square root of " + square, this);
     }
   }
 
@@ -65,12 +65,8 @@ public abstract class SquareRootNode extends ValueNode {
     return doSquareRootNode.executeSquareRoot(frame, this, square);
   }
 
-  public static SquareRootNode create(ValueNode squareNode, boolean isUntypedRegion) {
-    return SquareRootNodeGen.create(squareNode, isUntypedRegion);
-  }
-
-  @Override
-  public MatcherNode getTypeMatcher() {
-    return NumericTypeMatcherNode.create();
+  public static SquareRootNode create(ValueNode squareNode, boolean isUntypedRegion,
+      SourceSection section) {
+    return SquareRootNodeGen.create(squareNode, isUntypedRegion, section);
   }
 }

@@ -1,8 +1,11 @@
 package tailspin.language.nodes.value;
 
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
+
 import com.oracle.truffle.api.dsl.Executed;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
@@ -13,12 +16,13 @@ public abstract class SingleValueNode extends ValueNode {
   @Child @Executed
   TransformResultNode transformResult;
 
-  SingleValueNode(TransformNode transformNode) {
-    this.transformResult = new TransformResultNode(transformNode);
+  SingleValueNode(TransformNode transformNode, SourceSection sourceSection) {
+    super(sourceSection);
+    this.transformResult = new TransformResultNode(transformNode, sourceSection);
   }
 
   public static SingleValueNode create(TransformNode transformNode) {
-    return SingleValueNodeGen.create(transformNode);
+    return SingleValueNodeGen.create(transformNode, INTERNAL_CODE_SOURCE);
   }
 
   @Specialization

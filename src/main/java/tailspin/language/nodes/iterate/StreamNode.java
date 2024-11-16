@@ -4,6 +4,7 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.strings.TruffleString;
 import com.oracle.truffle.api.strings.TruffleStringBuilder;
 import com.oracle.truffle.api.strings.TruffleStringIterator;
@@ -21,6 +22,10 @@ public abstract class StreamNode extends TransformNode {
   @SuppressWarnings("FieldMayBeFinal")
   @Child
   private AppendResultNode appendResultNode = AppendResultNode.create();
+
+  public StreamNode(SourceSection sourceSection) {
+    super(sourceSection);
+  }
 
   @Specialization
   void doArray(VirtualFrame frame, TailspinArray ta) {
@@ -59,7 +64,7 @@ public abstract class StreamNode extends TransformNode {
     }
   }
 
-  public static StreamNode create(ValueNode value) {
-    return StreamNodeGen.create(value);
+  public static StreamNode create(ValueNode value, SourceSection sourceSection) {
+    return StreamNodeGen.create(sourceSection, value);
   }
 }

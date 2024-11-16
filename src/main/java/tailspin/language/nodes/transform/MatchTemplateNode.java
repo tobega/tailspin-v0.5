@@ -2,6 +2,7 @@ package tailspin.language.nodes.transform;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.TailspinNode;
@@ -15,7 +16,8 @@ public class MatchTemplateNode extends TailspinNode {
   private StatementNode body;
   final CountingConditionProfile isTrue = CountingConditionProfile.create();
 
-  private MatchTemplateNode(MatcherNode matcher, StatementNode body) {
+  private MatchTemplateNode(MatcherNode matcher, StatementNode body, SourceSection sourceSection) {
+    super(sourceSection);
     this.matcher = matcher;
     this.body = body;
   }
@@ -36,7 +38,8 @@ public class MatchTemplateNode extends TailspinNode {
     return false;
   }
 
-  public static MatchTemplateNode create(MatcherNode matcher, StatementNode body) {
-    return new MatchTemplateNode(matcher, body);
+  public static MatchTemplateNode create(MatcherNode matcher, StatementNode body,
+      SourceSection sourceSection) {
+    return new MatchTemplateNode(matcher, body, sourceSection);
   }
 }

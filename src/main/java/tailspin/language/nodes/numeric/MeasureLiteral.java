@@ -2,22 +2,23 @@ package tailspin.language.nodes.numeric;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.strings.TruffleString;
-import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.matchers.MeasureTypeMatcher;
 import tailspin.language.runtime.Measure;
 
 @NodeChild(value = "value", type = ValueNode.class)
 public abstract class MeasureLiteral extends ValueNode {
   private final TruffleString unit;
 
-  public MeasureLiteral(TruffleString unit) {
+  public MeasureLiteral(TruffleString unit, SourceSection sourceSection) {
+    super(sourceSection);
     this.unit = unit;
   }
 
-  public static MeasureLiteral create(ValueNode value, TruffleString unit) {
-    return MeasureLiteralNodeGen.create(unit, value);
+  public static MeasureLiteral create(ValueNode value, TruffleString unit,
+      SourceSection sourceSection) {
+    return MeasureLiteralNodeGen.create(unit, sourceSection, value);
   }
 
   @Specialization
@@ -28,10 +29,5 @@ public abstract class MeasureLiteral extends ValueNode {
   @Specialization
   Object doMeasure(Object value) {
     return new Measure(value, unit);
-  }
-
-  @Override
-  public MatcherNode getTypeMatcher() {
-    return MeasureTypeMatcher.create(unit);
   }
 }

@@ -4,6 +4,8 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.Shape;
+import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.factory.NodeFactory;
 import tailspin.language.parser.ParseNode;
 import tailspin.language.parser.TailspinParser;
@@ -12,6 +14,8 @@ import tailspin.language.parser.TailspinParser;
 public class TailspinLanguage extends TruffleLanguage<TailspinLanguageContext> {
   private static final LanguageReference<TailspinLanguage> REF =
       LanguageReference.create(TailspinLanguage.class);
+
+  public static final SourceSection INTERNAL_CODE_SOURCE = Source.newBuilder("tt", "", "internal").build().createUnavailableSection();
 
   /** Retrieve the current language instance for the given {@link Node}. */
   public static TailspinLanguage get(Node node) {
@@ -23,7 +27,7 @@ public class TailspinLanguage extends TruffleLanguage<TailspinLanguageContext> {
   @Override
   protected CallTarget parse(ParsingRequest request) {
     ParseNode parseNode = TailspinParser.parse(request.getSource().getReader());
-    return new NodeFactory(this).createCallTarget(parseNode);
+    return new NodeFactory(this, request.getSource()).createCallTarget(parseNode);
   }
 
   @Override

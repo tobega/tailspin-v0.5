@@ -2,21 +2,21 @@ package tailspin.language.nodes.numeric;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.source.SourceSection;
 import java.math.BigInteger;
-import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.matchers.NumericTypeMatcherNode;
 import tailspin.language.runtime.BigNumber;
 
 public class BigIntegerLiteral extends ValueNode {
   private final BigInteger value;
 
-  public BigIntegerLiteral(BigInteger value) {
+  public BigIntegerLiteral(BigInteger value, SourceSection sourceSection) {
+    super(sourceSection);
     this.value = value;
   }
 
-  public static BigIntegerLiteral create(BigInteger value) {
-    return new BigIntegerLiteral(value);
+  public static BigIntegerLiteral create(BigInteger value, SourceSection sourceSection) {
+    return new BigIntegerLiteral(value, sourceSection);
   }
 
   @Override
@@ -27,10 +27,5 @@ public class BigIntegerLiteral extends ValueNode {
   @Override
   public Object executeGeneric(VirtualFrame frame) {
     return new BigNumber(value);
-  }
-
-  @Override
-  public MatcherNode getTypeMatcher() {
-    return NumericTypeMatcherNode.create();
   }
 }

@@ -3,6 +3,7 @@ package tailspin.language.factory;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor.Builder;
 import com.oracle.truffle.api.frame.FrameSlotKind;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,10 +28,12 @@ public class Scope {
 
   private final String scopeId;
   private final Scope parent;
+  private final SourceSection sourceSection;
 
-  public Scope(String scopeId, Scope parent) {
+  public Scope(String scopeId, Scope parent, SourceSection sourceSection) {
     this.scopeId = scopeId;
     this.parent = parent;
+    this.sourceSection = sourceSection;
   }
 
   public ChainSlots newChainSlots() {
@@ -85,7 +88,8 @@ public class Scope {
     assignReferences();
     Templates templates = isInMatcher? matcherTemplates : new Templates();
     if (needsScope) templates.setNeedsScope();
-    templates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), scopeFdb.build(), block));
+    templates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), scopeFdb.build(), block,
+        sourceSection));
     return templates;
   }
 

@@ -1,5 +1,7 @@
 package tailspin.language.runtime;
 
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
+
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import java.util.Arrays;
 import java.util.Optional;
@@ -42,15 +44,17 @@ public class VocabularyType implements Comparable<VocabularyType> {
       case BigNumber ignored -> NumericTypeMatcherNode.create();
       case Rational ignored -> NumericTypeMatcherNode.create();
       case SciNum ignored -> NumericTypeMatcherNode.create();
-      case Measure(Object ignored, Object unit) -> MeasureTypeMatcher.create(unit);
-      case TaggedValue(VocabularyType type, Object ignored) -> TagMatcherNode.create(type);
-      case TailspinArray ignored -> ArrayTypeMatcherNode.create();
+      case Measure(Object ignored, Object unit) -> MeasureTypeMatcher.create(unit, INTERNAL_CODE_SOURCE);
+      case TaggedValue(VocabularyType type, Object ignored) -> TagMatcherNode.create(type,
+          INTERNAL_CODE_SOURCE);
+      case TailspinArray ignored -> ArrayTypeMatcherNode.create(INTERNAL_CODE_SOURCE);
       case Structure s -> {
         Object[] keyArray = DynamicObjectLibrary.getUncached().getKeyArray(s);
         yield StructureTypeMatcherNode.create(
-            Arrays.copyOf(keyArray, keyArray.length, VocabularyType[].class), false, new VocabularyType[0]);
+            Arrays.copyOf(keyArray, keyArray.length, VocabularyType[].class), false, new VocabularyType[0],
+            INTERNAL_CODE_SOURCE);
       }
-      default -> AlwaysTrueMatcherNode.create();
+      default -> AlwaysTrueMatcherNode.create(INTERNAL_CODE_SOURCE);
     };
   }
 

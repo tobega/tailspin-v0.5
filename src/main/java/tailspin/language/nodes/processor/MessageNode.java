@@ -6,6 +6,7 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 
@@ -15,7 +16,8 @@ public abstract class MessageNode extends ValueNode {
 
   private final String message;
 
-  protected MessageNode(String message) {
+  protected MessageNode(String message, SourceSection sourceSection) {
+    super(sourceSection);
     this.message = message;
   }
 
@@ -23,7 +25,7 @@ public abstract class MessageNode extends ValueNode {
   protected Object doLong(long value) {
     return switch (message) {
       case "raw" -> value;
-      default -> throw new TypeError("Can't send message " + message + " to long " + value);
+      default -> throw new TypeError("Can't send message " + message + " to long " + value, this);
     };
   }
 
@@ -39,10 +41,10 @@ public abstract class MessageNode extends ValueNode {
 
   @Specialization
   protected Object doUnknown(Object value) {
-    throw new TypeError("Can't send message " + message + " to " + value.getClass());
+    throw new TypeError("Can't send message " + message + " to " + value.getClass(), this);
   }
 
-  public static MessageNode create(String message, ValueNode processor) {
-    return MessageNodeGen.create(message, processor);
+  public static MessageNode create(String message, ValueNode processor, SourceSection sourceSection) {
+    return MessageNodeGen.create(message, sourceSection, processor);
   }
 }

@@ -1,6 +1,7 @@
 package tailspin.language.nodes.matchers;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.MatcherNode;
 
 public class InvertNode extends MatcherNode {
@@ -8,7 +9,8 @@ public class InvertNode extends MatcherNode {
   @Child
   private MatcherNode matcher;
 
-  private InvertNode(MatcherNode matcher) {
+  private InvertNode(MatcherNode matcher, SourceSection sourceSection) {
+    super(sourceSection);
     this.matcher = matcher;
   }
 
@@ -23,7 +25,7 @@ public class InvertNode extends MatcherNode {
     return !matcher.executeMatcherLong(frame, toMatch);
   }
 
-  public static InvertNode create(MatcherNode matcher) {
-    return new InvertNode(matcher);
+  public static InvertNode create(MatcherNode matcher, SourceSection sourceSection) {
+    return new InvertNode(matcher, sourceSection);
   }
 }

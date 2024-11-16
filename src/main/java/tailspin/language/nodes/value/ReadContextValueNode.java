@@ -1,5 +1,7 @@
 package tailspin.language.nodes.value;
 
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
+
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateCached;
 import com.oracle.truffle.api.dsl.GenerateInline;
@@ -7,6 +9,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.TailspinTypesGen;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.ReadContextValueNodeGen.ReadLocalValueNodeGen;
@@ -16,7 +19,8 @@ import tailspin.language.runtime.Reference;
 public abstract class ReadContextValueNode extends ValueNode {
   private final Reference reference;
 
-  protected ReadContextValueNode(Reference reference) {
+  protected ReadContextValueNode(Reference reference, SourceSection sourceSection) {
+    super(sourceSection);
     this.reference = reference;
   }
 
@@ -32,7 +36,7 @@ public abstract class ReadContextValueNode extends ValueNode {
     return create(Reference.to(level, slot));
   }
   public static ReadContextValueNode create(Reference reference) {
-    return ReadContextValueNodeGen.create(reference);
+    return ReadContextValueNodeGen.create(reference, INTERNAL_CODE_SOURCE);
   }
 
   @GenerateInline

@@ -10,6 +10,7 @@ import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.GetContextFrameNode;
@@ -20,13 +21,15 @@ public abstract class SendToTemplatesNode extends TransformNode {
   private final Templates templates;
   protected final int callLevel;
 
-  protected SendToTemplatesNode(Templates templates, int callLevel) {
+  protected SendToTemplatesNode(Templates templates, int callLevel, SourceSection sourceSection) {
+    super(sourceSection);
     this.callLevel = callLevel;
     this.templates = templates;
   }
 
-  public static SendToTemplatesNode create(ValueNode valueNode, int callLevel, Templates templates) {
-    return SendToTemplatesNodeGen.create(templates, callLevel, valueNode);
+  public static SendToTemplatesNode create(ValueNode valueNode, int callLevel, Templates templates,
+      SourceSection sourceSection) {
+    return SendToTemplatesNodeGen.create(templates, callLevel, sourceSection, valueNode);
   }
 
   @Specialization(guards = "contextFrameLevel() >= 0")

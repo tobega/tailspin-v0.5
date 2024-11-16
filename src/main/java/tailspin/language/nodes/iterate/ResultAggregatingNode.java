@@ -1,6 +1,9 @@
 package tailspin.language.nodes.iterate;
 
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
+
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.transform.AppendResultNode;
@@ -14,7 +17,8 @@ public class ResultAggregatingNode extends TransformNode {
   @Child
   private AppendResultNode appendResultNode = AppendResultNode.create();
 
-  ResultAggregatingNode(ValueNode resultNode) {
+  ResultAggregatingNode(ValueNode resultNode, SourceSection sourceSection) {
+    super(sourceSection);
     this.resultNode = resultNode;
   }
 
@@ -25,6 +29,6 @@ public class ResultAggregatingNode extends TransformNode {
   }
 
   public static ResultAggregatingNode create(ValueNode resultNode) {
-    return new ResultAggregatingNode(resultNode);
+    return new ResultAggregatingNode(resultNode, INTERNAL_CODE_SOURCE);
   }
 }

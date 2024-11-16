@@ -8,6 +8,8 @@ import tailspin.language.parser.composer.SubComposer;
 public class ParseNodeComposer implements SubComposer {
   private final CompositionSpec spec;
   private final SubComposer wrapped;
+  private int start;
+  private int end;
 
   public ParseNodeComposer(CompositionSpec spec, SubComposer wrapped) {
     this.spec = spec;
@@ -16,12 +18,17 @@ public class ParseNodeComposer implements SubComposer {
 
   @Override
   public Memo nibble(String s, Memo memo) {
-    return wrapped.nibble(s, memo);
+    start = memo.pos;
+    Memo nibbled = wrapped.nibble(s, memo);
+    end = memo.pos;
+    return nibbled;
   }
 
   @Override
   public Memo backtrack(String s, Memo memo) {
-    return wrapped.backtrack(s, memo);
+    Memo backtracked = wrapped.backtrack(s, memo);
+    end = backtracked.pos;
+    return backtracked;
   }
 
   @Override
@@ -32,7 +39,7 @@ public class ParseNodeComposer implements SubComposer {
       return null;
     }
     if (spec instanceof NamedComposition nc) {
-      return new ParseNode(nc.namedPattern(), values);
+      return new ParseNode(nc.namedPattern(), values, start, end);
     } else {
       return values;
     }

@@ -3,6 +3,7 @@ package tailspin.language.nodes.transform;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
@@ -14,6 +15,10 @@ public abstract class FilterNode extends TransformNode {
   @Child
   private AppendResultNode appendResultNode = AppendResultNode.create();
 
+  public FilterNode(SourceSection sourceSection) {
+    super(sourceSection);
+  }
+
   @Specialization
   void doFilter(VirtualFrame frame, Object value, boolean matches) {
     if (matches) {
@@ -21,7 +26,7 @@ public abstract class FilterNode extends TransformNode {
     }
   }
 
-  public static FilterNode create(ValueNode value, MatcherNode matcher) {
-    return FilterNodeGen.create(value, matcher);
+  public static FilterNode create(ValueNode value, MatcherNode matcher, SourceSection sourceSection) {
+    return FilterNodeGen.create(sourceSection, value, matcher);
   }
 }

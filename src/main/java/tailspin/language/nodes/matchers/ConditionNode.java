@@ -3,6 +3,7 @@ package tailspin.language.nodes.matchers;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
@@ -18,7 +19,9 @@ public abstract class ConditionNode extends MatcherNode {
   @Child
   MatcherNode matcherNode;
 
-  protected ConditionNode(int cvSlot, ValueNode toMatchNode, MatcherNode matcherNode) {
+  protected ConditionNode(int cvSlot, ValueNode toMatchNode, MatcherNode matcherNode,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.cvSlot = cvSlot;
     this.toMatchNode = toMatchNode;
     this.matcherNode = matcherNode;
@@ -33,7 +36,8 @@ public abstract class ConditionNode extends MatcherNode {
     return matcherNode.executeMatcherGeneric(frame, toMatch);
   }
 
-  public static ConditionNode create(int cvSlot, ValueNode toMatchNode, MatcherNode matcherNode) {
-    return ConditionNodeGen.create(cvSlot, toMatchNode, matcherNode);
+  public static ConditionNode create(int cvSlot, ValueNode toMatchNode, MatcherNode matcherNode,
+      SourceSection section) {
+    return ConditionNodeGen.create(cvSlot, toMatchNode, matcherNode, section);
   }
 }

@@ -1,5 +1,6 @@
 package tailspin.language.nodes.iterate;
 
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
 import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
@@ -16,6 +17,7 @@ import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
+import com.oracle.truffle.api.source.SourceSection;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import tailspin.language.nodes.TransformNode;
@@ -62,7 +64,9 @@ public abstract class RangeIteration extends TransformNode {
   @Child
   GtZeroNode isGt0Node = GtZeroNode.create();
 
-  protected RangeIteration(int startSlot, int endSlot, int incrementSlot, boolean inclusiveStart, boolean inclusiveEnd) {
+  protected RangeIteration(int startSlot, int endSlot, int incrementSlot, boolean inclusiveStart, boolean inclusiveEnd,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.startSlot = startSlot;
     this.endSlot = endSlot;
     this.incrementSlot = incrementSlot;
@@ -86,14 +90,17 @@ public abstract class RangeIteration extends TransformNode {
   }
 
   public static RangeIteration create(int rangeCvSlot, TransformNode stage, int startSlot, ValueNode start,
-      boolean inclusiveStart, int endSlot, ValueNode end, boolean inclusiveEnd, int incrementSlot, ValueNode increment) {
-    RangeIteration created = RangeIterationNodeGen.create(startSlot, endSlot, incrementSlot, inclusiveStart, inclusiveEnd, start, end, increment);
+      boolean inclusiveStart, int endSlot, ValueNode end, boolean inclusiveEnd, int incrementSlot, ValueNode increment,
+      SourceSection sourceSection) {
+    RangeIteration created = RangeIterationNodeGen.create(startSlot, endSlot, incrementSlot, inclusiveStart, inclusiveEnd,
+        sourceSection, start, end, increment);
     created.setStage(rangeCvSlot, stage);
     return created;
   }
 
-  public static RangeIteration create(int startSlot, ValueNode start, boolean inclusiveStart, int endSlot, ValueNode end, boolean inclusiveEnd, int incrementSlot, ValueNode increment) {
-    return RangeIterationNodeGen.create(startSlot, endSlot, incrementSlot, inclusiveStart, inclusiveEnd, start, end, increment);
+  public static RangeIteration create(int startSlot, ValueNode start, boolean inclusiveStart, int endSlot, ValueNode end, boolean inclusiveEnd, int incrementSlot, ValueNode increment,
+      SourceSection sourceSection) {
+    return RangeIterationNodeGen.create(startSlot, endSlot, incrementSlot, inclusiveStart, inclusiveEnd, sourceSection, start, end, increment);
   }
 
   public abstract void executeDirect(VirtualFrame frame, Object start, Object end, Object increment);
@@ -136,11 +143,11 @@ public abstract class RangeIteration extends TransformNode {
   }
 
   MessageNode createGetFirst() {
-    return MessageNode.create("first", null);
+    return MessageNode.create("first", null, INTERNAL_CODE_SOURCE);
   }
 
   MessageNode createGetLast() {
-    return MessageNode.create("last", null);
+    return MessageNode.create("last", null, INTERNAL_CODE_SOURCE);
   }
 
   static class RangeRepeatingNode extends Node implements RepeatingNode {
@@ -217,7 +224,7 @@ public abstract class RangeIteration extends TransformNode {
     }
 
     AddNode createAddNode() {
-      return AddNode.create(null, null, false);
+      return AddNode.create(null, null, false, INTERNAL_CODE_SOURCE);
     }
 
     public static InitializeRangeIteratorNode create(int startSlot, int endSlot, int incrementSlot, boolean inclusiveStart) {
@@ -267,11 +274,11 @@ public abstract class RangeIteration extends TransformNode {
     }
 
     GreaterThanMatcherNode createUpperBoundExceeded() {
-      return GreaterThanMatcherNode.create(true, !inclusiveEnd, null);
+      return GreaterThanMatcherNode.create(true, !inclusiveEnd, null, INTERNAL_CODE_SOURCE);
     }
 
     AddNode createAddNode() {
-      return AddNode.create(null, null, false);
+      return AddNode.create(null, null, false, INTERNAL_CODE_SOURCE);
     }
 
     @Specialization
@@ -290,7 +297,7 @@ public abstract class RangeIteration extends TransformNode {
     }
 
     LessThanMatcherNode createLowerBoundExceeded() {
-      return LessThanMatcherNode.create(true, !inclusiveEnd, null);
+      return LessThanMatcherNode.create(true, !inclusiveEnd, null, INTERNAL_CODE_SOURCE);
     }
 
     public static RangeIteratorNode create(int currentSlot, int endSlot, int incrementSlot, boolean inclusiveEnd) {

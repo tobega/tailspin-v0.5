@@ -6,6 +6,7 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
@@ -25,7 +26,9 @@ public abstract class ArrayReadNode extends ValueNode {
   @Child
   ValueNode lensNode;
 
-  protected ArrayReadNode(boolean noFail, Reference indexVar, ValueNode lensNode) {
+  protected ArrayReadNode(boolean noFail, Reference indexVar, ValueNode lensNode,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.noFail = noFail;
     this.indexVar = indexVar;
     this.lensNode = lensNode;
@@ -107,11 +110,12 @@ public abstract class ArrayReadNode extends ValueNode {
   }
 
   @Specialization
-  protected Object doIllegal(VirtualFrame frame, Object notArray) {
-    throw new TypeError("Cannot read " + notArray + " by array lens");
+  protected Object doIllegal(VirtualFrame ignored, Object notArray) {
+    throw new TypeError("Cannot read " + notArray + " by array lens", this);
   }
 
-  public static ArrayReadNode create(boolean noFail, ValueNode array, ValueNode lens, Reference indexVar) {
-    return ArrayReadNodeGen.create(noFail, indexVar, lens, array);
+  public static ArrayReadNode create(boolean noFail, ValueNode array, ValueNode lens, Reference indexVar,
+      SourceSection sourceSection) {
+    return ArrayReadNodeGen.create(noFail, indexVar, lens, sourceSection, array);
   }
 }

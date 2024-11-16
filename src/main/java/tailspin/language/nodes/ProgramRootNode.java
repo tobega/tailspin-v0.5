@@ -1,5 +1,6 @@
 package tailspin.language.nodes;
 
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
 import static tailspin.language.runtime.Templates.EMIT_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
@@ -25,7 +26,7 @@ public class ProgramRootNode extends RootNode {
   private ProgramRootNode(TruffleLanguage<?> language,
       FrameDescriptor frameDescriptor, FrameDescriptor scopeDescriptor, StatementNode statement) {
     super(language, frameDescriptor);
-    this.createScope = CreateScopeNode.create(scopeDescriptor);
+    this.createScope = CreateScopeNode.create(scopeDescriptor, INTERNAL_CODE_SOURCE);
     this.statement = statement;
   }
 

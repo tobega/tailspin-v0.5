@@ -1,8 +1,11 @@
 package tailspin.language.nodes.value;
 
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
+
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.IndexedArrayValue;
@@ -10,6 +13,11 @@ import tailspin.language.runtime.TailspinArray;
 
 @NodeChild(type = ValueNode.class)
 public abstract class ConsolidateLensResultNode extends ValueNode {
+
+  public ConsolidateLensResultNode(SourceSection sourceSection) {
+    super(sourceSection);
+  }
+
   public abstract Object executeDirect(VirtualFrame frame, Object value);
 
   @Specialization
@@ -32,6 +40,6 @@ public abstract class ConsolidateLensResultNode extends ValueNode {
   }
 
   public static ConsolidateLensResultNode create(ValueNode lensResult) {
-    return ConsolidateLensResultNodeGen.create(lensResult);
+    return ConsolidateLensResultNodeGen.create(INTERNAL_CODE_SOURCE, lensResult);
   }
 }

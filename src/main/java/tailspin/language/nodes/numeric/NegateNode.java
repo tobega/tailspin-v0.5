@@ -1,5 +1,7 @@
 package tailspin.language.nodes.numeric;
 
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
+
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
@@ -9,6 +11,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
@@ -19,6 +22,11 @@ import tailspin.language.runtime.SciNum;
 
 @NodeChild(type = ValueNode.class)
 public abstract class NegateNode extends ValueNode {
+
+  public NegateNode(SourceSection sourceSection) {
+    super(sourceSection);
+  }
+
   @GenerateInline
   @TypeSystemReference(TailspinTypes.class)
   public static abstract class DoNegateNode extends Node {
@@ -50,7 +58,7 @@ public abstract class NegateNode extends ValueNode {
 
     @Specialization
     protected Object typeError(Object value) {
-      throw new TypeError("Cannot negate " + value);
+      throw new TypeError("Cannot negate " + value, this);
     }
   }
 
@@ -67,6 +75,6 @@ public abstract class NegateNode extends ValueNode {
   }
 
   public static NegateNode create(ValueNode valueNode) {
-    return NegateNodeGen.create(valueNode);
+    return NegateNodeGen.create(INTERNAL_CODE_SOURCE, valueNode);
   }
 }

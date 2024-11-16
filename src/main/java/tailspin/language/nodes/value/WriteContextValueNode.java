@@ -1,5 +1,7 @@
 package tailspin.language.nodes.value;
 
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
+
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateCached;
 import com.oracle.truffle.api.dsl.GenerateInline;
@@ -9,6 +11,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.Reference;
@@ -18,7 +21,8 @@ import tailspin.language.runtime.Reference;
 public abstract class WriteContextValueNode extends StatementNode {
   private final Reference reference;
 
-  protected WriteContextValueNode(Reference reference) {
+  protected WriteContextValueNode(Reference reference, SourceSection sourceSection) {
+    super(sourceSection);
     this.reference = reference;
   }
 
@@ -35,7 +39,7 @@ public abstract class WriteContextValueNode extends StatementNode {
   }
 
   public static WriteContextValueNode create(Reference reference, ValueNode valueNode) {
-    return WriteContextValueNodeGen.create(reference, valueNode);
+    return WriteContextValueNodeGen.create(reference, INTERNAL_CODE_SOURCE, valueNode);
   }
 
   @ImportStatic(FrameSlotKind.class)

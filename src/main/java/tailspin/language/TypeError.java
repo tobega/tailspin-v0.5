@@ -1,16 +1,10 @@
 package tailspin.language;
 
-import tailspin.language.nodes.TailspinNode;
+import com.oracle.truffle.api.exception.AbstractTruffleException;
+import com.oracle.truffle.api.nodes.Node;
 
-public class TypeError extends Error {
-  public TypeError(String message) {
-    super(message);
-  }
-
-  @SuppressWarnings("unused")
-  public static TypeError at(TailspinNode node, Object... values) {
-    StringBuilder s = new StringBuilder("oops! ");
-    for (Object value : values) s.append(value == null ? "null" : value.getClass().getName()).append('\n');
-    return new TypeError(s.toString());
+public class TypeError extends AbstractTruffleException {
+  public TypeError(String message, Node node) {
+    super(message, node);
   }
 }

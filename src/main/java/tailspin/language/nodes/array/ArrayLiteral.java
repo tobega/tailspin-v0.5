@@ -2,12 +2,11 @@ package tailspin.language.nodes.array;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import java.util.List;
-import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.matchers.ArrayTypeMatcherNode;
 import tailspin.language.runtime.TailspinArray;
 
 public class ArrayLiteral extends ValueNode {
@@ -15,7 +14,8 @@ public class ArrayLiteral extends ValueNode {
   @Children
   private final TransformNode[] contents;
 
-  private ArrayLiteral(int buildSlot, List<TransformNode> contents) {
+  private ArrayLiteral(int buildSlot, List<TransformNode> contents, SourceSection sourceSection) {
+    super(sourceSection);
     this.buildSlot = buildSlot;
     this.contents = contents.toArray(new TransformNode[0]);
     for (TransformNode content : contents) {
@@ -23,8 +23,9 @@ public class ArrayLiteral extends ValueNode {
     }
   }
 
-  public static ArrayLiteral create(int buildSlot, List<TransformNode> contents) {
-    return new ArrayLiteral(buildSlot, contents);
+  public static ArrayLiteral create(int buildSlot, List<TransformNode> contents,
+      SourceSection sourceSection) {
+    return new ArrayLiteral(buildSlot, contents, sourceSection);
   }
 
   @Override
@@ -37,10 +38,5 @@ public class ArrayLiteral extends ValueNode {
     ArrayList<?> collector = (ArrayList<?>) frame.getObjectStatic(buildSlot);
     frame.setObjectStatic(buildSlot, null);
     return TailspinArray.value(collector.toArray());
-  }
-
-  @Override
-  public MatcherNode getTypeMatcher() {
-    return ArrayTypeMatcherNode.create();
   }
 }

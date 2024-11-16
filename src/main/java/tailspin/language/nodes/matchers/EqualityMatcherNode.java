@@ -13,6 +13,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.strings.TruffleString;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.MatcherNode;
@@ -32,7 +33,8 @@ import tailspin.language.runtime.VocabularyType;
 public abstract class EqualityMatcherNode extends MatcherNode {
   protected final boolean isTypeChecked;
 
-  protected EqualityMatcherNode(boolean isTypeChecked) {
+  protected EqualityMatcherNode(boolean isTypeChecked, SourceSection sourceSection) {
+    super(sourceSection);
     this.isTypeChecked = isTypeChecked;
   }
 
@@ -138,7 +140,7 @@ public abstract class EqualityMatcherNode extends MatcherNode {
       @Cached("autoType(value)") MatcherNode dynamicBound) {
     if (doEqualityNode.executeEquals(this, toMatch, value)) return true;
     if (dynamicBound.executeMatcherGeneric(frame, toMatch)) return false;
-    throw new TypeError("Incompatible type comparison " + toMatch + " = " + value);
+    throw new TypeError("Incompatible type comparison " + toMatch + " = " + value, this);
   }
 
   MatcherNode autoType(Object value) {
@@ -151,10 +153,11 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     if (doEqualityNode.executeEquals(this, toMatch, value)) return true;
     MatcherNode dynamicBound = autoType(value);
     if (dynamicBound.executeMatcherGeneric(frame, toMatch)) return false;
-    throw new TypeError("Incompatible type comparison " + toMatch + " = " + value);
+    throw new TypeError("Incompatible type comparison " + toMatch + " = " + value, this);
   }
 
-  public static EqualityMatcherNode create(boolean isTypeChecked, ValueNode valueNode) {
-    return EqualityMatcherNodeGen.create(isTypeChecked, null, valueNode);
+  public static EqualityMatcherNode create(boolean isTypeChecked, ValueNode valueNode,
+      SourceSection sourceSection) {
+    return EqualityMatcherNodeGen.create(isTypeChecked, sourceSection, null, valueNode);
   }
 }

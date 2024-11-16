@@ -6,6 +6,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.VocabularyType;
@@ -16,7 +17,9 @@ public abstract class StructureTypeMatcherNode extends MatcherNode {
   final boolean allowExtraFields;
   final VocabularyType[] optionalKeys;
 
-  protected StructureTypeMatcherNode(VocabularyType[] requiredKeys, boolean allowExtraFields, VocabularyType[] optionalKeys) {
+  protected StructureTypeMatcherNode(VocabularyType[] requiredKeys, boolean allowExtraFields, VocabularyType[] optionalKeys,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.requiredKeys = requiredKeys;
     this.allowExtraFields = allowExtraFields;
     this.optionalKeys = optionalKeys;
@@ -50,7 +53,8 @@ public abstract class StructureTypeMatcherNode extends MatcherNode {
   @Fallback
   protected boolean notStructure(Object ignored) { return false; }
 
-  public static StructureTypeMatcherNode create(VocabularyType[] requiredKeys, boolean allowExtraFields, VocabularyType[] optionalKeys) {
-    return StructureTypeMatcherNodeGen.create(requiredKeys, allowExtraFields, optionalKeys);
+  public static StructureTypeMatcherNode create(VocabularyType[] requiredKeys, boolean allowExtraFields, VocabularyType[] optionalKeys,
+      SourceSection sourceSection) {
+    return StructureTypeMatcherNodeGen.create(requiredKeys, allowExtraFields, optionalKeys, sourceSection);
   }
 }

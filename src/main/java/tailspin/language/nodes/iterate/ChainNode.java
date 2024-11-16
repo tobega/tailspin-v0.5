@@ -1,8 +1,11 @@
 package tailspin.language.nodes.iterate;
 
+import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
+
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.List;
 import tailspin.language.nodes.TransformNode;
 
@@ -10,7 +13,9 @@ public abstract class ChainNode extends TransformNode {
   @Children
   private final TransformNode[] stages;
 
-  ChainNode(int valuesSlot, int cvSlot, int resultSlot, List<TransformNode> stages) {
+  ChainNode(int valuesSlot, int cvSlot, int resultSlot, List<TransformNode> stages,
+      SourceSection sourceSection) {
+    super(sourceSection);
     this.stages = stages.toArray(new TransformNode[0]);
     this.stages[0].setResultSlot(valuesSlot);
     for (int i = 1; i < this.stages.length; i++) {
@@ -30,7 +35,7 @@ public abstract class ChainNode extends TransformNode {
   }
 
   public static ChainNode create(int chainValuesSlot, int chainCvSlot, int chainResultSlot, List<TransformNode> stages) {
-    return ChainNodeGen.create(chainValuesSlot, chainCvSlot, chainResultSlot, stages);
+    return ChainNodeGen.create(chainValuesSlot, chainCvSlot, chainResultSlot, stages, INTERNAL_CODE_SOURCE);
   }
 
   @Specialization

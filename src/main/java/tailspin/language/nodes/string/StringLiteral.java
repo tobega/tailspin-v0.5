@@ -7,6 +7,7 @@ import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.strings.TruffleString;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +20,13 @@ public abstract class StringLiteral extends ValueNode {
   @Children
   private final ValueNode[] parts;
 
-  StringLiteral(List<ValueNode> parts) {
+  StringLiteral(List<ValueNode> parts, SourceSection sourceSection) {
+    super(sourceSection);
     this.parts = parts.toArray(ValueNode[]::new);
   }
 
-  public static StringLiteral create(List<ValueNode> parts) {
-    return StringLiteralNodeGen.create(parts);
+  public static StringLiteral create(List<ValueNode> parts, SourceSection sourceSection) {
+    return StringLiteralNodeGen.create(parts, sourceSection);
   }
 
   @Specialization
