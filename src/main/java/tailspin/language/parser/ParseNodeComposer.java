@@ -20,7 +20,7 @@ public class ParseNodeComposer implements SubComposer {
   public Memo nibble(String s, Memo memo) {
     start = memo.pos;
     Memo nibbled = wrapped.nibble(s, memo);
-    end = memo.pos;
+    end = nibbled.pos;
     return nibbled;
   }
 
