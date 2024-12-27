@@ -20,6 +20,7 @@ class RuleSubComposer implements SubComposer {
 
   @Override
   public Memo nibble(String s, Memo memo) {
+    if (memo.failedRules.contains(name)) return memo;
     String precedingLeftRecursion = null;
     if (memo.leftRecursionResult == null) {
       precedingLeftRecursion = memo.caughtLeftRecursion;
@@ -42,6 +43,9 @@ class RuleSubComposer implements SubComposer {
       throw new AssertionError("left recursion detection mismatch");
     }
     if (precedingLeftRecursion != null) result.caughtLeftRecursion = precedingLeftRecursion;
+    if (!isSatisfied()) {
+      result.failedRules.add(name);
+    }
     return result;
   }
 
@@ -99,6 +103,6 @@ class RuleSubComposer implements SubComposer {
 
   @Override
   public boolean isSatisfied() {
-    return sequenceSubComposer.isSatisfied();
+    return sequenceSubComposer != null && sequenceSubComposer.isSatisfied();
   }
 }

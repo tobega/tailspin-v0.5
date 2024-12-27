@@ -1,7 +1,9 @@
 package tailspin.language.parser.composer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Memo {
   public final int pos;
@@ -9,6 +11,7 @@ public class Memo {
   public final List<String> namedRulesStack = new ArrayList<>();
   public String caughtLeftRecursion;
   public SubComposer leftRecursionResult;
+  public Set<String> failedRules = new HashSet<>();
 
   private Memo(int pos, Memo previous, String caughtLeftRecursion, SubComposer leftRecursionResult) {
     this.pos = pos;
