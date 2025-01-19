@@ -6,6 +6,10 @@ Examples of programs with updated syntax in the [samples](samples) folder.
 
 Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.com/graal-truffle-tutorial-part-0-what-is-truffle)
 
+## Status update 2025-01-19
+Been going slow, not had much time. Busy re-thinking composer functionality because when building a language server
+there is a need to get a "best effort" partial parse and also be able to find a place where things start to work again.
+
 ## Breaking changes
 ### Names first and more words
 - Names are more important, and need to be more easily scannable, than the type of statement, so names come first, the statement type keyword second.
