@@ -58,6 +58,19 @@ there is a need to get a "best effort" partial parse and also be able to find a 
 - Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `if <.....>`
 - Assert a single value from a chain by surrounding with parentheses, `($source -> filter)`, previously only for arithmetic value
 - Type assertions by tagging values, e.g. `foo´{bar: 5}` checks that the structure-literal is of type `foo`
+- There is now a divide operator `/` that creates rational numbers (exact math)
+- Scientific numbers with a specified number of digits precision (inexact math) can also be created and used.
+
+### Composers (WIP)
+- It should be possible to use a composer as a composer matcher.
+- Inline composers
+- It should be possible to create custom composers as Processors. Tentative interface:
+   - ::parse that emits the remaining text if successful, nothing otherwise
+   - ::backtrack that undoes the action and emits the previous input text
+   - ::result that streams out the results
+
+### A "nothing" code path (WIP)
+It is already possible to handle a nothing code path by wrapping in a list and checking if it is empty or not. `[$ -> maybe-nothing] -> templates when <|[](=0)> do ... nothing path ... otherwise ... end` But maybe that is too clunky? I am thinking of something like `$ -> maybe-nothing -< - ... \ ... nothing path ... >-` which allows a little ascii-arting if you like.
 
 ## Performance check
 See the [performance tests](src/jmh/README.md) for how Tailspin performs relative to java
