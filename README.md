@@ -66,11 +66,15 @@ there is a need to get a "best effort" partial parse and also be able to find a 
 - Inline composers
 - It should be possible to create custom composers as Processors. Tentative interface:
    - ::parse that emits the remaining text if successful, nothing otherwise
-   - ::backtrack that undoes the action and emits the previous input text
+   - ::undo that undoes the action and emits the previous input text (or should it be backtrack that tries alternative?)
    - ::result that streams out the results
 
 ### A "nothing" code path (WIP)
-It is already possible to handle a nothing code path by wrapping in a list and checking if it is empty or not. `[$ -> maybe-nothing] -> templates when <|[](=0)> do ... nothing path ... otherwise ... end` But maybe that is too clunky? I am thinking of something like `$ -> maybe-nothing -< - ... \ ... nothing path ... >-` which allows a little ascii-arting if you like.
+It is already possible to handle a nothing code path by wrapping in a list and checking if it is empty or not.
+`[$ -> maybe-nothing] -> templates when <|[](=0)> do ... nothing-path ... otherwise ... end`
+
+But maybe that is too clunky?
+I am thinking of something like `any maybe-nothing else nothing-path end`.
 
 ## Performance check
 See the [performance tests](src/jmh/README.md) for how Tailspin performs relative to java
