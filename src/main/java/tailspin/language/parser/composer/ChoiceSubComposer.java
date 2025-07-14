@@ -56,8 +56,6 @@ public class ChoiceSubComposer implements SubComposer {
     }
       memo.caughtLeftRecursion = caughtLeftRecursion;
       return memo;
-    //}
-    //return tryNext(s, memo);
   }
 
   @Override
