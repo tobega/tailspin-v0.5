@@ -50,10 +50,14 @@ public class ChoiceSubComposer implements SubComposer {
     memo = subComposer.backtrack(s, memo);
     if (subComposer.isSatisfied()) {
       value = subComposer.getValues();
+    } else {
+      choice = optionComposers.size();
+      caughtLeftRecursion = null;
+    }
       memo.caughtLeftRecursion = caughtLeftRecursion;
       return memo;
-    }
-    return tryNext(s, memo);
+    //}
+    //return tryNext(s, memo);
   }
 
   @Override

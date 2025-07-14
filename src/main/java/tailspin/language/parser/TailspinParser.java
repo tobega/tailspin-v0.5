@@ -34,7 +34,7 @@ public class TailspinParser {
      accumulator-state rule (?<|ignorable-text> <|='->'> ?<|ignorable-text>) <|set-state>
      
      value-chain rule <|range|source> *<|transform|stream>
-     source rule <|type-cast|reference|single-value-chain|array-literal|structure-literal|string-literal|arithmetic-expression> (?<|ignorable-text>)
+     source rule <|type-cast|array-literal|structure-literal|string-literal|arithmetic-expression|reference|single-value-chain> (?<|ignorable-text>)
      reference rule <|='$'> ?<|='@'> ?<|ID> ?<|lens-expression> ?<|message-send>
      single-value-chain rule (<|='('> ?<|ignorable-text>) <|value-chain> (?<|ignorable-text> <|=')'>) ?<|='"1"'|unit>
      range rule <|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) <|range-bound> ?<|stride> (?<|ignorable-text>)
@@ -58,16 +58,16 @@ public class TailspinParser {
      
      message-send rule (<|='::'>) <|ID>
 
-     array-literal rule <|='['|array-contents> (?<|ignorable-text> <|=']'> ?<|ignorable-text>)
+     array-literal rule <|array-contents|='['> (?<|ignorable-text> <|=']'> ?<|ignorable-text>)
      array-contents rule (<|='['> ?<|ignorable-text>) <|value-chain> (?<|ignorable-text>) *<|more-array-contents>
      more-array-contents rule (<|=','> ?<|ignorable-text>) <|value-chain> (?<|ignorable-text>)
      
-     structure-literal rule <|='{'|key-values> (?<|ignorable-text> <|='}'> ?<|ignorable-text>)
+     structure-literal rule <|key-values|='{'> (?<|ignorable-text> <|='}'> ?<|ignorable-text>)
      key-values rule (<|='{'> ?<|ignorable-text>) <|key-value|value-chain> *<|additional-key-value>
      key-value rule <|ID> (<|=':'> ?<|ignorable-text>) <|value-chain>
      additional-key-value rule (<|=','> ?<|ignorable-text>) <|key-value|value-chain>
 
-     transform rule (<|='->'> ?<|ignorable-text>) <|source|range|inline-templates-call|='#'|templates-call|filter> (?<|ignorable-text>)
+     transform rule (<|='->'> ?<|ignorable-text>) <|range|source|inline-templates-call|='#'|filter|templates-call> (?<|ignorable-text>)
      templates-call rule <|ID>
      inline-templates-call rule (<|='templates'> <|ignorable-text>) <|templates-body>  (<|='end'> ?<|ignorable-text>)
      templates rule (name is <|ID>; <|ignorable-text>) <|='templates'|='source'|='sink'> (<|ignorable-text>) <|templates-body>  (<|='end'> <|ignorable-text>) <|=$name>
@@ -93,7 +93,7 @@ public class TailspinParser {
      array-match rule <|='['> (?<|ignorable-text>) *<|array-content-matcher> (<|=']'> ?<|ignorable-text>) ?<|array-length-condition>
      array-content-matcher rule <|matcher>
      array-length-condition rule (<|='('> ?<|ignorable-text>) <|literal-match|range-match> (?<|ignorable-text> <|=')'> ?<|ignorable-text>)
-     structure-match rule <|='{'|key-matchers> (?<|ignorable-text>) ?<|='VOID'> (?<|ignorable-text> <|='}'> ?<|ignorable-text>)
+     structure-match rule <|key-matchers|='{'> (?<|ignorable-text>) ?<|='VOID'> (?<|ignorable-text> <|='}'> ?<|ignorable-text>)
      key-matchers rule (<|='{'> ?<|ignorable-text>) <|key-matcher> *<|additional-key-matcher>
      key-matcher rule ?<|='?'> <|ID> (<|=':'> ?<|ignorable-text>) ?<|content-matcher>
      additional-key-matcher rule (<|=','> ?<|ignorable-text>) <|key-matcher>
@@ -104,7 +104,7 @@ public class TailspinParser {
      addition rule <|addition|multiplication|term> <|'[+-]'> (?<|ignorable-text>) <|multiplication|term> (?<|ignorable-text>)
      multiplication rule <|multiplication|term> <|'\\*|/|~/|mod'> (?<|ignorable-text>) <|term> (?<|ignorable-text>)
      square-root rule (<|='√'>) <|term>
-     numeric-literal rule <|INT|NUM> ?<|='"1"'|unit>
+     numeric-literal rule <|NUM|INT> ?<|='"1"'|unit>
      term rule <|numeric-literal|negated-term|single-value-chain|reference|square-root> (?<|ignorable-text>)
      negated-term rule (<|='-'>) <|single-value-chain|reference|square-root> (?<|ignorable-text>)
      

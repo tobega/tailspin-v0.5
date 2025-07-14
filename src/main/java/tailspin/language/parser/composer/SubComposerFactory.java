@@ -44,7 +44,7 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
     // Would like this to be unicode ID_Start followed by ID_Continue
     namedPatterns.put("ID", Pattern.compile(("(?U)\\p{L}[\\p{L}\\p{Pc}\\p{Pd}\\p{Nd}\\p{Nl}]*")));
     namedValueCreators.put("ID", Function.identity());
-    namedPatterns.put("NUM", Pattern.compile("([+-]?(0|[1-9][0-9_]*)\\.[0-9_]*([Ee][+-]?([0-9][0-9_]*))?)|([+-]?(0|[1-9][0-9_]*)[Ee][+-]?([0-9][0-9_]*))"));
+    namedPatterns.put("NUM", Pattern.compile("([+-]?(0|[1-9][0-9_]*)\\.[0-9_]+([Ee][+-]?([0-9][0-9_]*))?)|([+-]?(0|[1-9][0-9_]*)[Ee][+-]?([0-9][0-9_]*))"));
     namedValueCreators.put("NUM", s -> {
       s = s.replace("_", "");
       String[] parts = s.split("[Ee]");
