@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import tailspin.language.TailspinLanguage;
+import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.ProgramRootNode;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.transform.TemplatesRootNode;
@@ -53,6 +54,11 @@ public class Scope {
     block = blockNode;
   }
 
+  MatcherNode precondition;
+  public void setPrecondition(MatcherNode matcherNode) {
+    precondition = matcherNode;
+  }
+
   boolean isInMatcher = false;
   Templates matcherTemplates;
   public Templates getOrCreateMatcherTemplates() {
@@ -90,6 +96,7 @@ public class Scope {
     if (needsScope) templates.setNeedsScope();
     templates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), scopeFdb.build(), block,
         sourceSection));
+    if (precondition != null) templates.setPrecondition(precondition);
     return templates;
   }
 

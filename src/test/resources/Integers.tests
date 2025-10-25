@@ -205,3 +205,6 @@ end !
 ---raw message long
 3 -> $::raw !
 =3
+---complex operation
+(100-5*(2+3*4)+2)/2 !
+=16

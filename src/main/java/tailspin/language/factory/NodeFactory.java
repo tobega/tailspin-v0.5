@@ -168,7 +168,13 @@ public class NodeFactory {
         String name = (String) content.getLast();
         String templateType = (String) content.getFirst();
         enterNewScope(name, sourceCode.createSection(start, end - start));
-        visitTemplatesBody((ParseNode) content.get(1));
+        int nextPart = content.size() - 2;
+        visitTemplatesBody((ParseNode) content.get(nextPart));
+        nextPart--;
+        if (nextPart > 0 && content.get(nextPart) instanceof ParseNode contract && contract.name().equals("precondition")) {
+          MatcherNode precondition = visitMatcher(((ParseNode) contract.content()).content());
+          currentScope().setPrecondition(precondition);
+        }
         Scope scope = exitScope();
         Templates templates = scope.getTemplates();
         templates.setType(templateType);

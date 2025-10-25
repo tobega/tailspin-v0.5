@@ -37,6 +37,7 @@ public abstract class SendToTemplatesNode extends TransformNode {
       @Cached(inline = true) GetContextFrameNode getContextFrameNode,
       @Cached @Shared DispatchNode dispatchNode) {
     VirtualFrame contextFrame = getContextFrameNode.execute(frame, this, contextFrameLevel());
+    templates.testPrecondition(contextFrame, value);
     Object resultBuilder = frame.getObjectStatic(getResultSlot());
     Object result = dispatchNode.executeDispatch(templates, value, contextFrame.materialize(),
         resultBuilder);
@@ -51,6 +52,7 @@ public abstract class SendToTemplatesNode extends TransformNode {
   @Specialization(guards = "contextFrameLevel() < 0")
   public void doFree(@SuppressWarnings("unused") VirtualFrame frame, Object value,
       @Cached @Shared DispatchNode dispatchNode) {
+    templates.testPrecondition(frame, value);
     Object resultBuilder = frame.getObjectStatic(getResultSlot());
     Object result = dispatchNode.executeDispatch(templates, value, null, resultBuilder);
     frame.setObjectStatic(getResultSlot(), result);

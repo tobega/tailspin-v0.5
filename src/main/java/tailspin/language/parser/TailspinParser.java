@@ -70,10 +70,11 @@ public class TailspinParser {
      transform rule (<|='->'> ?<|ignorable-text>) <|range|source|inline-templates-call|='#'|filter|templates-call> (?<|ignorable-text>)
      templates-call rule <|ID>
      inline-templates-call rule (<|='templates'> <|ignorable-text>) <|templates-body>  (<|='end'> ?<|ignorable-text>)
-     templates rule (name is <|ID>; <|ignorable-text>) <|='templates'|='source'|='sink'> (<|ignorable-text>) <|templates-body>  (<|='end'> <|ignorable-text>) <|=$name>
+     templates rule (name is <|ID>; <|ignorable-text>) <|='templates'|='source'|='sink'> (<|ignorable-text>) ?<|precondition> <|templates-body>  (<|='end'> <|ignorable-text>) <|=$name>
      filter rule (<|='if'> ?<|ignorable-text>) <|matcher>
      stream rule <|='...'> (?<|ignorable-text>)
      
+     precondition rule (<|='requires'> <|ignorable-text>) <|matcher> (<|ignorable-text>)
      templates-body rule <|with-block|matchers>
      with-block rule +<|statement> ?<|matchers>
      
