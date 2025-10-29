@@ -4,9 +4,6 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import tailspin.language.PreconditionFailed;
-import tailspin.language.nodes.MatcherNode;
 
 public class Templates {
   public static final int SCOPE_SLOT = 0;
@@ -37,9 +34,6 @@ public class Templates {
 
   @CompilationFinal
   private CallTarget callTarget;
-
-  @CompilationFinal
-  private MatcherNode precondition;
 
   @CompilationFinal
   private boolean needsScope = false;
@@ -79,14 +73,5 @@ public class Templates {
 
   public String getType() {
     return type;
-  }
-
-  public void setPrecondition(MatcherNode matcherNode) {
-    precondition = matcherNode;
-  }
-
-  public void testPrecondition(VirtualFrame frame, Object value) {
-    if (precondition == null || precondition.executeMatcherGeneric(frame, value)) return;
-    throw new PreconditionFailed("Requirement not met by " + value, precondition);
   }
 }

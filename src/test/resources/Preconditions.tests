@@ -14,3 +14,27 @@ end foo
 
 3 -> foo !
 =1
+---Failing precondition depends on outer scope value
+foo templates
+  max is $;
+  bar templates
+  requires <|..$max>
+    1 !
+  end bar
+  7 -> bar !
+end foo
+
+6 -> foo !
+=*PreconditionFailed
+---Passing precondition depends on outer scope value
+foo templates
+  max is $;
+  bar templates
+  requires <|..$max>
+    1 !
+  end bar
+  7 -> bar !
+end foo
+
+8 -> foo !
+=1

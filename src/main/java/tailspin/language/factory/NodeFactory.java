@@ -78,6 +78,7 @@ import tailspin.language.nodes.transform.EmitNode;
 import tailspin.language.nodes.transform.FilterNode;
 import tailspin.language.nodes.transform.MatchBlockNode;
 import tailspin.language.nodes.transform.MatchTemplateNode;
+import tailspin.language.nodes.transform.PreconditionNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.SinkNode;
 import tailspin.language.nodes.value.ConsolidateLensResultNode;
@@ -173,7 +174,8 @@ public class NodeFactory {
         nextPart--;
         if (nextPart > 0 && content.get(nextPart) instanceof ParseNode contract && contract.name().equals("precondition")) {
           MatcherNode precondition = visitMatcher(((ParseNode) contract.content()).content());
-          currentScope().setPrecondition(precondition);
+          currentScope().setPrecondition(PreconditionNode.create(precondition,
+              sourceCode.createSection(contract.start(), contract.end() - contract.start())));
         }
         Scope scope = exitScope();
         Templates templates = scope.getTemplates();
