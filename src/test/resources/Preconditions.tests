@@ -38,3 +38,9 @@ end foo
 
 8 -> foo !
 =1
+---Failing precondition on inline templates
+2 -> templates
+       requires <|=3>
+       1 !
+     end !
+=*PreconditionFailed

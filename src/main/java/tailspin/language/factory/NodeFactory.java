@@ -445,9 +445,17 @@ public class NodeFactory {
       case ParseNode(String name, ParseNode source, int start, int end) when name.equals("source") -> asTransformNode(visitSource(source));
       case ParseNode(String name, List<?> bounds, int start, int end) when name.equals("range") -> asTransformNode(visitRange(bounds,
           sourceCode.createSection(start, end - start)));
-      case ParseNode(String name, ParseNode body, int start, int end) when name.equals("inline-templates-call") -> {
+      case ParseNode(String name, Object implementation, int start, int end) when name.equals("inline-templates-call") -> {
+        List<?> content = implementation instanceof List<?> objects ? objects : List.of(implementation);
         enterNewScope(null, sourceCode.createSection(start, end - start));
-        visitTemplatesBody(body);
+        int nextPart = content.size() - 1;
+        visitTemplatesBody((ParseNode) content.get(nextPart));
+        nextPart--;
+        if (nextPart >= 0 && content.get(nextPart) instanceof ParseNode contract && contract.name().equals("precondition")) {
+          MatcherNode precondition = visitMatcher(((ParseNode) contract.content()).content());
+          currentScope().setPrecondition(PreconditionNode.create(precondition,
+              sourceCode.createSection(contract.start(), contract.end() - contract.start())));
+        }
         Scope scope = exitScope();
         Templates templates = scope.getTemplates();
         templates.setDefinitionLevel(scopes.size());
