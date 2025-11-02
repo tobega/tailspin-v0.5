@@ -6,9 +6,9 @@ Examples of programs with updated syntax in the [samples](samples) folder.
 
 Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.com/graal-truffle-tutorial-part-0-what-is-truffle)
 
-## Status update 2025-01-19
-Been going slow, not had much time. Busy re-thinking composer functionality because when building a language server
-there is a need to get a "best effort" partial parse and also be able to find a place where things start to work again.
+## Status update 2025-11-02
+I have now figured out mostly how I will [handle errors](https://tobega.blogspot.com/2025/08/exploring-error-handling-concepts-for.html),
+which unblocks my further work.
 
 ## Breaking changes
 ### Names first and more words
@@ -61,6 +61,20 @@ there is a need to get a "best effort" partial parse and also be able to find a 
 - There is now a divide operator `/` that creates rational numbers (exact math)
 - Scientific numbers with a specified number of digits precision (inexact math) can also be created and used.
 
+### Contracts
+- Preconditions specified by an optional `requires <.....>` at the top of a templates definition.
+- Postconditions specified by an optional `produces <.....>` at the top of a templates definition.
+  The `produces` clause can be more than one matcher (comma-separated), have multipliers prepended or
+  define sequences, all as for array content matchers.
+- Contract failures are generally hard failures (crashes), but precondition failures can be converted
+  to no-results by putting the `try` keyword in front of the templates call (or maybe any transform?).
+  A `try` should probably only be able to catch precondition failures for the immediate call.
+- Sometimes it may not be entirely possible to cover all precondition checks in a matcher, so a `!REJECT`
+  directive can be used to reject the input when a flaw is discovered
+
+### Transactionality
+- A failed precondition check caught by a `try` will roll back any mutations done in that transform
+
 ### Composers (WIP)
 - It should be possible to use a composer as a composer matcher.
 - Inline composers
@@ -73,8 +87,7 @@ there is a need to get a "best effort" partial parse and also be able to find a 
 It is already possible to handle a nothing code path by wrapping in a list and checking if it is empty or not.
 `[$ -> maybe-nothing] -> templates when <|[](=0)> do ... nothing-path ... otherwise ... end`
 
-But maybe that is too clunky?
-I am thinking of something like `any maybe-nothing else nothing-path end`.
+I think I want to enable another type of when-clause, `when any maybe-nothing do ... not-nothing ... otherwise ... nothing-path ...`
 
 ## Performance check
 See the [performance tests](src/jmh/README.md) for how Tailspin performs relative to java
