@@ -81,6 +81,7 @@ import tailspin.language.nodes.transform.MatchTemplateNode;
 import tailspin.language.nodes.transform.PreconditionNode;
 import tailspin.language.nodes.transform.SendToTemplatesNode;
 import tailspin.language.nodes.transform.SinkNode;
+import tailspin.language.nodes.transform.TryNode;
 import tailspin.language.nodes.value.ConsolidateLensResultNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
@@ -442,6 +443,11 @@ public class NodeFactory {
 
   private TransformNode visitTransform(Object transform) {
     return switch(transform) {
+      case List<?> l when l.size() == 2 && l.getFirst() instanceof ParseNode p && p.name().equals("try")  -> {
+        TransformNode tn = visitTransform(l.getLast());
+        SourceSection tss = tn.getEncapsulatingSourceSection();
+        yield TryNode.create(tn, tss);
+      }
       case ParseNode(String name, ParseNode source, int start, int end) when name.equals("source") -> asTransformNode(visitSource(source));
       case ParseNode(String name, List<?> bounds, int start, int end) when name.equals("range") -> asTransformNode(visitRange(bounds,
           sourceCode.createSection(start, end - start)));

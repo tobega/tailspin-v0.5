@@ -44,3 +44,17 @@ end foo
        1 !
      end !
 =*PreconditionFailed
+---Try on template call inhibits precondition error
+foo templates
+requires <|=2>
+  3!
+end foo
+
+[1 -> try foo] !
+=[]
+---Try on inline template call inhibits precondition error
+[1 -> try templates
+          requires <|=2>
+            3!
+          end] !
+=[]

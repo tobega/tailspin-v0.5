@@ -67,7 +67,8 @@ public class TailspinParser {
      key-value rule <|ID> (<|=':'> ?<|ignorable-text>) <|value-chain>
      additional-key-value rule (<|=','> ?<|ignorable-text>) <|key-value|value-chain>
 
-     transform rule (<|='->'> ?<|ignorable-text>) <|range|source|inline-templates-call|='#'|filter|templates-call> (?<|ignorable-text>)
+     transform rule (<|='->'> ?<|ignorable-text>) ?<|try> <|range|source|inline-templates-call|='#'|filter|templates-call> (?<|ignorable-text>)
+     try rule <|='try'> <|ignorable-text>
      templates-call rule <|ID>
      inline-templates-call rule (<|='templates'> <|ignorable-text>) ?<|precondition> <|templates-body>  (<|='end'> ?<|ignorable-text>)
      templates rule (name is <|ID>; <|ignorable-text>) <|='templates'|='source'|='sink'> (<|ignorable-text>) ?<|precondition> <|templates-body>  (<|='end'> <|ignorable-text>) <|=$name>
