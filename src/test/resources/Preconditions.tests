@@ -5,7 +5,7 @@ requires <|=3>
 end foo
 
 2 -> foo !
-=*PreconditionFailed
+=*TypeError: PreconditionFailed
 ---Passing precondition works
 foo templates
 requires <|=3>
@@ -25,7 +25,7 @@ foo templates
 end foo
 
 6 -> foo !
-=*PreconditionFailed
+=*TypeError: PreconditionFailed
 ---Passing precondition depends on outer scope value
 foo templates
   max is $;
@@ -43,7 +43,7 @@ end foo
        requires <|=3>
        1 !
      end !
-=*PreconditionFailed
+=*TypeError: PreconditionFailed
 ---Try on template call inhibits precondition error
 foo templates
 requires <|=2>
@@ -58,3 +58,23 @@ end foo
             3!
           end] !
 =[]
+---Failing precondition on nested call is not caught
+foo templates
+requires <|=2>
+  3!
+end foo
+
+[1 -> try templates
+        $ -> foo -> 5 !
+      end
+] !
+=*TypeError: PreconditionFailed
+---Failing precondition on internal call is not caught
+[1 -> try templates
+        $ -> templates
+             requires <|=2>
+               3!
+             end -> 5 !
+      end
+] !
+=*TypeError: PreconditionFailed

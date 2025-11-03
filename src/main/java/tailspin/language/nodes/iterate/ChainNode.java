@@ -7,6 +7,8 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.source.SourceSection;
 import java.util.List;
+import tailspin.language.PreconditionFailed;
+import tailspin.language.TypeError;
 import tailspin.language.nodes.TransformNode;
 
 public abstract class ChainNode extends TransformNode {
@@ -41,8 +43,12 @@ public abstract class ChainNode extends TransformNode {
   @Specialization
   @ExplodeLoop
   public void doChain(VirtualFrame frame) {
-    for (int i = 0; i < stages.length; i++) {
-      stages[i].executeTransform(frame);
+    try {
+      for (int i = 0; i < stages.length; i++) {
+        stages[i].executeTransform(frame);
+      }
+    } catch (PreconditionFailed pf) {
+      throw new TypeError(pf.getMessage(), pf.getLocation());
     }
   }
 }

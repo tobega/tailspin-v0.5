@@ -86,7 +86,7 @@ val requires <|..>
 ---may not redefine type
 val requires <|..>
 val requires <|{}>
-=*IllegalState
+=*java.lang.IllegalStateException
 ---define type is checked
 val requires <|..>
 { val: { foo: 4 } } !

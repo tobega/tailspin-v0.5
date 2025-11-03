@@ -12,7 +12,7 @@
 =5"N m/s deg"
 ---unit only one division
 5"N m/s/deg" !
-=*Parse failed
+=*java.lang.AssertionError: Parse failed
 ---add equal measures
 5"apples" + 2"apples" !
 =7"apples"
