@@ -84,6 +84,7 @@ import tailspin.language.nodes.transform.SinkNode;
 import tailspin.language.nodes.transform.TryNode;
 import tailspin.language.nodes.value.ConsolidateLensResultNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
+import tailspin.language.nodes.value.RejectValue;
 import tailspin.language.nodes.value.SingleValueNode;
 import tailspin.language.nodes.value.TagNode;
 import tailspin.language.nodes.value.TransformLensNode;
@@ -232,6 +233,8 @@ public class NodeFactory {
         }
         if (sinkType.equals("VOID")) {
           transforms.addLast("VOID");
+        } else if (sinkType.equals("REJECT")) {
+          transforms.addLast("REJECT");
         } else if (sinkType.equals("#")) {
           transforms.addLast(new ParseNode("transform", "#", start, end));
         } else if (sinkType instanceof ParseNode(String call, ParseNode id, int cs, int ce) && call.equals("templates-call")) {
@@ -378,6 +381,7 @@ public class NodeFactory {
               sourceCode.createSection(start, end - start));
           case ParseNode(String name, Object setState, int start, int end) when name.equals("set-state") -> visitSetState(setState, sourceCode.createSection(start, end - start));
           case String v when v.equals("VOID") -> VoidValue.create(sourceCode.createSection(valueChain.end() - 4, 4));
+          case String v when v.equals("REJECT") -> RejectValue.create(sourceCode.createSection(valueChain.end() - 4, 4));
           default -> throw new IllegalStateException("Unexpected value: " + stage);
         };
         if (stages.isEmpty()) { // after the first

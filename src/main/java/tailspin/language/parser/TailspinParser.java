@@ -30,7 +30,7 @@ public class TailspinParser {
      
      terminated-chain rule <|value-chain> <|emit|sink|accumulator-state>
      emit rule (?<|ignorable-text> <|='!'>)
-     sink rule (?<|ignorable-text> <|='->'> ?<|ignorable-text> <|='!'> ?<|ignorable-text>) <|='VOID'|='#'|templates-call>
+     sink rule (?<|ignorable-text> <|='->'> ?<|ignorable-text> <|='!'> ?<|ignorable-text>) <|='VOID'|='REJECT'|='#'|templates-call>
      accumulator-state rule (?<|ignorable-text> <|='->'> ?<|ignorable-text>) <|set-state>
      
      value-chain rule <|range|source> *<|transform|stream>

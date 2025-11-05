@@ -78,3 +78,26 @@ end foo
       end
 ] !
 =*TypeError: PreconditionFailed
+---Explicit reject sink causes precondition failure
+foo templates
+  $ !
+  $ -> !REJECT
+end foo
+
+1 -> foo !
+=*TypeError: PreconditionFailed
+---Try on explicit reject inhibits failure
+foo templates
+  $ -> !REJECT
+end foo
+
+[1 -> try foo] !
+=[]
+---Explicit reject caught by try removes previous output
+foo templates
+  $ !
+  $ -> !REJECT
+end foo
+
+[1 -> try foo] !
+=[]

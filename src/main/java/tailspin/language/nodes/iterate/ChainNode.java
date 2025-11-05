@@ -8,6 +8,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.source.SourceSection;
 import java.util.List;
 import tailspin.language.PreconditionFailed;
+import tailspin.language.RejectSinkReached;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.TransformNode;
 
@@ -49,6 +50,8 @@ public abstract class ChainNode extends TransformNode {
       }
     } catch (PreconditionFailed pf) {
       throw new TypeError(pf.getMessage(), pf.getLocation());
+    } catch (RejectSinkReached rsr) {
+      throw new PreconditionFailed(rsr.getMessage(), rsr.getLocation());
     }
   }
 }
