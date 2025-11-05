@@ -448,16 +448,16 @@ public class NodeFactory {
 
   private TransformNode visitTransform(Object transform) {
     return switch(transform) {
-      case List<?> l when l.size() == 2 && l.getFirst() instanceof ParseNode p && p.name().equals("try")  -> {
-        TransformNode tn = visitTransform(l.getLast());
-        SourceSection tss = tn.getEncapsulatingSourceSection();
-        yield TryNode.create(tn, tss);
-      }
       case ParseNode(String name, ParseNode source, int start, int end) when name.equals("source") -> asTransformNode(visitSource(source));
       case ParseNode(String name, List<?> bounds, int start, int end) when name.equals("range") -> asTransformNode(visitRange(bounds,
           sourceCode.createSection(start, end - start)));
       case ParseNode(String name, Object implementation, int start, int end) when name.equals("inline-templates-call") -> {
         List<?> content = implementation instanceof List<?> objects ? objects : List.of(implementation);
+        boolean isTry = false;
+        if (content.getFirst() instanceof ParseNode p && p.name().equals("try")) {
+          isTry = true;
+          content = content.subList(1, content.size());
+        }
         enterNewScope(null, sourceCode.createSection(start, end - start));
         int nextPart = content.size() - 1;
         visitTemplatesBody((ParseNode) content.get(nextPart));
@@ -470,17 +470,35 @@ public class NodeFactory {
         Scope scope = exitScope();
         Templates templates = scope.getTemplates();
         templates.setDefinitionLevel(scopes.size());
-        yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(), templates,
+        TransformNode tn = SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(), templates,
             INTERNAL_CODE_SOURCE);
+        if (isTry) {
+          SourceSection tss = tn.getEncapsulatingSourceSection();
+          yield TryNode.create(tn, tss);
+        } else {
+          yield tn;
+        }
       }
       case String crosshatch when crosshatch.equals("#") -> {
         Templates matchers = currentScope().getOrCreateMatcherTemplates();
         yield SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(), matchers,
             INTERNAL_CODE_SOURCE);
       }
-      case ParseNode(String type, ParseNode id, int start, int end) when type.equals("templates-call")
-          -> SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(),
-          currentScope().findTemplates((String) id.content()), sourceCode.createSection(start, end - start));
+      case ParseNode(String type, Object call, int start, int end) when type.equals("templates-call") -> {
+        boolean isTry = false;
+        if (call instanceof List<?> l && l.size() == 2 && l.getFirst() instanceof ParseNode p && p.name().equals("try")) {
+          isTry = true;
+          call = l.getLast();
+        }
+        TransformNode tn = SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(),
+            currentScope().findTemplates((String) ((ParseNode) call).content()), sourceCode.createSection(start, end - start));
+        if (isTry) {
+          SourceSection tss = tn.getEncapsulatingSourceSection();
+          yield TryNode.create(tn, tss);
+        } else {
+          yield tn;
+        }
+      }
       case ParseNode(String type, ParseNode matcher, int start, int end) when type.equals("filter")
           -> FilterNode.create(ReadContextValueNode.create(-1, currentValueSlot()), visitMatcher(matcher.content()), sourceCode.createSection(start, end - start));
       default -> throw new IllegalStateException("Unexpected value: " + transform);
