@@ -1,7 +1,6 @@
 package tailspin.language.factory;
 
 import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
-import static tailspin.language.parser.ParseNode.normalizeValues;
 import static tailspin.language.runtime.Templates.CV_SLOT;
 import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
 import static tailspin.language.runtime.Templates.STATE_SLOT;
@@ -148,7 +147,11 @@ public class NodeFactory {
 
   private StatementNode visitBlock(Object block) {
     return switch (block) {
+      case ParseNode(String name, Object content, int start, int end) when name.equals("block") -> visitBlock(content);
+      case ParseNode(String name, Object statements, int start, int end) when name.equals("statements") -> visitBlock(statements);
       case ParseNode(String name, ParseNode statement, int start, int end) when name.equals("statement") -> visitStatement(statement);
+      case ParseNode(String name, String ignored, int start, int end) when name.equals("do-nothing") -> DoNothingNode.create(
+          sourceCode.createSection(start, end - start));
       case List<?> statements -> {
         int start = ((ParseNode) statements.getFirst()).start();
         int end = ((ParseNode) statements.getFirst()).end();
@@ -162,8 +165,6 @@ public class NodeFactory {
   private StatementNode visitStatement(ParseNode statement) {
     return switch (statement) {
       case ParseNode(String name, ParseNode stmt, int start, int end) when name.equals("statement") -> visitStatement(stmt);
-      case ParseNode(String name, String ignored, int start, int end) when name.equals("do-nothing") -> DoNothingNode.create(
-          sourceCode.createSection(start, end - start));
       case ParseNode(String name, Object stmt, int start, int end) when name.equals("terminated-chain") -> visitTerminatedChain(stmt);
       case ParseNode(String name, List<?> def, int start, int end) when name.equals("definition") -> visitDefinition(def);
       case ParseNode(String name, Object setExpr, int start, int end) when name.equals("set-state") -> visitSetState(setExpr, sourceCode.createSection(start, end - start));
@@ -492,10 +493,11 @@ public class NodeFactory {
           when name.equals("with-block"):
         Object matchBlock = null;
         if (block instanceof List<?> list
+            && list.size() == 2
             && list.getLast() instanceof ParseNode(String type, Object m, int ms, int me)
             && type.equals("matchers")) {
           matchBlock = m;
-          block = list.subList(0, list.size() - 1);
+          block = list.getFirst();
         }
         StatementNode blockNode = visitBlock(block);
         currentScope().setBlock(blockNode);
@@ -545,7 +547,8 @@ public class NodeFactory {
           when name.equals("when-do") -> visitMatcher(matcher.content());
       default -> throw new IllegalStateException("Unexpected value: " + matchTemplate.getFirst());
     };
-    StatementNode block = visitBlock(normalizeValues(matchTemplate.subList(1, matchTemplate.size())));
+    if (matchTemplate.size() != 2) throw new IllegalStateException("Unexpected list size in match template");
+    StatementNode block = visitBlock(matchTemplate.getLast());
     currentScope().deleteTemporaryValues();
     return MatchTemplateNode.create(matcherNode, block, INTERNAL_CODE_SOURCE);
   }

@@ -18,12 +18,14 @@ import tailspin.language.parser.composer.SubComposerFactory;
 public class TailspinParser {
 
   static final String tailspinSyntax = """
-     program rule (?<|ignorable-text>) +<|statement>
+     program rule (?<|ignorable-text>) <|statements>
      
-     statement rule <|do-nothing|definition|set-state|templates|type-def|terminated-chain> (?<|ignorable-text>)
+     statement rule <|definition|set-state|templates|type-def|terminated-chain> (?<|ignorable-text>)
+     block rule <|do-nothing|statements>
+     statements rule +<|statement>
      comment rule (<|'--.*(\\R|\\z)'>)
      ignorable-text rule (+<|WS|comment>)
-     do-nothing rule <|='VOID'>
+     do-nothing rule <|='VOID'> (?<|ignorable-text>)
      definition rule <|ID> (<|ignorable-text> <|='is'> <|ignorable-text>) <|value-chain> (<|=';'> ?<|ignorable-text>)
      type-def rule <|ID> (<|ignorable-text> <|='requires'> <|ignorable-text> <|='<'>) ?<|='~'> (?<|ignorable-text>) +<|membrane> (<|='>'> ?<|ignorable-text>)
      set-state rule ?<|='..|'> (<|='@'>) ?<|ID> ?<|lens-expression> (?<|ignorable-text> <|='set'> ?<|ignorable-text>) <|value-chain> (<|=';'> ?<|ignorable-text>)
@@ -77,10 +79,10 @@ public class TailspinParser {
      
      precondition rule (<|='requires'> <|ignorable-text>) <|matcher> (<|ignorable-text>)
      templates-body rule <|with-block|matchers>
-     with-block rule +<|statement> ?<|matchers>
+     with-block rule <|block> ?<|matchers>
      
      matchers rule +<|match-template>
-     match-template rule <|when-do|otherwise> +<|statement>
+     match-template rule <|when-do|otherwise> <|block>
      otherwise rule <|='otherwise'> (?<|ignorable-text>)
      when-do rule (<|='when'> ?<|ignorable-text>) <|matcher>  (<|='do'> ?<|ignorable-text>)
      matcher rule ?<|type-bound> (<|='<'>) ?<|='~'> (?<|ignorable-text>) +<|membrane> (<|='>'> ?<|ignorable-text>)
