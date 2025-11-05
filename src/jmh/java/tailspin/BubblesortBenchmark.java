@@ -61,6 +61,52 @@ public class BubblesortBenchmark extends TruffleBenchmark {
       end sortedCopy
       """;
 
+  private static final String tailspinRecurseSimplePrecondition = """
+      sortedCopy templates
+        bubble templates
+        requires <|2..>
+          @ set 1;
+          1..$-1 -> !#
+          $@ !
+      
+          when <|?($@sortedCopy($+1) matches <|..~$@sortedCopy($)>)> do
+            @ set $;
+            temp is $@sortedCopy($@);
+            @sortedCopy($@) set $@sortedCopy($@ + 1);
+            @sortedCopy($@ + 1) set $temp;
+        end bubble
+      
+        @ set $;
+        $::length -> !#
+        $@ !
+      
+        when <|2..> do $ -> bubble -> !#
+      end sortedCopy
+      """;
+
+  private static final String tailspinRecurseFullPrecondition = """
+      sortedCopy templates
+        @ set $;
+        bubble templates
+        requires <|$@sortedCopy::first~..$@sortedCopy::last>
+          @ set 1;
+          1..$-1 -> !#
+          $@ !
+      
+          when <|?($@sortedCopy($+1) matches <|..~$@sortedCopy($)>)> do
+            @ set $;
+            temp is $@sortedCopy($@);
+            @sortedCopy($@) set $@sortedCopy($@ + 1);
+            @sortedCopy($@ + 1) set $temp;
+        end bubble
+      
+        $::length -> !#
+        $@ !
+      
+        when <|2..> do $ -> bubble -> !#
+      end sortedCopy
+      """;
+
   @Benchmark
   public void sort_tailspin_iterate() {
     TailspinArray sorted = truffleContext.eval("tt", tailspinIterate + tailspinMain).as(TailspinArray.class);
@@ -103,6 +149,32 @@ public class BubblesortBenchmark extends TruffleBenchmark {
   @Benchmark
   public void sort_tailspin_recurse() {
     TailspinArray sorted = truffleContext.eval("tt", tailspinRecurse + tailspinMain).as(TailspinArray.class);
+    if (sorted.getArraySize() != 100) {
+      throw new AssertionError("Too short array " + sorted.getArraySize());
+    }
+    for (int i = 1; i < sorted.getArraySize(); i++) {
+      if ((long) sorted.getNative(i - 1, false) > (long) sorted.getNative(i, false)) {
+        throw new AssertionError("Out of order " + sorted.getArraySize());
+      }
+    }
+  }
+
+  @Benchmark
+  public void sort_tailspin_recurse_simple_precondition() {
+    TailspinArray sorted = truffleContext.eval("tt", tailspinRecurseSimplePrecondition + tailspinMain).as(TailspinArray.class);
+    if (sorted.getArraySize() != 100) {
+      throw new AssertionError("Too short array " + sorted.getArraySize());
+    }
+    for (int i = 1; i < sorted.getArraySize(); i++) {
+      if ((long) sorted.getNative(i - 1, false) > (long) sorted.getNative(i, false)) {
+        throw new AssertionError("Out of order " + sorted.getArraySize());
+      }
+    }
+  }
+
+  @Benchmark
+  public void sort_tailspin_recurse_full_precondition() {
+    TailspinArray sorted = truffleContext.eval("tt", tailspinRecurseFullPrecondition + tailspinMain).as(TailspinArray.class);
     if (sorted.getArraySize() != 100) {
       throw new AssertionError("Too short array " + sorted.getArraySize());
     }
