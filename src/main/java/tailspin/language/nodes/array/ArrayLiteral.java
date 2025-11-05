@@ -37,6 +37,6 @@ public class ArrayLiteral extends ValueNode {
     }
     ArrayList<?> collector = (ArrayList<?>) frame.getObjectStatic(buildSlot);
     frame.setObjectStatic(buildSlot, null);
-    return TailspinArray.value(collector.toArray());
+    return TailspinArray.value(collector == null ? new Object[0] : collector.toArray());
   }
 }

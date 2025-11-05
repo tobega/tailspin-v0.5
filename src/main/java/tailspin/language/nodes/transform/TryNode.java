@@ -2,7 +2,6 @@ package tailspin.language.nodes.transform;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
 import tailspin.language.PreconditionFailed;
 import tailspin.language.nodes.TransformNode;
 
@@ -21,7 +20,7 @@ public class TryNode  extends TransformNode {
     try {
       transformNode.executeTransform(frame);
     } catch (PreconditionFailed pf) {
-      frame.setObjectStatic(getResultSlot(), new ArrayList<>());
+      frame.setObjectStatic(getResultSlot(), null);
     }
   }
 
