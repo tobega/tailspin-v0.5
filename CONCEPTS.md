@@ -1,5 +1,6 @@
 # Concepts, design principles and their relation to Tailspin features
 Mostly based on [my blogpost on concepts and programming language usability](https://tobega.blogspot.com/2024/01/usability-in-programming-language.html)
+Appended with [error handling concepts](https://tobega.blogspot.com/2025/08/exploring-error-handling-concepts-for.html)
 
 ## General design principles, in priority order
 1. Tailspin programming structures shall strive to be a visual representation of the desired result, as far as possible. 
@@ -18,6 +19,7 @@ Mostly based on [my blogpost on concepts and programming language usability](htt
 - Selection - Purpose: Allows a choice of which units to process and which to ignore. Operational Principle: If you specify the selection criteria, the matching units will be processed.
 - Verification - Purpose: Allows checking correctness criteria of the program. Operational Principle: If you specify a criterion and run the verification procedure (which may be built in), a warning/failure is issued if the program does not fulfil the criterion.
 - Documentation - Purpose: Allows communicating aspects of the design and purpose to a future reader of the program. Operational Principle: If you specify the relevant information, a future reader will receive it when needed.
+- Checkpoint - Purpose: Allows returning to a known program state Operational principle: When a line of computation starting from the checkpoint is abandoned and returned to the checkpoint, all changes made in that line of computation will be forgotten and not impact any continued computation.
 
 ## Some features examined
 ### Pipeline processing

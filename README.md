@@ -27,6 +27,7 @@ which unblocks my further work.
 - The current value that a lens applies to is made accessible as $.
 - The special array context words `first` and `last` are removed, just use range without specific bound, e.g. `..`, `~..` or `2..~`. If needed, use `$::first` and `$::last`.
 - `..` will be introduced as a short form of `first..last` (and will also work as an *all* selector for non-indexed collections like relations)
+- A relative bound will be introduced, so `1|..` will be from the first element, `2|..` from the second, `..|2` to the second last, whatever the type or offset of the index.
 - As a consequence, the structure transform projection, e.g. `$({x:, y: §.y + 1"1"})` will become `$(-> {x:, y: $.y + 1"1"})` for a structure value, equivalent to `$ -> {x:, y: $.y + 1"1"}`, or `$(..; -> {x:, y: $.y + 1"1"})` for a collection of structures.
 - Array templates will be folded in as projections, so `$ -> \[i]($ * $i! \)` will be written instead `$(.. as i; -> $ * $i)`
 - The magic property of the structure transform projection to apply no matter how many array dimensions down, will disappear. Maybe it will be enabled by an explicit `;;`
@@ -88,6 +89,8 @@ It is already possible to handle a nothing code path by wrapping in a list and c
 `[$ -> maybe-nothing] -> templates when <|[](=0)> do ... nothing-path ... otherwise ... end`
 
 I think I want to enable another type of when-clause, `when any maybe-nothing do ... not-nothing ... otherwise ... nothing-path ...`
+
+There will probably be a `when try something do`, or should it have to be a `when any try something do`? YES.
 
 ## Performance check
 See the [performance tests](src/jmh/README.md) for how Tailspin performs relative to java

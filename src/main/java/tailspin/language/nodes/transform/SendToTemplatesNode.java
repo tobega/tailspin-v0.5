@@ -12,6 +12,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.state.FreezeNode;
 import tailspin.language.nodes.state.GetDefiningScopeNode;
 import tailspin.language.runtime.DefiningScope;
 import tailspin.language.runtime.Templates;
@@ -34,13 +35,17 @@ public abstract class SendToTemplatesNode extends TransformNode {
 
   @Specialization(guards = "contextFrameLevel() >= 0")
   public void doDispatch(VirtualFrame frame, Object value,
-      @Cached(inline = true)GetDefiningScopeNode getScope,
-      @Cached @Shared DispatchNode dispatchNode) {
+      @Cached(inline = true) GetDefiningScopeNode getScope,
+      @Cached @Shared DispatchNode dispatchNode,
+      @Cached NewTransactionNode createTransaction,
+      @Cached CommitTransactionNode commitTransaction) {
     DefiningScope scope = getScope.execute(frame, this, contextFrameLevel());
+    scope = createTransaction.execute(scope);
     Object resultBuilder = frame.getObjectStatic(getResultSlot());
     Object result = dispatchNode.executeDispatch(templates, value, scope,
         resultBuilder);
     frame.setObjectStatic(getResultSlot(), result);
+    commitTransaction.execute(scope);
   }
 
   @Idempotent
@@ -68,6 +73,42 @@ public abstract class SendToTemplatesNode extends TransformNode {
         Object resultBuilder,
         @Cached("create(templates.getCallTarget())") DirectCallNode directCallNode) {
       return directCallNode.call(definingScope, currentValue, resultBuilder);
+    }
+  }
+
+  @GenerateInline(value = false)
+  public static abstract class NewTransactionNode extends Node {
+    public abstract DefiningScope execute(DefiningScope base);
+
+    @Specialization(guards = "base == null")
+    protected DefiningScope doNull(DefiningScope base) {
+      return null;
+    }
+
+    @Specialization(guards = "base != null")
+    protected DefiningScope createTransactionScope(DefiningScope base,
+        @Cached(inline = true) FreezeNode freezer) {
+      DefiningScope parent = execute(base.getParentScope());
+      DefiningScope transactionScope = new DefiningScope(base.getFrame(), parent);
+      Object state = base.getState();
+      freezer.executeFreeze(this, state);
+      transactionScope.setTransactionState(base, state);
+      return transactionScope;
+    }
+  }
+
+  @GenerateInline(value = false)
+  public static abstract class CommitTransactionNode extends Node {
+    public abstract void execute(DefiningScope base);
+
+    @Specialization(guards = "transaction == null")
+    protected void doNull(DefiningScope transaction) {}
+
+    @Specialization(guards = "transaction != null")
+    protected void commitTransactionScope(DefiningScope transaction,
+        @Cached(inline = true) FreezeNode freezer) {
+      execute(transaction.getParentScope());
+      transaction.tryCommit();
     }
   }
 }

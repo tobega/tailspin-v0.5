@@ -10,6 +10,9 @@ public class DefiningScope {
   @CompilationFinal
   DefiningScope parent;
 
+  @CompilationFinal
+  DefiningScope base;
+
   Object state;
 
   public DefiningScope(MaterializedFrame frame, DefiningScope parent) {
@@ -31,5 +34,14 @@ public class DefiningScope {
 
   public void setState(Object state) {
     this.state = state;
+  }
+
+  public void setTransactionState(DefiningScope base, Object state) {
+    this.base = base;
+    this.state = state;
+  }
+
+  public void tryCommit() {
+    base.setState(state);
   }
 }

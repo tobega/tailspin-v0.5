@@ -14,6 +14,9 @@ import tailspin.language.runtime.TailspinArray;
 public abstract class FreezeNode extends Node {
   public abstract void executeFreeze(Node node, Object value);
 
+  @Specialization(guards = "ignored == null")
+  void doNull(Object ignored) {}
+
   @Specialization
   void doArray(TailspinArray ta,
       @Cached(inline = false) @Exclusive FreezeNode childFreezer) {

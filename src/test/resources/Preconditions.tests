@@ -101,3 +101,16 @@ end foo
 
 [1 -> try foo] !
 =[]
+---Explicit reject caught by try removes previous state changes
+foo templates
+  @ set 2;
+  bar templates
+    @foo set 3;
+    $ -> !REJECT
+  end bar
+  $ -> try bar -> 5 !
+  $@ !
+end foo
+
+1 -> foo !
+=2
