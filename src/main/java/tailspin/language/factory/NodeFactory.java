@@ -3,7 +3,6 @@ package tailspin.language.factory;
 import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
 import static tailspin.language.runtime.Templates.CV_SLOT;
 import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
-import static tailspin.language.runtime.Templates.STATE_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.source.Source;
@@ -64,6 +63,8 @@ import tailspin.language.nodes.numeric.TruncateDivideNode;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.state.AppendStateNode;
 import tailspin.language.nodes.state.ReadStateNode;
+import tailspin.language.nodes.state.ReadStateValueNode;
+import tailspin.language.nodes.state.WriteStateValueNode;
 import tailspin.language.nodes.string.CodepointNode;
 import tailspin.language.nodes.string.StringLiteral;
 import tailspin.language.nodes.string.StringPart;
@@ -287,7 +288,7 @@ public class NodeFactory {
           l = l.subList(1, l.size());
         }
         stateLevel = currentScope().accessState(scopeId);
-        ValueNode target = ReadContextValueNode.create(stateLevel, STATE_SLOT);
+        ValueNode target = ReadStateValueNode.create(stateLevel);
         if (!l.isEmpty()) {
           if (l.getFirst() instanceof ParseNode(String type, Object lensExpr, int start, int end) && type.equals("lens-expression")) {
             if (mode == Mode.APPEND) {
@@ -305,7 +306,7 @@ public class NodeFactory {
       }
       default -> throw new IllegalStateException("Unexpected value: " + expr);
     }
-    return WriteContextValueNode.create(stateLevel, STATE_SLOT, asSingleValueNode(value));
+    return WriteStateValueNode.create(stateLevel, asSingleValueNode(value));
   }
 
   private ValueNode visitWriteLensExpression(ValueNode target, Object lensExpression, TailspinNode value) {
@@ -1017,7 +1018,7 @@ public class NodeFactory {
           scopeId = identifier;
           predicate = predicate.subList(1, predicate.size());
         }
-        yield ReadContextValueNode.create(currentScope().accessState(scopeId), STATE_SLOT);
+        yield ReadStateValueNode.create(currentScope().accessState(scopeId));
       }
       case List<?> l when l.getFirst().equals("$") -> {
         predicate = l.subList(1, l.size());
