@@ -6,14 +6,14 @@ import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Idempotent;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.value.GetContextFrameNode;
+import tailspin.language.nodes.state.GetDefiningScopeNode;
+import tailspin.language.runtime.DefiningScope;
 import tailspin.language.runtime.Templates;
 
 @NodeChild(value = "value", type = ValueNode.class)
@@ -34,11 +34,11 @@ public abstract class SendToTemplatesNode extends TransformNode {
 
   @Specialization(guards = "contextFrameLevel() >= 0")
   public void doDispatch(VirtualFrame frame, Object value,
-      @Cached(inline = true) GetContextFrameNode getContextFrameNode,
+      @Cached(inline = true)GetDefiningScopeNode getScope,
       @Cached @Shared DispatchNode dispatchNode) {
-    VirtualFrame contextFrame = getContextFrameNode.execute(frame, this, contextFrameLevel());
+    DefiningScope scope = getScope.execute(frame, this, contextFrameLevel());
     Object resultBuilder = frame.getObjectStatic(getResultSlot());
-    Object result = dispatchNode.executeDispatch(templates, value, contextFrame.materialize(),
+    Object result = dispatchNode.executeDispatch(templates, value, scope,
         resultBuilder);
     frame.setObjectStatic(getResultSlot(), result);
   }
@@ -58,12 +58,13 @@ public abstract class SendToTemplatesNode extends TransformNode {
 
   @GenerateInline(value = false)
   public static abstract class DispatchNode extends Node {
-    public abstract Object executeDispatch(Templates templates, Object currentValue, Frame definingScope, Object resultBuilder);
+    public abstract Object executeDispatch(Templates templates, Object currentValue, DefiningScope definingScope, Object resultBuilder);
+
     @Specialization
     protected static Object dispatchDirectly(
         @SuppressWarnings("unused") Templates templates,
         Object currentValue,
-        Frame definingScope,
+        DefiningScope definingScope,
         Object resultBuilder,
         @Cached("create(templates.getCallTarget())") DirectCallNode directCallNode) {
       return directCallNode.call(definingScope, currentValue, resultBuilder);

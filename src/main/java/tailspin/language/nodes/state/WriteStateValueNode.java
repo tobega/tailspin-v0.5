@@ -1,7 +1,6 @@
 package tailspin.language.nodes.state;
 
 import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
-import static tailspin.language.runtime.Templates.STATE_SLOT;
 
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateCached;
@@ -11,8 +10,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
-import tailspin.language.runtime.Reference;
+import tailspin.language.runtime.DefiningScope;
 
 @NodeChild(value = "valueExpr", type = ValueNode.class)
 @GenerateCached(alwaysInlineCached=true)
@@ -26,10 +24,9 @@ public abstract class WriteStateValueNode extends StatementNode {
 
   @Specialization
   protected void writeObject(VirtualFrame frame, Object value,
-      @Cached(neverDefault = true) GetStateFrameNode getFrame,
-      @Cached(neverDefault = true) WriteLocalValueNode writeValue) {
-    VirtualFrame contextFrame = getFrame.execute(frame, this, level);
-    writeValue.executeGeneric(contextFrame, this, STATE_SLOT, value);
+      @Cached(neverDefault = true) GetDefiningScopeNode getScope) {
+    DefiningScope scope = getScope.execute(frame, this, level);
+    scope.setState(value);
   }
 
   public static WriteStateValueNode create(int level, ValueNode valueNode) {

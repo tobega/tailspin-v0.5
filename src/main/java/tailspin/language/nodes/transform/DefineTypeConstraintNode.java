@@ -2,10 +2,10 @@ package tailspin.language.nodes.transform;
 
 import static tailspin.language.runtime.Templates.SCOPE_SLOT;
 
-import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.StatementNode;
+import tailspin.language.runtime.DefiningScope;
 import tailspin.language.runtime.TemplatesInstance;
 
 public class DefineTypeConstraintNode extends StatementNode {
@@ -23,7 +23,7 @@ public class DefineTypeConstraintNode extends StatementNode {
 
   @Override
   public void executeVoid(VirtualFrame frame) {
-    MaterializedFrame definingScope = (MaterializedFrame) frame.getObjectStatic(SCOPE_SLOT);
+    DefiningScope definingScope = (DefiningScope) frame.getObjectStatic(SCOPE_SLOT);
     templates.setDefiningScope(definingScope);
   }
 }

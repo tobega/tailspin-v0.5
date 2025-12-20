@@ -14,6 +14,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import tailspin.language.TailspinLanguage;
+import tailspin.language.runtime.DefiningScope;
 import tailspin.language.runtime.TailspinArray;
 
 public class ProgramRootNode extends RootNode {
@@ -69,7 +70,7 @@ public class ProgramRootNode extends RootNode {
     @Override
     public void executeVoid(VirtualFrame frame) {
       MaterializedFrame scope = Truffle.getRuntime().createMaterializedFrame(EMPTY_ARGS, scopeDescriptor);
-      frame.setObjectStatic(SCOPE_SLOT, scope);
+      frame.setObjectStatic(SCOPE_SLOT, new DefiningScope(scope, null));
     }
   }
 }

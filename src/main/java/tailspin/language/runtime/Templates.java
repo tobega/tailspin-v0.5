@@ -11,8 +11,6 @@ public class Templates {
   public static final int EMIT_SLOT = 2;
   public static final int LENS_CONTEXT_SLOT = 3;
 
-  public static final int STATE_SLOT = 0;
-
   public static FrameDescriptor.Builder createBasicFdb() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     assertSlot(SCOPE_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
@@ -24,7 +22,6 @@ public class Templates {
 
   public static FrameDescriptor.Builder createScopeFdb() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
-    assertSlot(STATE_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
     return fdb;
   }
 

@@ -8,7 +8,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.Node;
-import tailspin.language.nodes.transform.TemplatesRootNode;
+import tailspin.language.runtime.DefiningScope;
 
 @GenerateInline
 public abstract class GetContextFrameNode extends Node {
@@ -23,10 +23,11 @@ public abstract class GetContextFrameNode extends Node {
   @Specialization(guards = "level >= 0")
   @ExplodeLoop
   VirtualFrame doUplevel(VirtualFrame frame, int level) {
-    VirtualFrame definingScope = (VirtualFrame) frame.getObjectStatic(SCOPE_SLOT);
-    for (int i = 0; i < level; i++)
-      definingScope = (VirtualFrame) definingScope.getArguments()[TemplatesRootNode.DEFINING_SCOPE_ARG];
-    return definingScope;
+    DefiningScope scope = (DefiningScope) frame.getObjectStatic(SCOPE_SLOT);
+    for (int i = 0; i < level; i++) {
+      scope = scope.getParentScope();
+    }
+    return scope.getFrame();
   }
 
   @Fallback
