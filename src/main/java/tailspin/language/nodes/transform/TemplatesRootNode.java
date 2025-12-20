@@ -88,7 +88,7 @@ public class TemplatesRootNode extends RootNode {
 
     @Override
     public void executeVoid(VirtualFrame frame) {
-      MaterializedFrame scope = Truffle.getRuntime().createMaterializedFrame(frame.getArguments(), scopeDescriptor);
+      MaterializedFrame scope = Truffle.getRuntime().createMaterializedFrame(new Object[]{frame.getArguments()[DEFINING_SCOPE_ARG]}, scopeDescriptor);
       frame.setObjectStatic(SCOPE_SLOT, scope);
     }
   }
