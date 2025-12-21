@@ -21,21 +21,34 @@ import tailspin.language.runtime.Templates;
 public abstract class SendToTemplatesNode extends TransformNode {
   private final Templates templates;
   protected final int callLevel;
+  protected final boolean noTransaction;
 
-  protected SendToTemplatesNode(Templates templates, int callLevel, SourceSection sourceSection) {
+  protected SendToTemplatesNode(boolean noTransaction, Templates templates, int callLevel, SourceSection sourceSection) {
     super(sourceSection);
     this.callLevel = callLevel;
     this.templates = templates;
+    this.noTransaction = noTransaction;
   }
 
   public static SendToTemplatesNode create(ValueNode valueNode, int callLevel, Templates templates,
       SourceSection sourceSection) {
-    return SendToTemplatesNodeGen.create(templates, callLevel, sourceSection, valueNode);
+    return SendToTemplatesNodeGen.create(templates.isAuxiliary(), templates, callLevel, sourceSection, valueNode);
   }
 
-  @Specialization(guards = "contextFrameLevel() >= 0")
-  public void doDispatch(VirtualFrame frame, Object value,
-      @Cached(inline = true) GetDefiningScopeNode getScope,
+  @Specialization(guards = {"contextFrameLevel() >= 0", "noTransaction"})
+  public void doAuxiliaryDispatch(VirtualFrame frame, Object value,
+      @Cached(inline = true) @Shared GetDefiningScopeNode getScope,
+      @Cached @Shared DispatchNode dispatchNode) {
+    DefiningScope scope = getScope.execute(frame, this, contextFrameLevel());
+    Object resultBuilder = frame.getObjectStatic(getResultSlot());
+    Object result = dispatchNode.executeDispatch(templates, value, scope,
+        resultBuilder);
+    frame.setObjectStatic(getResultSlot(), result);
+  }
+
+  @Specialization(guards = {"contextFrameLevel() >= 0", "!noTransaction"})
+  public void doTransactionDispatch(VirtualFrame frame, Object value,
+      @Cached(inline = true) @Shared GetDefiningScopeNode getScope,
       @Cached @Shared DispatchNode dispatchNode,
       @Cached NewTransactionNode createTransaction,
       @Cached CommitTransactionNode commitTransaction) {

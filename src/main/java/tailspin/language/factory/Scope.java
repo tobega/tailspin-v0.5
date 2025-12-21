@@ -66,7 +66,10 @@ public class Scope {
   boolean isInMatcher = false;
   Templates matcherTemplates;
   public Templates getOrCreateMatcherTemplates() {
-    if (matcherTemplates == null) matcherTemplates = new Templates();
+    if (matcherTemplates == null) {
+      matcherTemplates = new Templates();
+      matcherTemplates.setAuxiliary();
+    }
     return matcherTemplates;
   }
 

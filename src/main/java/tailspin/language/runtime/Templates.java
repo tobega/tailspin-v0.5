@@ -36,6 +36,9 @@ public class Templates {
   private boolean needsScope = false;
 
   @CompilationFinal
+  private boolean auxiliary = false;
+
+  @CompilationFinal
   private int definitionLevel = -100;
 
   private String type;
@@ -70,5 +73,13 @@ public class Templates {
 
   public String getType() {
     return type;
+  }
+
+  public void setAuxiliary() {
+    auxiliary = true;
+  }
+
+  public boolean isAuxiliary() {
+    return auxiliary;
   }
 }
