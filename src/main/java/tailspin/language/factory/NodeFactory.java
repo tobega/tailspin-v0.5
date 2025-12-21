@@ -171,7 +171,11 @@ public class NodeFactory {
       case ParseNode(String name, Object setExpr, int start, int end) when name.equals("set-state") -> visitSetState(setExpr, sourceCode.createSection(start, end - start));
       case ParseNode(String type, List<?> content, int start, int end) when type.equals("templates") -> {
         String name = (String) content.getLast();
-        String templateType = (String) content.getFirst();
+        boolean isAuxiliary = false;
+        if (content.getFirst() instanceof ParseNode(String auxName, Object auxContent, int auxStart, int auxEnd) && auxName.equals("auxiliary")) {
+          isAuxiliary = true;
+        }
+        String templateType = (String) (isAuxiliary ? content.get(1) : content.getFirst());
         enterNewScope(name, sourceCode.createSection(start, end - start));
         int nextPart = content.size() - 2;
         visitTemplatesBody((ParseNode) content.get(nextPart));
@@ -185,6 +189,7 @@ public class NodeFactory {
         Templates templates = scope.getTemplates();
         templates.setType(templateType);
         templates.setDefinitionLevel(scopes.size());
+        if (isAuxiliary) templates.setAuxiliary();
         currentScope().registerTemplates(name, templates);
         yield DoNothingNode.create(sourceCode.createSection(start, end - start));
       }

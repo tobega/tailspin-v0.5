@@ -73,7 +73,8 @@ public class TailspinParser {
      try rule <|='try'> (<|ignorable-text>)
      templates-call rule ?<|try> <|ID>
      inline-templates-call rule ?<|try> (<|='templates'> <|ignorable-text>) ?<|precondition> <|templates-body>  (<|='end'> ?<|ignorable-text>)
-     templates rule (name is <|ID>; <|ignorable-text>) <|='templates'|='source'|='sink'> (<|ignorable-text>) ?<|precondition> <|templates-body>  (<|='end'> <|ignorable-text>) <|=$name>
+     templates rule (name is <|ID>; <|ignorable-text>) ?<|auxiliary> <|='templates'|='source'|='sink'> (<|ignorable-text>) ?<|precondition> <|templates-body>  (<|='end'> <|ignorable-text>) <|=$name>
+     auxiliary rule <|='auxiliary'> (<|ignorable-text>)
      filter rule (<|='if'> ?<|ignorable-text>) <|matcher>
      stream rule <|='...'> (?<|ignorable-text>)
      

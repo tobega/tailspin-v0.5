@@ -39,7 +39,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
       end sortedCopy
       """;
 
-  private static final String tailspinRecurse = """
+  private static final String tailspinRecurseNonAuxiliary = """
       sortedCopy templates
         bubble templates
           @ set 1;
@@ -61,9 +61,31 @@ public class BubblesortBenchmark extends TruffleBenchmark {
       end sortedCopy
       """;
 
+  private static final String tailspinRecurse = """
+      sortedCopy templates
+        bubble auxiliary templates
+          @ set 1;
+          1..$-1 -> !#
+          $@ !
+      
+          when <|?($@sortedCopy($+1) matches <|..~$@sortedCopy($)>)> do
+            @ set $;
+            temp is $@sortedCopy($@);
+            @sortedCopy($@) set $@sortedCopy($@ + 1);
+            @sortedCopy($@ + 1) set $temp;
+        end bubble
+      
+        @ set $;
+        $::length -> !#
+        $@ !
+      
+        when <|2..> do $ -> bubble -> !#
+      end sortedCopy
+      """;
+
   private static final String tailspinRecurseSimplePrecondition = """
       sortedCopy templates
-        bubble templates
+        bubble auxiliary templates
         requires <|2..>
           @ set 1;
           1..$-1 -> !#
@@ -87,7 +109,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
   private static final String tailspinRecurseFullPrecondition = """
       sortedCopy templates
         @ set $;
-        bubble templates
+        bubble auxiliary templates
         requires <|$@sortedCopy::first~..$@sortedCopy::last>
           @ set 1;
           1..$-1 -> !#
@@ -141,6 +163,19 @@ public class BubblesortBenchmark extends TruffleBenchmark {
     }
     for (int i = 1; i < sorted.getArraySize(); i++) {
       if ((long) ((TaggedValue) sorted.getNative(i - 1, false)).value() > (long) ((TaggedValue) sorted.getNative(i, false)).value()) {
+        throw new AssertionError("Out of order " + sorted.getArraySize());
+      }
+    }
+  }
+
+  @Benchmark
+  public void sort_tailspin_recurse_non_auxiliary() {
+    TailspinArray sorted = truffleContext.eval("tt", tailspinRecurseNonAuxiliary + tailspinMain).as(TailspinArray.class);
+    if (sorted.getArraySize() != 100) {
+      throw new AssertionError("Too short array " + sorted.getArraySize());
+    }
+    for (int i = 1; i < sorted.getArraySize(); i++) {
+      if ((long) sorted.getNative(i - 1, false) > (long) sorted.getNative(i, false)) {
         throw new AssertionError("Out of order " + sorted.getArraySize());
       }
     }

@@ -79,7 +79,7 @@ public class NBodyBenchmark extends TruffleBenchmark {
       @n-body-system(1; vz:) set 0"z/t" - ($@(pz:) / $SOLAR_MASS)"z/t";
     end -> !VOID
 
-    advance sink
+    advance auxiliary sink
       dt is $;
       1..$@n-body-system::length -> templates
         i is $;
@@ -112,7 +112,7 @@ public class NBodyBenchmark extends TruffleBenchmark {
       end -> !VOID
     end advance
 
-    energy source
+    energy auxiliary source
       @ set 0"e";
 
       1..$@n-body-system::length -> templates
