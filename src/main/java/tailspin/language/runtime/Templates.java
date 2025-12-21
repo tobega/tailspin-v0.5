@@ -36,6 +36,9 @@ public class Templates {
   private boolean needsScope = false;
 
   @CompilationFinal
+  private boolean needsState = false;
+
+  @CompilationFinal
   private boolean auxiliary = false;
 
   @CompilationFinal
@@ -57,6 +60,14 @@ public class Templates {
 
   public boolean needsScope() {
     return needsScope;
+  }
+
+  public void setNeedsState() {
+    needsState = true;
+  }
+
+  public boolean needsState() {
+    return needsState;
   }
 
   public void setDefinitionLevel(int definitionLevel) {

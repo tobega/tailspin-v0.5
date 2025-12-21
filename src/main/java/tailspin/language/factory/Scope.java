@@ -97,10 +97,12 @@ public class Scope {
   }
 
   boolean needsScope;
+  boolean needsState;
   public Templates getTemplates() {
     assignReferences();
     Templates templates = isInMatcher? matcherTemplates : new Templates();
     if (needsScope) templates.setNeedsScope();
+    if (needsState) templates.setNeedsState();
     templates.setCallTarget(TemplatesRootNode.create(rootFdb.build(), scopeFdb.build(), block,
         sourceSection));
     return templates;
@@ -161,7 +163,7 @@ public class Scope {
     if (!isInMatcher && (scopeId == null || scopeId.equals(this.scopeId))) {
       return 0;
     } else {
-      needsScope = true;
+      needsState = true;
       return 1 + parent.accessState(scopeId);
     }
   }
@@ -179,8 +181,10 @@ public class Scope {
     if (definitions.containsKey(name)) return (Templates) definitions.get(name);
     else if (parent == null) throw new IllegalStateException("Cannot find templates " + name);
     else {
-      needsScope = true;
-      return parent.findTemplates(name);
+      Templates templates = parent.findTemplates(name);
+      if (templates.needsScope()) needsScope = true;
+      if (templates.needsState()) needsState = true;
+      return templates;
     }
   }
 

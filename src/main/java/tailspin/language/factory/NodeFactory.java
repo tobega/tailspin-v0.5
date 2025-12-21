@@ -214,7 +214,7 @@ public class NodeFactory {
         exitScope();
         Scope definedScope = exitScope();
         Templates templates = definedScope.getTemplates();
-        if (templates.needsScope()) {
+        if (templates.needsScope() || templates.needsState()) {
           definedScope.getOrCreateMatcherTemplates().setDefinitionLevel(scopes.size());
           TemplatesInstance definedTemplates = new TemplatesInstance(null, templates.getCallTarget());
           type.setConstraint(CallDefinedTypeMatcherNode.create(definedTemplates, INTERNAL_CODE_SOURCE));

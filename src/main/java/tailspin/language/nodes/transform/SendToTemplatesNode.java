@@ -32,7 +32,7 @@ public abstract class SendToTemplatesNode extends TransformNode {
 
   public static SendToTemplatesNode create(ValueNode valueNode, int callLevel, Templates templates,
       SourceSection sourceSection) {
-    return SendToTemplatesNodeGen.create(templates.isAuxiliary(), templates, callLevel, sourceSection, valueNode);
+    return SendToTemplatesNodeGen.create(templates.isAuxiliary() || !templates.needsState(), templates, callLevel, sourceSection, valueNode);
   }
 
   @Specialization(guards = {"contextFrameLevel() >= 0", "noTransaction"})
@@ -63,7 +63,7 @@ public abstract class SendToTemplatesNode extends TransformNode {
 
   @Idempotent
   int contextFrameLevel() {
-    return templates.needsScope() ? callLevel - templates.getDefinitionLevel() : -1;
+    return templates.needsScope() || templates.needsState() ? callLevel - templates.getDefinitionLevel() : -1;
   }
 
   @Specialization(guards = "contextFrameLevel() < 0")
@@ -118,8 +118,7 @@ public abstract class SendToTemplatesNode extends TransformNode {
     protected void doNull(DefiningScope transaction) {}
 
     @Specialization(guards = "transaction != null")
-    protected void commitTransactionScope(DefiningScope transaction,
-        @Cached(inline = true) FreezeNode freezer) {
+    protected void commitTransactionScope(DefiningScope transaction) {
       execute(transaction.getParentScope());
       transaction.tryCommit();
     }
