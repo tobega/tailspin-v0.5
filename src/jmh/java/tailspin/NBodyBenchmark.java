@@ -67,7 +67,7 @@ public class NBodyBenchmark extends TruffleBenchmark {
   
   n-body-system templates
     @ set [$sun, $jupiter, $saturn, $uranus, $neptune];
-    $@ -> templates
+    $@ -> auxiliary templates
       @ set {px: 0"u x/t", py: 0"u y/t", pz: 0"u z/t"};
       $... -> @ set {
         px: $@(px:) + ($(vx:) * $(mass:))"u x/t",
@@ -81,10 +81,10 @@ public class NBodyBenchmark extends TruffleBenchmark {
 
     advance auxiliary sink
       dt is $;
-      1..$@n-body-system::length -> templates
+      1..$@n-body-system::length -> auxiliary templates
         i is $;
         iBody is $@n-body-system($);
-        $~..$@n-body-system::length -> templates
+        $~..$@n-body-system::length -> auxiliary templates
           j is $;
           jBody is $@n-body-system($);
           dx is $iBody(x:) - $jBody(x:);
@@ -105,7 +105,7 @@ public class NBodyBenchmark extends TruffleBenchmark {
         end -> !VOID
       end -> !VOID
 
-      1..$@n-body-system::length -> templates
+      1..$@n-body-system::length -> auxiliary templates
           @n-body-system($; x:) set $@n-body-system($; x:) + ($dt * $@n-body-system($; vx:))"x";
           @n-body-system($; y:) set $@n-body-system($; y:) + ($dt * $@n-body-system($; vy:))"y";
           @n-body-system($; z:) set $@n-body-system($; z:) + ($dt * $@n-body-system($; vz:))"z";
@@ -115,14 +115,14 @@ public class NBodyBenchmark extends TruffleBenchmark {
     energy auxiliary source
       @ set 0"e";
 
-      1..$@n-body-system::length -> templates
+      1..$@n-body-system::length -> auxiliary templates
         i is $;
         iBody is $@n-body-system($);
         @energy set $@energy + (0.5000000000000000 * $iBody(mass:) * ($iBody(vx:) * $iBody(vx:) +
           $iBody(vy:) * $iBody(vy:) +
           $iBody(vz:) * $iBody(vz:)))"e";
 
-        $~..$@n-body-system::length -> templates
+        $~..$@n-body-system::length -> auxiliary templates
           j is $;
           jBody is $@n-body-system($);
           dx is $iBody(x:) - $jBody(x:);
@@ -201,7 +201,7 @@ public class NBodyBenchmark extends TruffleBenchmark {
   
   n-body-system templates
     @ set [$sun, $jupiter, $saturn, $uranus, $neptune];
-    $@ -> templates
+    $@ -> auxiliary templates
       @ set {px: 0"u x/t", py: 0"u y/t", pz: 0"u z/t"};
       $... -> @ set {
         px: $@(px:) + ($(vx:) * $(mass:))"u x/t",
@@ -213,12 +213,12 @@ public class NBodyBenchmark extends TruffleBenchmark {
       @n-body-system(1; vz:) set 0"z/t" - ($@(pz:) / $SOLAR_MASS)"z/t";
     end -> !VOID
 
-    advance sink
+    advance auxiliary sink
       dt is $;
-      1..$@n-body-system::length -> templates
+      1..$@n-body-system::length -> auxiliary templates
         i is $;
         iBody is $@n-body-system($);
-        $~..$@n-body-system::length -> templates
+        $~..$@n-body-system::length -> auxiliary templates
           j is $;
           jBody is $@n-body-system($);
           dx is $iBody(x:) - $jBody(x:);
@@ -239,24 +239,24 @@ public class NBodyBenchmark extends TruffleBenchmark {
         end -> !VOID
       end -> !VOID
 
-      1..$@n-body-system::length -> templates
+      1..$@n-body-system::length -> auxiliary templates
           @n-body-system($; x:) set $@n-body-system($; x:) + ($dt * $@n-body-system($; vx:))"x";
           @n-body-system($; y:) set $@n-body-system($; y:) + ($dt * $@n-body-system($; vy:))"y";
           @n-body-system($; z:) set $@n-body-system($; z:) + ($dt * $@n-body-system($; vz:))"z";
       end -> !VOID
     end advance
 
-    energy source
+    energy auxiliary source
       @ set 0"e";
 
-      1..$@n-body-system::length -> templates
+      1..$@n-body-system::length -> auxiliary templates
         i is $;
         iBody is $@n-body-system($);
         @energy set $@energy + (0.500000 * $iBody(mass:) * ($iBody(vx:) * $iBody(vx:) +
           $iBody(vy:) * $iBody(vy:) +
           $iBody(vz:) * $iBody(vz:)))"e";
 
-        $~..$@n-body-system::length -> templates
+        $~..$@n-body-system::length -> auxiliary templates
           j is $;
           jBody is $@n-body-system($);
           dx is $iBody(x:) - $jBody(x:);

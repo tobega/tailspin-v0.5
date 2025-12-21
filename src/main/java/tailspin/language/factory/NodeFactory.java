@@ -172,10 +172,11 @@ public class NodeFactory {
       case ParseNode(String type, List<?> content, int start, int end) when type.equals("templates") -> {
         String name = (String) content.getLast();
         boolean isAuxiliary = false;
-        if (content.getFirst() instanceof ParseNode(String auxName, Object auxContent, int auxStart, int auxEnd) && auxName.equals("auxiliary")) {
+        if (content.getFirst() instanceof ParseNode p && p.name().equals("auxiliary")) {
           isAuxiliary = true;
+          content = content.subList(1, content.size());
         }
-        String templateType = (String) (isAuxiliary ? content.get(1) : content.getFirst());
+        String templateType = (String) content.getFirst();
         enterNewScope(name, sourceCode.createSection(start, end - start));
         int nextPart = content.size() - 2;
         visitTemplatesBody((ParseNode) content.get(nextPart));
@@ -464,6 +465,11 @@ public class NodeFactory {
           isTry = true;
           content = content.subList(1, content.size());
         }
+        boolean isAuxiliary = false;
+        if (content.getFirst() instanceof ParseNode p && p.name().equals("auxiliary")) {
+          isAuxiliary = true;
+          content = content.subList(1, content.size());
+        }
         enterNewScope(null, sourceCode.createSection(start, end - start));
         int nextPart = content.size() - 1;
         visitTemplatesBody((ParseNode) content.get(nextPart));
@@ -476,6 +482,7 @@ public class NodeFactory {
         Scope scope = exitScope();
         Templates templates = scope.getTemplates();
         templates.setDefinitionLevel(scopes.size());
+        if (isAuxiliary) templates.setAuxiliary();
         TransformNode tn = SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(), templates,
             INTERNAL_CODE_SOURCE);
         if (isTry) {
