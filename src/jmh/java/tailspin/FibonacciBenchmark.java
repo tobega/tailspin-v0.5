@@ -33,11 +33,19 @@ public class FibonacciBenchmark extends TruffleBenchmark {
       end !
       """;
 
-  private static final String tailspinSciNumProgram = """
+  private static final String tailspinSmallSciNumProgram = """
       20.0 -> templates
         when <|=0> do 0 !
         when <|=1> do 1 !
         otherwise ($ - 1 -> #) + ($ - 2 -> #) !
+      end !
+      """;
+
+  private static final String tailspinSciNumProgram = """
+      20000000000000000000.0 -> templates
+        when <|=0> do 0 !
+        when <|=1000000000000000000.0> do 1 !
+        otherwise ($ - 1000000000000000000.0 -> #) + ($ - 2000000000000000000.0 -> #) !
       end !
       """;
 
@@ -80,6 +88,12 @@ public class FibonacciBenchmark extends TruffleBenchmark {
   @Benchmark
   public void recursive_tailspin_rational() {
     int value = truffleContext.eval("tt", tailspinRationalProgram).asInt();
+    if (value != 6765) throw new AssertionError("value " + value);
+  }
+
+  @Benchmark
+  public void recursive_tailspin_small_scinum() {
+    int value = truffleContext.eval("tt", tailspinSmallSciNumProgram).asInt();
     if (value != 6765) throw new AssertionError("value " + value);
   }
 

@@ -50,17 +50,12 @@ public class SciNum implements TruffleObject {
     return value.precision();
   }
 
-  public static SciNum fromDigits(String digits, int exponent) {
-    String sign = "";
-    if (digits.startsWith("-") || digits.startsWith("+")) {
-      sign = digits.substring(0, 1);
-      digits = digits.substring(1);
-    }
-    int precision = digits.length();
-    while (digits.startsWith("0")) digits = digits.substring(1);
-    if (!digits.isEmpty()) precision = digits.length();
-    if (digits.isEmpty()) digits = "0";
-    return new SciNum(new BigDecimal(new BigInteger(sign + digits), -exponent), precision);
+  public static SciNum fromDigits(String digits, int precision, int exponent) {
+    return new SciNum(new BigDecimal(new BigInteger(digits), -exponent), precision);
+  }
+
+  public static SciNum fromSmallSciNum(SmallSciNum smallSciNum) {
+    return new SciNum(new BigDecimal(smallSciNum.getDouble()), smallSciNum.getPrecision());
   }
 
   public static SciNum fromBigInteger(BigInteger bigInteger) {

@@ -20,6 +20,7 @@ import tailspin.language.parser.composer.CompositionSpec.RegexComposition;
 import tailspin.language.parser.composer.CompositionSpec.SkipComposition;
 import tailspin.language.parser.composer.CompositionSpec.StringUnescapeComposition;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallSciNum;
 
 public class SubComposerFactory implements CompositionSpec.Resolver {
 
@@ -57,7 +58,17 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
         exponent -= parts[0].length() - 1 - dotPosition;
       }
       String digits = parts[0].replace(".", "");
-      return SciNum.fromDigits(digits, exponent);
+      String sign = "";
+      if (digits.startsWith("-") || digits.startsWith("+")) {
+        sign = digits.substring(0, 1);
+        digits = digits.substring(1);
+      }
+      int precision = digits.length();
+      while (digits.startsWith("0")) digits = digits.substring(1);
+      if (!digits.isEmpty()) precision = digits.length();
+      if (digits.isEmpty()) digits = "0";
+      if (precision < 15) return SmallSciNum.fromDigits(sign + digits, precision, exponent);
+      return SciNum.fromDigits(sign + digits, precision, exponent);
     });
   }
 

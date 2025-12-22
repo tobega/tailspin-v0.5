@@ -57,6 +57,7 @@ import tailspin.language.nodes.numeric.MeasureLiteral;
 import tailspin.language.nodes.numeric.MultiplyNode;
 import tailspin.language.nodes.numeric.NegateNode;
 import tailspin.language.nodes.numeric.SciNumLiteral;
+import tailspin.language.nodes.numeric.SmallSciNumLiteral;
 import tailspin.language.nodes.numeric.SquareRootNode;
 import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.numeric.TruncateDivideNode;
@@ -95,6 +96,7 @@ import tailspin.language.parser.ParseNode;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallSciNum;
 import tailspin.language.runtime.TailspinStrings;
 import tailspin.language.runtime.Templates;
 import tailspin.language.runtime.TemplatesInstance;
@@ -969,6 +971,8 @@ public class NodeFactory {
       case ParseNode(String name, Long value, int start, int end) when name.equals("INT") -> IntegerLiteral.create(value,
           sourceCode.createSection(start, end - start));
       case ParseNode(String name, BigInteger value, int start, int end) when name.equals("INT") -> BigIntegerLiteral.create(value,
+          sourceCode.createSection(start, end - start));
+      case ParseNode(String name, SmallSciNum value, int start, int end) when name.equals("NUM") -> SmallSciNumLiteral.create(value,
           sourceCode.createSection(start, end - start));
       case ParseNode(String name, SciNum value, int start, int end) when name.equals("NUM") -> SciNumLiteral.create(value,
           sourceCode.createSection(start, end - start));

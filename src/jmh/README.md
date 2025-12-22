@@ -796,3 +796,32 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |NBodyBenchmark.nbody_tailspin_6digits                          |avgt |   5 |  8958,102 |±  389,287  |us/op|
 |PascalBenchmark.triangle_java                                  |avgt |   5 |    13,970 |±    0,657  |us/op|
 |PascalBenchmark.triangle_tailspin                              |avgt |   5 |    20,904 |±    0,349  |us/op|
+
+2025-12-23 SmallSciNum without arithmetic specializations (auto-convert to SciNum)
+|Benchmark                                                      |Mode | Cnt |    Score  |   Error   |Units|
+|---------------------------------------------------------------|-----|-----|-----------|------------|-----|
+|BubblesortBenchmark.sort_java                                  |avgt |   5 |    22,035 |±    2,470  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate                      |avgt |   5 |    45,520 |±   59,388  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate_measure              |avgt |   5 |    41,881 |±    2,023  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate_tagged_long          |avgt |   5 |    41,359 |±    1,089  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse                      |avgt |   5 |    41,140 |±    0,840  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse_full_precondition    |avgt |   5 |    59,508 |±    1,557  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse_non_auxiliary        |avgt |   5 |    94,831 |±    5,102  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse_simple_precondition  |avgt |   5 |    40,706 |±    0,749  |us/op|
+|FibonacciBenchmark.recursive_java                              |avgt |   5 |    38,155 |±    1,807  |us/op|
+|FibonacciBenchmark.recursive_tailspin_array_long               |avgt |   5 |  1703,211 |±  215,294  |us/op|
+|FibonacciBenchmark.recursive_tailspin_bignumber                |avgt |   5 |   607,074 |±   16,131  |us/op|
+|FibonacciBenchmark.recursive_tailspin_measure_long             |avgt |   5 |   154,883 |±    8,479  |us/op|
+|FibonacciBenchmark.recursive_tailspin_rational                 |avgt |   5 | 10028,310 |±  688,768  |us/op|
+|FibonacciBenchmark.recursive_tailspin_raw_long                 |avgt |   5 |    84,048 |±    0,635  |us/op|
+|FibonacciBenchmark.recursive_tailspin_scinum                   |avgt |   5 |  1130,376 |±   71,445  |us/op|
+|FibonacciBenchmark.recursive_tailspin_small_scinum             |avgt |   5 |  1030,719 |±   76,935  |us/op|
+|FibonacciBenchmark.recursive_tailspin_structure_measure        |avgt |   5 |  8921,710 |±  424,739  |us/op|
+|ListBenchmark.list_java                                        |avgt |   5 |    25,778 |±    8,370  |us/op|
+|ListBenchmark.list_tailspin_empty                              |avgt |   5 |   951,428 |±   30,200  |us/op|
+|ListBenchmark.list_tailspin_optional                           |avgt |   5 |   947,534 |±   17,927  |us/op|
+|NBodyBenchmark.nbody_java                                      |avgt |   5 |    15,876 |±    0,180  |us/op|
+|NBodyBenchmark.nbody_tailspin_18digits                         |avgt |   5 | 17481,033 |± 3704,484  |us/op|
+|NBodyBenchmark.nbody_tailspin_6digits                          |avgt |   5 | 14425,689 |± 2666,737  |us/op|
+|PascalBenchmark.triangle_java                                  |avgt |   5 |    15,509 |±    0,364  |us/op|
+|PascalBenchmark.triangle_tailspin                              |avgt |   5 |    22,929 |±    6,526  |us/op|
