@@ -48,31 +48,21 @@ public class SmallSciNum implements TruffleObject {
   }
 
   private static SmallSciNum newNormalized(double inS, double inC, int precision, int bitsToKeep) {
-    // 1. Fold the compensation into the significand
     double s = inS + inC;
+    if (s == 0) return new SmallSciNum(0, 0, precision, bitsToKeep);
 
-    // 2. Calculate the "lost" part of that fold
-    // This effectively 'resets' c to the most accurate residual possible
-    double c = (inS - s) + inC;
+    // 1. Calculate the 'Weight' of the last decimal digit
+    // For 11.1, the magnitude is 10^1. 3 digits of precision means 1-3+1 = -1.
+    double mag = Math.floor(Math.log10(Math.abs(s)) + 1e-9);
+    double decimalStep = Math.pow(10, mag - (precision - 1));
 
-    // Remove "trash" from the insignificant part of the double
-    if (s != 0 && !Double.isNaN(s)) {
-      int bits = Math.min(bitsToKeep, 52);
-      long mask = ~((1L << (52 - bits)) - 1);
-      long raw = Double.doubleToRawLongBits(s);
+    // 2. Round the sum to the nearest multiple of that decimal step
+    double roundedS = Math.round(s / decimalStep) * decimalStep;
 
-      double oldS = s;
-      s = Double.longBitsToDouble(raw & (0xFFF0000000000000L | mask));
-      c += (oldS - s);
+    // 3. The carry is now just the 'discarded' part
+    double c = (inS - roundedS) + inC;
 
-      // Trash filter
-      long exp = (raw >> 52) & 0x7FFL;
-      double threshold = Double.longBitsToDouble(((exp - bits) << 52) & 0x7FF0000000000000L);
-      if (abs(c) < abs(threshold))
-        c = 0.0;
-    }
-
-    return new SmallSciNum(s, c, precision, bitsToKeep);
+    return new SmallSciNum(roundedS, c, precision, bitsToKeep);
   }
 
   public SmallSciNum multiply(SmallSciNum other) {
@@ -103,37 +93,48 @@ public class SmallSciNum implements TruffleObject {
   }
 
   public SmallSciNum add(SmallSciNum other) {
-    // 1. Neumaier addition for high-precision sum
+    // 1. Neumaier addition for high-precision sum (t) and carry (newC)
     double t = this.s + other.s;
     double newC;
-    if (abs(this.s) >= abs(other.s)) {
+    if (Math.abs(this.s) >= Math.abs(other.s)) {
       newC = (this.s - t) + other.s;
     } else {
       newC = (other.s - t) + this.s;
     }
     newC += (this.c + other.c);
 
-    // 2. Track the "Absolute Uncertainty Floor"
-    // We find the exponent of the last significant bit for both numbers.
-    // Example: 1.23e5 with 10 bits means the error starts at (exp - 10).
-    int expThis = Math.getExponent(this.s);
-    int expOther = Math.getExponent(other.s);
+    int finalDigits = additionAccuracyDigits(other, t + newC);
+    // 6. Derive bit budget from precision
+    int finalBits = (int) Math.ceil(finalDigits * BITS_PER_DIGIT) + 2;
 
-    int floorThis = expThis - this.bitsToKeep;
-    int floorOther = expOther - other.bitsToKeep;
+    // Use the Neumaier results (t, newC) for the normalized result
+    return newNormalized(t, newC, finalDigits, finalBits);
+  }
 
-    // The result's precision is limited by whichever number is "coarser"
-    // (whichever has the higher absolute floor).
-    int resultFloor = Math.max(floorThis, floorOther);
+  private int additionAccuracyDigits(SmallSciNum other, double total) {
+    // 3. Calculate the decimal anchor (coarsest floor)
+    int floorThis = getAbsoluteFloor(this);
+    int floorOther = getAbsoluteFloor(other);
+    int targetDecimalFloor = Math.max(floorThis, floorOther);
 
-    // 3. Calculate bits to keep for the new sum
-    int expResult = Math.getExponent(t);
-    int finalBits = expResult - resultFloor;
+    // 2. Handle the zero case
+    if (total == 0) {
+      int zeroPrecision = (0 - targetDecimalFloor + 1);
+      return  Math.max(1, zeroPrecision);
+    }
 
-    // Clamp bits between 1 and 53 (the limit of double precision)
-    finalBits = Math.max(1, Math.min(53, finalBits));
+    // 4. Calculate magnitude of the RESULT (use t + newC for best estimate)
+    double resMag = Math.floor(Math.log10(Math.abs(total)) + 1e-9);
 
-    return newNormalized(t, newC, (int) Math.floor(finalBits / BITS_PER_DIGIT), finalBits);
+    // 5. Secure the Decimal Precision
+    int finalDigits = (int) (resMag - targetDecimalFloor + 1);
+    return Math.max(1, finalDigits);
+  }
+
+  private int getAbsoluteFloor(SmallSciNum n) {
+    // Returns the power of 10 of the last significant digit
+    double magnitude = (n.s == 0) ? 0 : Math.floor(Math.log10(Math.abs(n.s)) + 1e-9);
+    return (int) (magnitude - (n.precision - 1));
   }
 
   public SmallSciNum subtract(SmallSciNum other) {
@@ -150,29 +151,15 @@ public class SmallSciNum implements TruffleObject {
     }
     newC += (this.c + negC);
 
-    // 2. Track the Absolute Uncertainty Floor
-    int expThis = Math.getExponent(this.s);
-    int expOther = Math.getExponent(other.s);
+    int finalDigits = additionAccuracyDigits(other, t + newC);
+    // 6. Derive bit budget from precision
+    int finalBits = (int) Math.ceil(finalDigits * BITS_PER_DIGIT) + 2;
 
-    int floorThis = expThis - this.bitsToKeep;
-    int floorOther = expOther - other.bitsToKeep;
+    return newNormalized(t, newC, finalDigits, finalBits);
+  }
 
-    // The uncertainty floor remains the 'highest' of the two
-    int resultFloor = Math.max(floorThis, floorOther);
-
-    // 3. Precision Calculation
-    int expResult = Math.getExponent(t);
-
-    // If t is 0 or extremely small due to cancellation,
-    // we may have 0 or negative significant bits.
-    int finalBits = expResult - resultFloor;
-
-    // Clamp bits.
-    // If finalBits < 1, it means the result is indistinguishable from zero
-    // given our precision constraints.
-    finalBits = Math.max(0, Math.min(53, finalBits));
-
-    return newNormalized(t, newC, (int) Math.floor(finalBits / BITS_PER_DIGIT), finalBits);
+  public SmallSciNum negate() {
+    return new SmallSciNum(-s, -c, precision, bitsToKeep);
   }
 
   @TruffleBoundary
@@ -208,6 +195,45 @@ public class SmallSciNum implements TruffleObject {
     }
 
     return diff > 0 ? 1 : -1;
+  }
+
+  @TruffleBoundary
+  public SmallSciNum mod(SmallSciNum modulus) {
+    int newPrecision = Math.min(this.precision, modulus.precision);
+    int newBits = Math.min(this.bitsToKeep, modulus.bitsToKeep);
+    // 1. Calculate the standard remainder
+    // Java's % operator for -7 % 4 returns -3.
+    double r = this.s % modulus.s;
+
+    // 2. Force it to be positive relative to the ABSOLUTE value of the modulus
+    // This handles the -7 mod 4 case: -3 + abs(4) = 1
+    double absDiv = Math.abs(modulus.s);
+    double result = (r < 0) ? (r + absDiv) : r;
+
+    return newNormalized(result, 0.0, newPrecision, newBits);
+  }
+
+  @TruffleBoundary
+  public Object truncateDivide(SmallSciNum divisor) {
+    if (divisor.s == 0) throw new ArithmeticException("Division by zero");
+
+    // 1. Calculate the raw quotient using the full precision
+    double quotient = (this.s + this.c) / (divisor.s + divisor.c);
+
+    if (Double.isNaN(quotient) || Double.isInfinite(quotient)) {
+      throw new ArithmeticException("Result is not a finite number");
+    }
+
+    // 2. Check the bounds of a Long
+    // We use a slightly smaller bound to be safe from rounding errors during the check
+    double absQ = Math.abs(quotient);
+    if (absQ <= 9e18) {
+      return (long) quotient;
+    }
+
+    // 3. Fallback to BigInteger for huge numbers
+    // We convert to a string or use BigDecimal to ensure an exact integral conversion
+    return new java.math.BigDecimal(quotient).toBigInteger();
   }
 
   public SmallSciNum power(double exponent) {

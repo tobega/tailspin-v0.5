@@ -23,6 +23,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallSciNum;
 import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.TaggedValue;
 import tailspin.language.runtime.TailspinArray;
@@ -58,6 +59,28 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     @TruffleBoundary
     protected boolean rationalEquals(Rational toMatch, Rational value) {
       return toMatch.equals(value);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean doSmallSciNum(SmallSciNum left, SmallSciNum right) {
+      return left.compareTo(right) == 0;
+    }
+
+    protected boolean isSmallEnough(long value) {
+      return Math.abs(value) <= SmallSciNum.MAX_MANTISSA;
+    }
+
+    @Specialization(guards = "isSmallEnough(right)")
+    @TruffleBoundary
+    protected boolean doSmallSciNumLong(SmallSciNum left, Long right) {
+      return left.compareTo(SmallSciNum.fromLong(right)) == 0;
+    }
+
+    @Specialization(guards = "isSmallEnough(left)")
+    @TruffleBoundary
+    protected boolean doLongSmallSciNum(Long left, SmallSciNum right) {
+      return SmallSciNum.fromLong(left).compareTo(right) == 0;
     }
 
     @Specialization

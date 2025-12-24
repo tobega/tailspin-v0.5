@@ -19,6 +19,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallSciNum;
 
 @NodeChild(type = ValueNode.class)
 public abstract class NegateNode extends ValueNode {
@@ -47,6 +48,12 @@ public abstract class NegateNode extends ValueNode {
     @Specialization
     @TruffleBoundary
     protected Object doRational(Rational value) {
+      return value.negate();
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected SmallSciNum doSmallSciNum(SmallSciNum value) {
       return value.negate();
     }
 

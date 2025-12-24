@@ -17,6 +17,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallSciNum;
 
 public abstract class AddNode extends ValueNode {
   @SuppressWarnings("FieldMayBeFinal")
@@ -59,6 +60,28 @@ public abstract class AddNode extends ValueNode {
     @TruffleBoundary
     protected Object doRational(Rational left, Rational right) {
       return left.add(right).simplestForm();
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected SmallSciNum doSmallSciNum(SmallSciNum left, SmallSciNum right) {
+      return left.add(right);
+    }
+
+    protected boolean isSmallEnough(long value) {
+      return Math.abs(value) <= SmallSciNum.MAX_MANTISSA;
+    }
+
+    @Specialization(guards = "isSmallEnough(right)")
+    @TruffleBoundary
+    protected SmallSciNum doSmallSciNumLong(SmallSciNum left, Long right) {
+      return left.add(SmallSciNum.fromLong(right));
+    }
+
+    @Specialization(guards = "isSmallEnough(left)")
+    @TruffleBoundary
+    protected SmallSciNum doLongSmallSciNum(Long left, SmallSciNum right) {
+      return SmallSciNum.fromLong(left).add(right);
     }
 
     @Specialization

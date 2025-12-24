@@ -11,6 +11,7 @@ import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallSciNum;
 import tailspin.language.runtime.TaggedValue;
 import tailspin.language.runtime.VocabularyType;
 
@@ -50,6 +51,15 @@ public abstract class TagNode extends ValueNode {
 
   @Specialization
   TaggedValue doTagRational(VirtualFrame frame, Rational value,
+      @Cached(value = "type.getConstraint(value)", neverDefault = true) MatcherNode typeConstraint) {
+    if (typeConstraint.executeMatcherGeneric(frame, value)) {
+      return new TaggedValue(type, value);
+    }
+    throw new TypeError(value + " is not of type " + type.toString(), this);
+  }
+
+  @Specialization
+  TaggedValue doTagSmallSciNum(VirtualFrame frame, SmallSciNum value,
       @Cached(value = "type.getConstraint(value)", neverDefault = true) MatcherNode typeConstraint) {
     if (typeConstraint.executeMatcherGeneric(frame, value)) {
       return new TaggedValue(type, value);

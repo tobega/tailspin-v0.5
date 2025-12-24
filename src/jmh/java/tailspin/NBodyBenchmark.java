@@ -4,6 +4,7 @@ import org.openjdk.jmh.annotations.Benchmark;
 import tailspin.impl.nbody.NBodySystem;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallSciNum;
 
 /**
  * This benchmark does a lot of state mutations as well as exercising SciNums
@@ -286,8 +287,8 @@ public class NBodyBenchmark extends TruffleBenchmark {
 
   @Benchmark
   public void nbody_tailspin_6digits() {
-    SciNum energy = (SciNum) truffleContext.eval("tt", tailspinProgram6digits).as(Measure.class).value();
-    if (energy.compareTo(SciNum.fromDigits("-169054", 6,-6)) != 0) throw new AssertionError("Wrong result " + energy);
+    SmallSciNum energy = (SmallSciNum) truffleContext.eval("tt", tailspinProgram6digits).as(Measure.class).value();
+    if (energy.compareTo(SmallSciNum.fromDigits("-169054", 6,-6)) != 0) throw new AssertionError("Wrong result " + energy);
   }
 
   @Benchmark

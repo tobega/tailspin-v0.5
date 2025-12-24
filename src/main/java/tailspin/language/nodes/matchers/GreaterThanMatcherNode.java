@@ -19,6 +19,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallSciNum;
 import tailspin.language.runtime.TaggedValue;
 import tailspin.language.runtime.VocabularyType;
 
@@ -56,6 +57,12 @@ public abstract class GreaterThanMatcherNode extends MatcherNode {
     @Specialization
     @TruffleBoundary
     protected boolean rationalMore(Rational toMatch, Rational value, boolean inclusive) {
+      return toMatch.compareTo(value) >= (inclusive ? 0 : 1);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean smallSciNumMore(SmallSciNum toMatch, SmallSciNum value, boolean inclusive) {
       return toMatch.compareTo(value) >= (inclusive ? 0 : 1);
     }
 

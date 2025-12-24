@@ -28,10 +28,10 @@
 ---subtraction rounds to rightmost common digit
 1.111 - 1.00 !
 =1.1e-1
----digits within addition precision remain
+---digits within subtraction precision remain
 1.111 - 0.10 !
 =1.01e0
----digits outside addition precision are lost
+---digits outside subtraction precision are lost
 1.11 - 0.011 !
 =1.10e0
 ---multiplication gives smallest precision
@@ -97,9 +97,12 @@
 ---SciNums autotype numeric
 { foo: 1.0 } -> { foo: 3 } !
 ={ foo: 3 }
----autotyped numeric accepts SciNum
+---autotyped numeric accepts SmallSciNum
 { foo: 1 } -> { foo: 3.0 } !
 ={ foo: 3.0e0 }
+---autotyped numeric accepts SciNum
+{ foo: 1 } -> { foo: 3.000000000000000 } !
+={ foo: 3.000000000000000e0 }
 ---SciNums autotype numeric checked
 { foo: 1.0 } -> { foo: [3] } !
 =*TypeError
@@ -127,6 +130,9 @@ end !
 ---allow redundant + and zero
 3e+00 !
 =3e0
+---sanity check for regression test parser
+1.5 + 3e0 + 4e0 !
+=9e0
 ---regression test parser left recursion bug backtracking choice
 1.5 + 3 + 4 !
 =8.5e0

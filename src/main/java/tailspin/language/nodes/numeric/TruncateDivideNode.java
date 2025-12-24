@@ -17,6 +17,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallSciNum;
 
 public abstract class TruncateDivideNode extends ValueNode {
   @SuppressWarnings("FieldMayBeFinal")
@@ -57,6 +58,28 @@ public abstract class TruncateDivideNode extends ValueNode {
     @TruffleBoundary
     protected Object doRational(Rational left, Rational right) {
       return left.truncateDivide(right);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object doSmallSciNum(SmallSciNum left, SmallSciNum right) {
+      return left.truncateDivide(right);
+    }
+
+    protected boolean isSmallEnough(long value) {
+      return Math.abs(value) <= SmallSciNum.MAX_MANTISSA;
+    }
+
+    @Specialization(guards = "isSmallEnough(right)")
+    @TruffleBoundary
+    protected Object doSmallSciNumLong(SmallSciNum left, Long right) {
+      return left.truncateDivide(SmallSciNum.fromLong(right));
+    }
+
+    @Specialization(guards = "isSmallEnough(left)")
+    @TruffleBoundary
+    protected Object doLongSmallSciNum(Long left, SmallSciNum right) {
+      return SmallSciNum.fromLong(left).truncateDivide(right);
     }
 
     @Specialization

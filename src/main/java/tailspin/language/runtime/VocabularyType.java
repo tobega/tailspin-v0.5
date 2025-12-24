@@ -43,6 +43,7 @@ public class VocabularyType implements Comparable<VocabularyType> {
       case Long ignored -> NumericTypeMatcherNode.create();
       case BigNumber ignored -> NumericTypeMatcherNode.create();
       case Rational ignored -> NumericTypeMatcherNode.create();
+      case SmallSciNum ignored -> NumericTypeMatcherNode.create();
       case SciNum ignored -> NumericTypeMatcherNode.create();
       case Measure(Object ignored, Object unit) -> MeasureTypeMatcher.create(unit, INTERNAL_CODE_SOURCE);
       case TaggedValue(VocabularyType type, Object ignored) -> TagMatcherNode.create(type,

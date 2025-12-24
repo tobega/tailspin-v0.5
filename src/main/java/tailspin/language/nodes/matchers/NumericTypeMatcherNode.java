@@ -10,6 +10,7 @@ import tailspin.language.nodes.MatcherNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallSciNum;
 
 @GenerateInline(false)
 public abstract class NumericTypeMatcherNode extends MatcherNode {
@@ -30,6 +31,11 @@ public abstract class NumericTypeMatcherNode extends MatcherNode {
 
   @Specialization
   protected boolean isRational(Rational ignored) {
+    return true;
+  }
+
+  @Specialization
+  protected boolean isSmallSciNum(SmallSciNum ignored) {
     return true;
   }
 

@@ -16,6 +16,7 @@ import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallSciNum;
 
 public abstract class SquareRootNode extends ValueNode {
   @SuppressWarnings("FieldMayBeFinal")
@@ -34,6 +35,12 @@ public abstract class SquareRootNode extends ValueNode {
   @TypeSystemReference(TailspinTypes.class)
   public static abstract class DoSquareRootNode extends Node {
     public abstract Object executeSquareRoot(VirtualFrame frame, Node node, Object square);
+
+    @Specialization
+    @TruffleBoundary
+    protected SmallSciNum doSmallSciNum(SmallSciNum square) {
+      return square.squareRoot();
+    }
 
     @Specialization
     @TruffleBoundary
