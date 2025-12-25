@@ -70,18 +70,6 @@ public abstract class AddNode extends ValueNode {
 
     @Specialization
     @TruffleBoundary
-    protected Object doSmallSciNumLong(SmallSciNum left, Long right) {
-      return left.add(SmallSciNum.fromLong(right));
-    }
-
-    @Specialization
-    @TruffleBoundary
-    protected Object doLongSmallSciNum(Long left, SmallSciNum right) {
-      return SmallSciNum.fromLong(left).add(right);
-    }
-
-    @Specialization
-    @TruffleBoundary
     protected SciNum doSciNum(SciNum left, SciNum right) {
       return left.add(right);
     }

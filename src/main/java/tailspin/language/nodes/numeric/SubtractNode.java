@@ -68,18 +68,6 @@ public abstract class SubtractNode extends ValueNode {
 
     @Specialization
     @TruffleBoundary
-    protected Object doSmallSciNumLong(SmallSciNum left, Long right) {
-      return left.subtract(SmallSciNum.fromLong(right));
-    }
-
-    @Specialization
-    @TruffleBoundary
-    protected Object doLongSmallSciNum(Long left, SmallSciNum right) {
-      return SmallSciNum.fromLong(left).subtract(right);
-    }
-
-    @Specialization
-    @TruffleBoundary
     protected SciNum doSciNum(SciNum left, SciNum right) {
       return left.subtract(right);
     }

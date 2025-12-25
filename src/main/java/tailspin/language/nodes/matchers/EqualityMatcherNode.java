@@ -69,18 +69,6 @@ public abstract class EqualityMatcherNode extends MatcherNode {
 
     @Specialization
     @TruffleBoundary
-    protected boolean doSmallSciNumLong(SmallSciNum left, Long right) {
-      return left.compareTo(SmallSciNum.fromLong(right)) == 0;
-    }
-
-    @Specialization
-    @TruffleBoundary
-    protected boolean doLongSmallSciNum(Long left, SmallSciNum right) {
-      return SmallSciNum.fromLong(left).compareTo(right) == 0;
-    }
-
-    @Specialization
-    @TruffleBoundary
     protected boolean doSciNum(SciNum left, SciNum right) {
       return left.compareTo(right) == 0;
     }

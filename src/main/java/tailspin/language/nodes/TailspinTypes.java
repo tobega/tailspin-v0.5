@@ -30,6 +30,11 @@ public abstract class TailspinTypes {
   }
 
   @ImplicitCast
+  public static SmallSciNum castSmallSciNum(long value) {
+    return SmallSciNum.fromLong(value);
+  }
+
+  @ImplicitCast
   @TruffleBoundary
   public static SciNum castSciNum(SmallSciNum value) {
     return SciNum.fromSmallSciNum(value);
@@ -39,11 +44,5 @@ public abstract class TailspinTypes {
   @TruffleBoundary
   public static SciNum castSciNum(BigNumber value) {
     return SciNum.fromBigInteger(value.asBigInteger());
-  }
-
-  @ImplicitCast
-  @TruffleBoundary
-  public static SciNum castSciNum(long value) {
-    return SciNum.fromLong(value);
   }
 }

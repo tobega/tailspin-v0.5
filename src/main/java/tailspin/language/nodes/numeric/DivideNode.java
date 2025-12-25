@@ -68,18 +68,6 @@ public abstract class DivideNode extends ValueNode {
 
     @Specialization
     @TruffleBoundary
-    protected Object doSmallSciNumLong(SmallSciNum left, Long right) {
-      return left.divide(SmallSciNum.fromLong(right));
-    }
-
-    @Specialization
-    @TruffleBoundary
-    protected Object doLongSmallSciNum(Long left, SmallSciNum right) {
-      return SmallSciNum.fromLong(left).divide(right);
-    }
-
-    @Specialization
-    @TruffleBoundary
     protected SciNum doSciNum(SciNum left, SciNum right) {
       return left.divide(right);
     }
