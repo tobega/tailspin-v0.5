@@ -38,7 +38,7 @@ public abstract class SquareRootNode extends ValueNode {
 
     @Specialization
     @TruffleBoundary
-    protected SmallSciNum doSmallSciNum(SmallSciNum square) {
+    protected Object doSmallSciNum(SmallSciNum square) {
       return square.squareRoot();
     }
 

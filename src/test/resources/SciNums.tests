@@ -145,11 +145,17 @@ end !
 ---derived zero has a precision for add
 (1.11 - 1.11) + 12.345 !
 =1.235e1
+--- check zero precision for add
+0.00 + 7.654321 !
+=7.65e0
 ---zero has a precision for multiplication
 0.00 * 12.345 + 7.654321 !
 =7.65e0
----derived zero has a precision for multiplication
+---derived subtracted zero has a precision for multiplication
 (1.11 - 1.11) * 12.345 + 7.654321 !
+=7.65e0
+---derived added zero has a precision for multiplication
+(-1.11 + 1.11) * 12.345 + 7.654321 !
 =7.65e0
 ---range
 [1.1..2.8:0.5]!

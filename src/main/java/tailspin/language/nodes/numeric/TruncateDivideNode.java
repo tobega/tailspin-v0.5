@@ -66,17 +66,13 @@ public abstract class TruncateDivideNode extends ValueNode {
       return left.truncateDivide(right);
     }
 
-    protected boolean isSmallEnough(long value) {
-      return Math.abs(value) <= SmallSciNum.MAX_MANTISSA;
-    }
-
-    @Specialization(guards = "isSmallEnough(right)")
+    @Specialization
     @TruffleBoundary
     protected Object doSmallSciNumLong(SmallSciNum left, Long right) {
       return left.truncateDivide(SmallSciNum.fromLong(right));
     }
 
-    @Specialization(guards = "isSmallEnough(left)")
+    @Specialization
     @TruffleBoundary
     protected Object doLongSmallSciNum(Long left, SmallSciNum right) {
       return SmallSciNum.fromLong(left).truncateDivide(right);

@@ -62,23 +62,19 @@ public abstract class MultiplyNode extends ValueNode {
 
     @Specialization
     @TruffleBoundary
-    protected SmallSciNum doSmallSciNum(SmallSciNum left, SmallSciNum right) {
+    protected Object doSmallSciNum(SmallSciNum left, SmallSciNum right) {
       return left.multiply(right);
     }
 
-    protected boolean isSmallEnough(long value) {
-      return Math.abs(value) <= SmallSciNum.MAX_MANTISSA;
-    }
-
-    @Specialization(guards = "isSmallEnough(right)")
+    @Specialization
     @TruffleBoundary
-    protected SmallSciNum doSmallSciNumLong(SmallSciNum left, Long right) {
+    protected Object doSmallSciNumLong(SmallSciNum left, Long right) {
       return left.multiply(SmallSciNum.fromLong(right));
     }
 
-    @Specialization(guards = "isSmallEnough(left)")
+    @Specialization
     @TruffleBoundary
-    protected SmallSciNum doLongSmallSciNum(Long left, SmallSciNum right) {
+    protected Object doLongSmallSciNum(Long left, SmallSciNum right) {
       return SmallSciNum.fromLong(left).multiply(right);
     }
 

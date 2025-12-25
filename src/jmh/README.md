@@ -551,7 +551,7 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |ListBenchmark.list_tailspin_empty                        |avgt  |  5  | 1000,585 |±  125,102  |us/op|
 |ListBenchmark.list_tailspin_optional                     |avgt  |  5  |  935,499 |±   85,166  |us/op|
 |NBodyBenchmark.nbody_java                                |avgt  |  5  |   16,636 |±    0,801  |us/op|
-|NBodyBenchmark.nbody_tailspin_18digits                   |avgt  |  5  |18761,450 |± 3020,980  |us/op|
+|NBodyBenchmark.nbody_tailspin_16digits                   |avgt  |  5  |18761,450 |± 3020,980  |us/op|
 |NBodyBenchmark.nbody_tailspin_6digits                    |avgt  |  5  |10273,871 |±  449,656  |us/op|
 |PascalBenchmark.triangle_java                            |avgt  |  5  |   12,931 |±    0,278  |us/op|
 |PascalBenchmark.triangle_tailspin                        |avgt  |  5  |   23,404 |±    0,346  |us/op|
@@ -576,7 +576,7 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |ListBenchmark.list_tailspin_empty                        |avgt  |  5  |  889,666 |±   63,865  |us/op|
 |ListBenchmark.list_tailspin_optional                     |avgt  |  5  |  867,522 |±   19,404  |us/op|
 |NBodyBenchmark.nbody_java                                |avgt  |  5  |   15,375 |±    0,172  |us/op|
-|NBodyBenchmark.nbody_tailspin_18digits                   |avgt  |  5  |15527,291 |± 1839,315  |us/op|
+|NBodyBenchmark.nbody_tailspin_16digits                   |avgt  |  5  |15527,291 |± 1839,315  |us/op|
 |NBodyBenchmark.nbody_tailspin_6digits                    |avgt  |  5  | 9548,792 |±  928,056  |us/op|
 |PascalBenchmark.triangle_java                            |avgt  |  5  |   11,682 |±    0,310  |us/op|
 |PascalBenchmark.triangle_tailspin                        |avgt  |  5  |   23,452 |±   12,038  |us/op|
@@ -601,7 +601,7 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |ListBenchmark.list_tailspin_empty                        |avgt  |  5  |  885,042 |±  25,198  |us/op|
 |ListBenchmark.list_tailspin_optional                     |avgt  |  5  |  889,609 |±  39,204  |us/op|
 |NBodyBenchmark.nbody_java                                |avgt  |  5  |   15,427 |±   0,113  |us/op|
-|NBodyBenchmark.nbody_tailspin_18digits                   |avgt  |  5  |16256,092 |± 349,736  |us/op|
+|NBodyBenchmark.nbody_tailspin_16digits                   |avgt  |  5  |16256,092 |± 349,736  |us/op|
 |NBodyBenchmark.nbody_tailspin_6digits                    |avgt  |  5  | 8928,324 |± 154,907  |us/op|
 |PascalBenchmark.triangle_java                            |avgt  |  5  |   11,681 |±   0,498  |us/op|
 |PascalBenchmark.triangle_tailspin                        |avgt  |  5  |   22,005 |±   2,501  |us/op|
@@ -628,7 +628,7 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |ListBenchmark.list_tailspin_empty                              |avgt |   5 |  1307,003 |±  45,956  |us/op|
 |ListBenchmark.list_tailspin_optional                           |avgt |   5 |   968,849 |±  37,029  |us/op|
 |NBodyBenchmark.nbody_java                                      |avgt |   5 |    16,075 |±   0,178  |us/op|
-|NBodyBenchmark.nbody_tailspin_18digits                         |avgt |   5 | 17719,280 |± 718,091  |us/op|
+|NBodyBenchmark.nbody_tailspin_16digits                         |avgt |   5 | 17719,280 |± 718,091  |us/op|
 |NBodyBenchmark.nbody_tailspin_6digits                          |avgt |   5 | 10840,985 |± 371,339  |us/op|
 |PascalBenchmark.triangle_java                                  |avgt |   5 |    12,451 |±   0,447  |us/op|
 |PascalBenchmark.triangle_tailspin                              |avgt |   5 |    22,792 |±   1,005  |us/op|
@@ -655,7 +655,7 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |ListBenchmark.list_tailspin_empty                              |avgt |   5 |  1005,666 |±  18,892  |us/op|
 |ListBenchmark.list_tailspin_optional                           |avgt |   5 |   877,251 |±  16,860  |us/op|
 |NBodyBenchmark.nbody_java                                      |avgt |   5 |    15,304 |±   0,295  |us/op|
-|NBodyBenchmark.nbody_tailspin_18digits                         |avgt |   5 | 15408,999 |± 384,717  |us/op|
+|NBodyBenchmark.nbody_tailspin_16digits                         |avgt |   5 | 15408,999 |± 384,717  |us/op|
 |NBodyBenchmark.nbody_tailspin_6digits                          |avgt |   5 |  9408,254 |± 868,068  |us/op|
 |PascalBenchmark.triangle_java                                  |avgt |   5 |    11,577 |±   0,226  |us/op|
 |PascalBenchmark.triangle_tailspin                              |avgt |   5 |    20,784 |±   0,156  |us/op|
@@ -682,7 +682,7 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |ListBenchmark.list_tailspin_empty                              |avgt |   5 |   870,863 |±   17,442 |us/op|
 |ListBenchmark.list_tailspin_optional                           |avgt |   5 |   996,073 |±   11,844 |us/op|
 |NBodyBenchmark.nbody_java                                      |avgt |   5 |    15,397 |±    0,455 |us/op|
-|NBodyBenchmark.nbody_tailspin_18digits                         |avgt |   5 | 15753,461 |± 4227,902 |us/op|
+|NBodyBenchmark.nbody_tailspin_16digits                         |avgt |   5 | 15753,461 |± 4227,902 |us/op|
 |NBodyBenchmark.nbody_tailspin_6digits                          |avgt |   5 |  9182,673 |± 2844,016 |us/op|
 |PascalBenchmark.triangle_java                                  |avgt |   5 |    13,805 |±    0,464 |us/op|
 |PascalBenchmark.triangle_tailspin                              |avgt |   5 |    20,633 |±    0,290 |us/op|
@@ -709,7 +709,7 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |ListBenchmark.list_tailspin_empty                              |avgt |   5 |  2717,897 |±   84,404 | us/op|
 |ListBenchmark.list_tailspin_optional                           |avgt |   5 |  2807,097 |±   47,482 | us/op|
 |NBodyBenchmark.nbody_java                                      |avgt |   5 |    16,000 |±    0,604 | us/op|
-|NBodyBenchmark.nbody_tailspin_18digits                         |avgt |   5 | 20895,134 |± 2428,150 | us/op|
+|NBodyBenchmark.nbody_tailspin_16digits                         |avgt |   5 | 20895,134 |± 2428,150 | us/op|
 |NBodyBenchmark.nbody_tailspin_6digits                          |avgt |   5 | 13816,985 |± 1454,489 | us/op|
 |PascalBenchmark.triangle_java                                  |avgt |   5 |    15,262 |±    1,471 | us/op|
 |PascalBenchmark.triangle_tailspin                              |avgt |   5 |   440,261 |±  119,485 | us/op|
@@ -736,7 +736,7 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |ListBenchmark.list_tailspin_empty                              |avgt |   5 |   886,754 |±   22,102 | us/op|
 |ListBenchmark.list_tailspin_optional                           |avgt |   5 |   997,505 |±   14,392 | us/op|
 |NBodyBenchmark.nbody_java                                      |avgt |   5 |    15,353 |±    0,132 | us/op|
-|NBodyBenchmark.nbody_tailspin_18digits                         |avgt |   5 | 20089,971 |± 3940,865 | us/op|
+|NBodyBenchmark.nbody_tailspin_16digits                         |avgt |   5 | 20089,971 |± 3940,865 | us/op|
 |NBodyBenchmark.nbody_tailspin_6digits                          |avgt |   5 | 12657,673 |±  382,698 | us/op|
 |PascalBenchmark.triangle_java                                  |avgt |   5 |    11,496 |±    0,305 | us/op|
 |PascalBenchmark.triangle_tailspin                              |avgt |   5 |    20,876 |±    0,766 | us/op|
@@ -764,7 +764,7 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |ListBenchmark.list_tailspin_empty                              |avgt |   5 |   883,559 |±  15,626  |us/op|
 |ListBenchmark.list_tailspin_optional                           |avgt |   5 |   991,378 |±  29,274  |us/op|
 |NBodyBenchmark.nbody_java                                      |avgt |   5 |    15,321 |±   0,402  |us/op|
-|NBodyBenchmark.nbody_tailspin_18digits                         |avgt |   5 | 18909,067 |± 396,125  |us/op|
+|NBodyBenchmark.nbody_tailspin_16digits                         |avgt |   5 | 18909,067 |± 396,125  |us/op|
 |NBodyBenchmark.nbody_tailspin_6digits                          |avgt |   5 | 12290,362 |± 842,733  |us/op|
 |PascalBenchmark.triangle_java                                  |avgt |   5 |    13,862 |±   0,301  |us/op|
 |PascalBenchmark.triangle_tailspin                              |avgt |   5 |    20,462 |±   0,674  |us/op|
@@ -792,7 +792,7 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |ListBenchmark.list_tailspin_empty                              |avgt |   5 |   902,292 |±    9,301  |us/op|
 |ListBenchmark.list_tailspin_optional                           |avgt |   5 |   999,563 |±   31,921  |us/op|
 |NBodyBenchmark.nbody_java                                      |avgt |   5 |    15,328 |±    0,266  |us/op|
-|NBodyBenchmark.nbody_tailspin_18digits                         |avgt |   5 | 15693,510 |± 3611,796  |us/op|
+|NBodyBenchmark.nbody_tailspin_16digits                         |avgt |   5 | 15693,510 |± 3611,796  |us/op|
 |NBodyBenchmark.nbody_tailspin_6digits                          |avgt |   5 |  8958,102 |±  389,287  |us/op|
 |PascalBenchmark.triangle_java                                  |avgt |   5 |    13,970 |±    0,657  |us/op|
 |PascalBenchmark.triangle_tailspin                              |avgt |   5 |    20,904 |±    0,349  |us/op|
@@ -821,7 +821,36 @@ NBodyBenchmark.nbody_tailspin                  avgt    5  15152,368 ± 797,550  
 |ListBenchmark.list_tailspin_empty                              |avgt |   5 |   951,428 |±   30,200  |us/op|
 |ListBenchmark.list_tailspin_optional                           |avgt |   5 |   947,534 |±   17,927  |us/op|
 |NBodyBenchmark.nbody_java                                      |avgt |   5 |    15,876 |±    0,180  |us/op|
-|NBodyBenchmark.nbody_tailspin_18digits                         |avgt |   5 | 17481,033 |± 3704,484  |us/op|
+|NBodyBenchmark.nbody_tailspin_16digits                         |avgt |   5 | 17481,033 |± 3704,484  |us/op|
 |NBodyBenchmark.nbody_tailspin_6digits                          |avgt |   5 | 14425,689 |± 2666,737  |us/op|
 |PascalBenchmark.triangle_java                                  |avgt |   5 |    15,509 |±    0,364  |us/op|
 |PascalBenchmark.triangle_tailspin                              |avgt |   5 |    22,929 |±    6,526  |us/op|
+
+2025-12-25 Much better SmallSciNum implementation
+|Benchmark                                                      |Mode | Cnt |    Score  |   Error   |Units|
+|---------------------------------------------------------------|-----|-----|-----------|------------|-----|
+|BubblesortBenchmark.sort_java                                  |avgt |   5 |    19,903 |±    0,563  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate                      |avgt |   5 |    34,861 |±    0,901  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate_measure              |avgt |   5 |    37,328 |±    0,742  |us/op|
+|BubblesortBenchmark.sort_tailspin_iterate_tagged_long          |avgt |   5 |    37,372 |±    0,796  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse                      |avgt |   5 |    38,423 |±    0,233  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse_full_precondition    |avgt |   5 |    54,097 |±    0,866  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse_non_auxiliary        |avgt |   5 |    86,757 |±    3,538  |us/op|
+|BubblesortBenchmark.sort_tailspin_recurse_simple_precondition  |avgt |   5 |    38,124 |±    1,201  |us/op|
+|FibonacciBenchmark.recursive_java                              |avgt |   5 |    35,792 |±    0,571  |us/op|
+|FibonacciBenchmark.recursive_tailspin_array_long               |avgt |   5 |  1521,404 |±   32,957  |us/op|
+|FibonacciBenchmark.recursive_tailspin_bignumber                |avgt |   5 |   559,275 |±   49,125  |us/op|
+|FibonacciBenchmark.recursive_tailspin_measure_long             |avgt |   5 |   139,590 |±   14,223  |us/op|
+|FibonacciBenchmark.recursive_tailspin_rational                 |avgt |   5 |  9639,304 |±  511,429  |us/op|
+|FibonacciBenchmark.recursive_tailspin_raw_long                 |avgt |   5 |    78,517 |±    0,632  |us/op|
+|FibonacciBenchmark.recursive_tailspin_scinum                   |avgt |   5 |  1054,519 |±  171,460  |us/op|
+|FibonacciBenchmark.recursive_tailspin_small_scinum             |avgt |   5 |   726,845 |±   34,479  |us/op|
+|FibonacciBenchmark.recursive_tailspin_structure_measure        |avgt |   5 |  8803,886 |± 1501,020  |us/op|
+|ListBenchmark.list_java                                        |avgt |   5 |    22,671 |±    0,463  |us/op|
+|ListBenchmark.list_tailspin_empty                              |avgt |   5 |   889,418 |±   21,642  |us/op|
+|ListBenchmark.list_tailspin_optional                           |avgt |   5 |  1004,351 |±   10,546  |us/op|
+|NBodyBenchmark.nbody_java                                      |avgt |   5 |    15,414 |±    0,567  |us/op|
+|NBodyBenchmark.nbody_tailspin_16digits                         |avgt |   5 | 16004,213 |±  528,519  |us/op|
+|NBodyBenchmark.nbody_tailspin_6digits                          |avgt |   5 |  5950,251 |±  180,130  |us/op|
+|PascalBenchmark.triangle_java                                  |avgt |   5 |    11,838 |±    0,434  |us/op|
+|PascalBenchmark.triangle_tailspin                              |avgt |   5 |    21,278 |±    4,275  |us/op|

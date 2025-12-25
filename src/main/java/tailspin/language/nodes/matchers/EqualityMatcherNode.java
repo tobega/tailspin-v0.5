@@ -67,17 +67,13 @@ public abstract class EqualityMatcherNode extends MatcherNode {
       return left.compareTo(right) == 0;
     }
 
-    protected boolean isSmallEnough(long value) {
-      return Math.abs(value) <= SmallSciNum.MAX_MANTISSA;
-    }
-
-    @Specialization(guards = "isSmallEnough(right)")
+    @Specialization
     @TruffleBoundary
     protected boolean doSmallSciNumLong(SmallSciNum left, Long right) {
       return left.compareTo(SmallSciNum.fromLong(right)) == 0;
     }
 
-    @Specialization(guards = "isSmallEnough(left)")
+    @Specialization
     @TruffleBoundary
     protected boolean doLongSmallSciNum(Long left, SmallSciNum right) {
       return SmallSciNum.fromLong(left).compareTo(right) == 0;
