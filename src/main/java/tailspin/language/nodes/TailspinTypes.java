@@ -19,30 +19,7 @@ public abstract class TailspinTypes {
 
   @ImplicitCast
   @TruffleBoundary
-  public static Rational castLongToRational(long value) {
-    return new Rational(BigInteger.valueOf(value), BigInteger.ONE);
-  }
-
-  @ImplicitCast
-  @TruffleBoundary
-  public static Rational castBigNumberToRational(BigNumber bigNumber) {
-    return new Rational(bigNumber.asBigInteger(), BigInteger.ONE);
-  }
-
-  @ImplicitCast
-  public static SmallSciNum castSmallSciNum(long value) {
-    return SmallSciNum.fromLong(value);
-  }
-
-  @ImplicitCast
-  @TruffleBoundary
   public static SciNum castSciNum(SmallSciNum value) {
     return SciNum.fromSmallSciNum(value);
-  }
-
-  @ImplicitCast
-  @TruffleBoundary
-  public static SciNum castSciNum(BigNumber value) {
-    return SciNum.fromBigInteger(value.asBigInteger());
   }
 }

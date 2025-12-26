@@ -10,6 +10,7 @@ import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
+import java.math.BigInteger;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
@@ -62,8 +63,32 @@ public abstract class MathModNode extends ValueNode {
 
     @Specialization
     @TruffleBoundary
+    protected Object rationalBigNumber(Rational left, BigNumber value) {
+      return left.mod(new Rational(value.asBigInteger(), BigInteger.ONE));
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object bigNumberRational(BigNumber left, Rational value) {
+      return new Rational(left.asBigInteger(), BigInteger.ONE).mod(value);
+    }
+
+    @Specialization
+    @TruffleBoundary
     protected Object doSmallSciNum(SmallSciNum left, SmallSciNum right) {
       return left.mod(right);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object doSmallSciNumLong(SmallSciNum left, Long right) {
+      return left.mod(SmallSciNum.fromLong(right));
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object doLongSmallSciNum(Long left, SmallSciNum right) {
+      return SmallSciNum.fromLong(left).mod(right);
     }
 
     @Specialization

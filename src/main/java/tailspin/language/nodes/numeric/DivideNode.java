@@ -62,14 +62,50 @@ public abstract class DivideNode extends ValueNode {
 
     @Specialization
     @TruffleBoundary
+    protected Object rationalBigNumber(Rational left, BigNumber value) {
+      return left.divide(new Rational(value.asBigInteger(), BigInteger.ONE));
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object bigNumberRational(BigNumber left, Rational value) {
+      return new Rational(left.asBigInteger(), BigInteger.ONE).divide(value);
+    }
+
+    @Specialization
+    @TruffleBoundary
     protected Object doSmallSciNum(SmallSciNum left, SmallSciNum right) {
       return left.divide(right);
     }
 
     @Specialization
     @TruffleBoundary
+    protected Object doSmallSciNumLong(SmallSciNum left, Long right) {
+      return left.divide(SmallSciNum.fromLong(right));
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object doLongSmallSciNum(Long left, SmallSciNum right) {
+      return SmallSciNum.fromLong(left).divide(right);
+    }
+
+    @Specialization
+    @TruffleBoundary
     protected SciNum doSciNum(SciNum left, SciNum right) {
       return left.divide(right);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object doBigNumSciNum(BigNumber left, SciNum right) {
+      return SciNum.fromBigInteger(left.asBigInteger()).divide(right);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected Object doSciNumBigNum(SciNum left, BigNumber right) {
+      return left.multiply(SciNum.fromBigInteger(right.asBigInteger()));
     }
 
     @Specialization

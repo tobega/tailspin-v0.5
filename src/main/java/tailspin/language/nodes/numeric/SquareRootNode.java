@@ -13,6 +13,7 @@ import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.TailspinTypes;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
@@ -37,6 +38,23 @@ public abstract class SquareRootNode extends ValueNode {
     public abstract Object executeSquareRoot(VirtualFrame frame, Node node, Object square);
 
     @Specialization
+    protected Object doLong(long square) {
+      return SmallSciNum.fromLong(square).squareRoot();
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected SciNum doBigNumber(BigNumber square) {
+      return SciNum.fromBigInteger(square.asBigInteger()).squareRoot();
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected SciNum doRational(Rational square) {
+      return SciNum.fromBigInteger(square.numerator()).squareRoot().divide(SciNum.fromBigInteger(square.denominator()).squareRoot());
+    }
+
+    @Specialization
     @TruffleBoundary
     protected Object doSmallSciNum(SmallSciNum square) {
       return square.squareRoot();
@@ -46,12 +64,6 @@ public abstract class SquareRootNode extends ValueNode {
     @TruffleBoundary
     protected SciNum doSciNum(SciNum square) {
       return square.squareRoot();
-    }
-
-    @Specialization
-    @TruffleBoundary
-    protected SciNum doRational(Rational square) {
-      return SciNum.fromBigInteger(square.numerator()).squareRoot().divide(SciNum.fromBigInteger(square.denominator()).squareRoot());
     }
 
     @Specialization

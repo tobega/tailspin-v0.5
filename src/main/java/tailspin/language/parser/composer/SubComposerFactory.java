@@ -67,7 +67,7 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
       while (digits.startsWith("0")) digits = digits.substring(1);
       if (!digits.isEmpty()) precision = digits.length();
       if (digits.isEmpty()) digits = "0";
-      if (precision <= 15) return SmallSciNum.fromDigits(sign + digits, exponent, precision);
+      if (precision < 15) return SmallSciNum.fromDigits(sign + digits, exponent, precision);
       return SciNum.fromDigits(sign + digits, exponent, precision);
     });
   }

@@ -15,6 +15,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.strings.TruffleString;
+import java.math.BigInteger;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TailspinTypes;
@@ -63,14 +64,49 @@ public abstract class EqualityMatcherNode extends MatcherNode {
 
     @Specialization
     @TruffleBoundary
+    protected boolean rationalBigNumber(Rational toMatch, BigNumber value) {
+      return toMatch.equals(new Rational(value.asBigInteger(), BigInteger.ONE));
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean bigNumberRational(BigNumber toMatch, Rational value) {
+      return new Rational(toMatch.asBigInteger(), BigInteger.ONE).equals(value);
+    }
+
+    @Specialization
     protected boolean doSmallSciNum(SmallSciNum left, SmallSciNum right) {
       return left.compareTo(right) == 0;
     }
 
     @Specialization
     @TruffleBoundary
+    protected boolean doSmallSciNumLong(SmallSciNum left, Long right) {
+      return left.compareTo(SmallSciNum.fromLong(right)) == 0;
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean doLongSmallSciNum(Long left, SmallSciNum right) {
+      return SmallSciNum.fromLong(left).compareTo(right) == 0;
+    }
+
+    @Specialization
+    @TruffleBoundary
     protected boolean doSciNum(SciNum left, SciNum right) {
       return left.compareTo(right) == 0;
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean doBigNumSciNum(BigNumber left, SciNum right) {
+      return SciNum.fromBigInteger(left.asBigInteger()).compareTo(right) == 0;
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean doSciNumBigNum(SciNum left, BigNumber right) {
+      return left.compareTo(SciNum.fromBigInteger(right.asBigInteger())) == 0;
     }
 
     @Specialization

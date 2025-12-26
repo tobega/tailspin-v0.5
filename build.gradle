@@ -31,7 +31,10 @@ test {
     useJUnitPlatform()
 
     jvmArgs '-ea',
-            '-Dgraalvm.locatorDisabled=true'
+            '-Dgraalvm.locatorDisabled=true' /*,
+            '-XX:+PrintCompilation',
+            '-XX:+UnlockDiagnosticVMOptions',
+            '-XX:+PrintInlining' */
 
     testLogging {
         events 'failed'

@@ -13,7 +13,7 @@ import java.util.Set;
 
 @ValueType
 @ExportLibrary(InteropLibrary.class)
-public class SmallSciNum implements TruffleObject {
+public final class SmallSciNum implements TruffleObject {
 
   private static final long[] LONG_POWERS_OF_10 = {
       1L, 10L, 100L, 1000L, 10000L, 100000L,

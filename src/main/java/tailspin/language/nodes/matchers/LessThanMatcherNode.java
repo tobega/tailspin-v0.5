@@ -11,6 +11,7 @@ import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
+import java.math.BigInteger;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.MatcherNode;
 import tailspin.language.nodes.TailspinTypes;
@@ -62,14 +63,47 @@ public abstract class LessThanMatcherNode extends MatcherNode {
 
     @Specialization
     @TruffleBoundary
+    protected boolean rationalBigNumber(Rational toMatch, BigNumber value, boolean inclusive) {
+      return toMatch.compareTo(new Rational(value.asBigInteger(), BigInteger.ONE)) <= (inclusive ? 0 : 1);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean bigNumberRational(BigNumber toMatch, Rational value, boolean inclusive) {
+      return new Rational(toMatch.asBigInteger(), BigInteger.ONE).compareTo(value) <= (inclusive ? 0 : 1);
+    }
+
+    @Specialization
     protected boolean smallSciNumLess(SmallSciNum toMatch, SmallSciNum value, boolean inclusive) {
       return toMatch.compareTo(value) <= (inclusive ? 0 : -1);
+    }
+
+    @Specialization
+    protected boolean smallSciNumLong(SmallSciNum toMatch, long value, boolean inclusive) {
+      return toMatch.compareTo(SmallSciNum.fromLong(value)) <= (inclusive ? 0 : -1);
+    }
+
+    @Specialization
+    protected boolean longSmallSciNum(long toMatch, SmallSciNum value, boolean inclusive) {
+      return SmallSciNum.fromLong(toMatch).compareTo(value) <= (inclusive ? 0 : -1);
     }
 
     @Specialization
     @TruffleBoundary
     protected boolean sciNumLess(SciNum toMatch, SciNum value, boolean inclusive) {
       return toMatch.compareTo(value) <= (inclusive ? 0 : -1);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean doBigNumSciNum(BigNumber toMatch, SciNum value, boolean inclusive) {
+      return SciNum.fromBigInteger(toMatch.asBigInteger()).compareTo(value) <= (inclusive ? 0 : -1);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean doSciNumBigNum(SciNum toMatch, BigNumber value, boolean inclusive) {
+      return toMatch.compareTo(SciNum.fromBigInteger(value.asBigInteger())) <= (inclusive ? 0 : -1);
     }
 
     @Specialization
