@@ -1,5 +1,6 @@
 package tailspin.language.runtime;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.CompilerDirectives.ValueType;
 import com.oracle.truffle.api.interop.InteropLibrary;
@@ -9,6 +10,7 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Set;
 
 @ValueType
@@ -23,9 +25,11 @@ public final class SmallSciNum implements TruffleObject {
       10000000000000000L, 100000000000000000L, 1000000000000000000L
   };
 
-  private final long unscaled; // The digits (e.g., 12345)
+  private static final long[] PADDED_POWERS_OF_10 = Arrays.stream(LONG_POWERS_OF_10).map(p -> p * 8).toArray();
+
+  private final long unscaled; // The digits + 3 extra bits to pad against exponent shifting artefacts
   private final int exponent; // Power of 10 (e.g., -3 for 12.345)
-  private final int precision; // Sig-figs (e.g., 5)
+  private final int precision; // Significant digits, generally corresponds to the magnitude of unscaled.
 
   private SmallSciNum(long unscaled, int exponent, int precision) {
     this.unscaled = unscaled;
@@ -35,56 +39,49 @@ public final class SmallSciNum implements TruffleObject {
 
   public static SmallSciNum fromDigits(String digits, int exponent, int precision) {
     long mantissa = Long.parseLong(digits);
-    return new SmallSciNum(mantissa, exponent, precision);
+    return new SmallSciNum(Math.multiplyExact(mantissa, 8), exponent, precision);
   }
 
   public static SmallSciNum fromLong(long value) {
-    return new SmallSciNum(value, 0, 0);
+    return new SmallSciNum(Math.multiplyExact(value, 8), 0, 0);
   }
 
-  public Object add(SmallSciNum other) {
-    try {
-      // 1. Identify which number is "coarser" (higher exponent)
-      int targetExp = Math.min(this.exponent, other.exponent);
+  public SmallSciNum add(SmallSciNum other) {
+    long sum;
+    int finalExponent;
+    int newPrecision;
+    if (exponent == other.exponent) {
+      newPrecision = Math.max(precision, other.precision);
+      finalExponent = exponent;
+      sum = Math.addExact(unscaled, other.unscaled);
+    } else if ((exponent > other.exponent && precision != 0) || other.precision == 0) {
+      newPrecision = Math.max(precision, other.precision + other.exponent - exponent);
+      finalExponent = exponent;
+      sum = Math.addExact(unscaled, reScale(other.unscaled, other.exponent, exponent));
+    } else {
+      newPrecision = Math.max(other.precision, precision + exponent - other.exponent);
+      finalExponent = other.exponent;
+      sum = Math.addExact(other.unscaled, reScale(unscaled, exponent, other.exponent));
+    }
+    int finalPrecision;
+    if (sum == 0) {
+      finalPrecision = Math.max(1, newPrecision);
+    } else {
+      // Check if the sum carried over into a new digit column
+      int sumPrecision = getPaddedMagnitude(sum) + 1;
+      finalPrecision = Math.max(sumPrecision, newPrecision);
+    }
+    return new SmallSciNum(sum, finalExponent, finalPrecision);
+  }
 
-      // 2. Align this and other to the targetExp
-      long term1 = alignExponent(this, targetExp);
-      long term2 = alignExponent(other, targetExp);
-
-      long sum = Math.addExact(term1, term2);
-      int resultFloor;
-      if (this.precision == 0 && other.precision == 0) {
-        // Both exact: keep the finest scale of the two
-        resultFloor = Math.min(this.exponent, other.exponent);
-      } else if (this.precision == 0) {
-        // This is exact, so 'other' is the only measurement
-        resultFloor = other.exponent;
-      } else if (other.precision == 0) {
-        // Other is exact, so 'this' is the only measurement
-        resultFloor = this.exponent;
-      } else {
-        // Both measured: the coarsest measurement wins (standard Sci-Figs)
-        resultFloor = Math.max(this.exponent, other.exponent);
-      }
-      if (sum == 0) {
-        // If we have a zero, the precision isn't just 1.
-        // It's the number of digits between the "top" of the original
-        // measurement and the "floor" where we stopped.
-        // 2. Calculate Potential Precision
-        // Find the "highest" point of our two numbers
-        int top1 = this.exponent + getLongMagnitude(this.unscaled);
-        int top2 = other.exponent + getLongMagnitude(other.unscaled);
-        int maxTop = Math.max(top1, top2);
-
-        // Potential precision is the distance from the highest digit
-        // to the result floor.
-        // e.g., 1.11 (top 0) to floor -2 = 3 digits.
-        int potentialPrecision = maxTop - resultFloor + 1;
-        return new SmallSciNum(0, resultFloor, Math.max(1, potentialPrecision));
-      }
-      return normalizeFromLong(sum, targetExp, resultFloor);
-    } catch (ArithmeticException e) {
-      return SciNum.fromSmallSciNum(this).add(SciNum.fromSmallSciNum(other));
+  long reScale(long toScale, int fromExponent, int toExponent) {
+    int diff = fromExponent - toExponent;
+    if (diff >= 0) {
+      long multiplier = LONG_POWERS_OF_10[diff];
+      return toScale * multiplier;
+    } else {
+      long divisor = LONG_POWERS_OF_10[-diff];
+      return toScale / divisor;
     }
   }
 
@@ -98,42 +95,10 @@ public final class SmallSciNum implements TruffleObject {
     }
 
     // MultiplyExact catches if the shift itself overflows the long
-    return Math.multiplyExact(n.unscaled, LONG_POWERS_OF_10[diff]);
+    return Math.multiplyExact(n.unscaled / 8, LONG_POWERS_OF_10[diff]) * 8;
   }
 
-  private SmallSciNum normalizeFromLong(long sum, int currentExp, int anchorExp) {
-    // 2. Scientific Rounding (The "Anchor" Logic)
-    // If our sum is at 10^-3 but our anchor is 10^-2, we must round.
-    if (currentExp < anchorExp) {
-      int diff = anchorExp - currentExp;
-      if (diff < 19) { // Safety check for power table
-        long divisor = LONG_POWERS_OF_10[diff];
-        long half = divisor / 2;
-
-        // Manual rounding (Ties to even or Away from zero)
-        long remainder = Math.abs(sum % divisor);
-        sum /= divisor;
-
-        // Basic "Round half away from zero"
-        if (remainder >= half) {
-          sum += (sum >= 0) ? 1 : -1;
-        }
-      } else {
-        sum = 0; // The number was completely rounded away
-      }
-      currentExp = anchorExp;
-    }
-
-    // 3. Calculate Final Precision
-    // We need to know where the "Top" digit is relative to our "Bottom" (currentExp)
-    int magnitude = getLongMagnitude(sum) + currentExp;
-    int finalPrecision = magnitude - currentExp + 1;
-
-    return new SmallSciNum(sum, currentExp, Math.max(1, finalPrecision));
-  }
-
-  // Fast magnitude check for a long
-  private int getLongMagnitude(long n) {
+  private int getMagnitude(long n) {
     long absN = Math.abs(n);
     if (absN == 0) {
       return 0;
@@ -147,68 +112,77 @@ public final class SmallSciNum implements TruffleObject {
     return 0;
   }
 
-  public Object subtract(SmallSciNum other) {
-    int targetExp = Math.min(this.exponent, other.exponent);
+  private int getPaddedMagnitude(long n) {
+    // Snabb absolutvärde som hanterar Long.MIN_VALUE utan krasch
+    long absN = (n < 0) ? -n : n;
 
-    try {
-      long term1 = alignExponent(this, targetExp);
-      long term2 = alignExponent(other, targetExp);
+    // Om det skalade talet är mindre än 8 är det logiska värdet 0
+    if (absN < 8) return 0;
 
-      // Directly subtract the longs without creating a negated object
-      long diff = Math.subtractExact(term1, term2);
+    // 61 = 64 bitar - 3 bitar (skalning)
+    int bits = 61 - Long.numberOfLeadingZeros(absN);
 
-      int resultFloor;
-      if (this.precision == 0 && other.precision == 0) {
-        // Both exact: keep the finest scale of the two
-        resultFloor = Math.min(this.exponent, other.exponent);
-      } else if (this.precision == 0) {
-        // This is exact, so 'other' is the only measurement
-        resultFloor = other.exponent;
-      } else if (other.precision == 0) {
-        // Other is exact, so 'this' is the only measurement
-        resultFloor = this.exponent;
-      } else {
-        // Both measured: the coarsest measurement wins (standard Sci-Figs)
-        resultFloor = Math.max(this.exponent, other.exponent);
-      }
-      if (diff == 0) {
-        // If we have a zero, the precision isn't just 1.
-        // It's the number of digits between the "top" of the original
-        // measurement and the "floor" where we stopped.
-        // 2. Calculate Potential Precision
-        // Find the "highest" point of our two numbers
-        int top1 = this.exponent + getLongMagnitude(this.unscaled);
-        int top2 = other.exponent + getLongMagnitude(other.unscaled);
-        int maxTop = Math.max(top1, top2);
+    // Approximation av log10 (digits - 1)
+    // Vi använder (bits - 1) för att ligga på den säkra, lägre sidan
+    int guess = ((bits - 1) * 1233) >> 12;
 
-        // Potential precision is the distance from the highest digit
-        // to the result floor.
-        // e.g., 1.11 (top 0) to floor -2 = 3 digits.
-        int potentialPrecision = maxTop - resultFloor + 1;
-        return new SmallSciNum(0, resultFloor, Math.max(1, potentialPrecision));
-      }
-      return normalizeFromLong(diff, targetExp, resultFloor);
-    } catch (ArithmeticException e) {
-      // Fallback to BigDecimal
-      return SciNum.fromSmallSciNum(this).subtract(SciNum.fromSmallSciNum(other));
+    // Eftersom PADDED_POWERS_OF_10 redan är * 8, jämför vi direkt
+    if (guess < 18 && absN >= PADDED_POWERS_OF_10[guess + 1]) {
+      return guess + 1;
     }
+    return guess;
   }
 
-  public Object multiply(SmallSciNum other) {
-    // 1. New Exponent is the sum of exponents
+  public SmallSciNum subtract(SmallSciNum other) {
+    long a, b, diff;
+    int finalExponent, newPrecision;
+
+    // Berätta för Graal att vi oftast har samma exponent
+    if (CompilerDirectives.injectBranchProbability(CompilerDirectives.LIKELY_PROBABILITY,
+        this.exponent == other.exponent)) {
+
+      a = this.unscaled;
+      b = other.unscaled;
+      newPrecision = Math.max(this.precision, other.precision);
+      finalExponent = this.exponent;
+    } else if ((this.exponent > other.exponent && this.precision != 0) || other.precision == 0) {
+      a = this.unscaled;
+      b = reScale(other.unscaled, other.exponent, this.exponent);
+      newPrecision = Math.max(this.precision, other.precision + other.exponent - this.exponent);
+      finalExponent = this.exponent;
+    } else {
+      a = reScale(this.unscaled, this.exponent, other.exponent);
+      b = other.unscaled;
+      newPrecision = Math.max(other.precision, this.precision + this.exponent - other.exponent);
+      finalExponent = other.exponent;
+    }
+
+    diff = a - b;
+
+    // Manuell overflow-kontroll (Tecken-analys)
+    if (((a ^ b) & (a ^ diff)) < 0L) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
+      return handleOverflow(a, b, finalExponent); // Implementera efter behov
+    }
+
+    int finalPrecision = (diff == 0) ? newPrecision : 1 + getPaddedMagnitude(diff);
+
+    // Utan @TruffleBoundary kan Graal optimera bort denna allokering helt (Escape Analysis)
+    return new SmallSciNum(diff, finalExponent, finalPrecision);
+  }
+
+  @TruffleBoundary // Flytta den tunga felhanteringen utanför den heta vägen
+  private SmallSciNum handleOverflow(long a, long b, int exp) {
+    // Här kan du t.ex. konvertera till en större representation
+    // eller kasta ett kontrollerat fel.
+    throw new ArithmeticException("Long overflow i SmallSciNum");
+  }
+
+  public SmallSciNum multiply(SmallSciNum other) {
     int targetExp = this.exponent + other.exponent;
-
-    try {
-      // 2. Multiply the unscaled longs
-      long product = Math.multiplyExact(this.unscaled, other.unscaled);
-
-      // 3. Determine precision
-      // If both are exact (0), result is exact (0).
-      // If one is measured, result is measured by that precision.
-      int resultPrecision;
-      if (this.precision == 0 && other.precision == 0) {
-        resultPrecision = 0;
-      } else if (this.precision == 0) {
+    long product = Math.multiplyExact(this.unscaled / 8, other.unscaled / 8);
+    int resultPrecision;
+      if (this.precision == 0) {
         resultPrecision = other.precision;
       } else if (other.precision == 0) {
         resultPrecision = this.precision;
@@ -216,12 +190,14 @@ public final class SmallSciNum implements TruffleObject {
         resultPrecision = Math.min(this.precision, other.precision);
       }
 
-      // 4. Normalize based on the precision requirement
-      return normalizeForMultiplication(product, targetExp, resultPrecision);
-    } catch (ArithmeticException e) {
-      // Promote to BigDecimal-backed SciNum
-      return SciNum.fromSmallSciNum(this).multiply(SciNum.fromSmallSciNum(other));
-    }
+      if (product == 0) {
+        return new SmallSciNum(0, 1 - resultPrecision, resultPrecision);
+      }
+
+      int reduction = 1 + getMagnitude(product) - resultPrecision;
+      long result = (reduction == 0) ? product : roundBy(product, LONG_POWERS_OF_10[reduction]);
+      int newExp = targetExp + reduction;
+      return new SmallSciNum(result * 8, newExp, resultPrecision);
   }
 
   private SmallSciNum normalizeForMultiplication(long product, int exp, int precision) {
@@ -233,7 +209,7 @@ public final class SmallSciNum implements TruffleObject {
     }
 
     // 1. Find the current digit count of the product
-    int currentDigits = getLongMagnitude(product) + 1;
+    int currentDigits = getPaddedMagnitude(product) + 1;
 
     // 2. If we have more digits than our precision allows, we must round
     if (currentDigits > precision) {
@@ -249,7 +225,7 @@ public final class SmallSciNum implements TruffleObject {
         product += (product >= 0) ? 1 : -1;
 
         // Edge case: rounding 99 to 100 changes digit count
-        if (getLongMagnitude(product) + 1 > precision) {
+        if (getPaddedMagnitude(product) + 1 > precision) {
           // This happens rarely (e.g., 9.9 rounded to 10)
           // We keep the extra digit or round again depending on your strictness
         }
@@ -285,8 +261,8 @@ public final class SmallSciNum implements TruffleObject {
       // 2. Prepare for shifting
       // We want the result to have 'resultPrecision' digits.
       // Current digits in (this.s / other.s) is approx: mag(this) - mag(other)
-      int thisMag = getLongMagnitude(this.unscaled);
-      int otherMag = getLongMagnitude(other.unscaled);
+      int thisMag = getPaddedMagnitude(this.unscaled);
+      int otherMag = getPaddedMagnitude(other.unscaled);
 
       // We need to shift 'this' so that the result of the division has roughly resultPrecision + 1 digits
       // (The +1 is for rounding accuracy)
@@ -310,7 +286,7 @@ public final class SmallSciNum implements TruffleObject {
       int finalExp = (this.exponent - other.exponent) - neededShift;
 
       // 4. Normalize to the target precision
-      return normalizeForMultiplication(quotient, finalExp, resultPrecision);
+      return normalizeForMultiplication(quotient * 8, finalExp, resultPrecision);
 
     } catch (ArithmeticException e) {
       // Overflows during shift or division go to BigDecimal
@@ -325,8 +301,9 @@ public final class SmallSciNum implements TruffleObject {
   @TruffleBoundary
   @Override
   public String toString() {
+    long rounded = getUnscaled();
     StringBuilder sb = new StringBuilder();
-    if (unscaled == 0) {
+    if (rounded == 0) {
       // Significant Zero: 0.00e2
       sb.append("0");
       if (precision > 1) {
@@ -340,11 +317,11 @@ public final class SmallSciNum implements TruffleObject {
     }
     if (precision == 0) {
       // Exact number representation
-      return sb.append(unscaled).repeat("0", exponent).toString();
+      return sb.append(rounded).repeat("0", exponent).toString();
     }
 
-    String digits = Long.toString(Math.abs(unscaled));
-    if (unscaled < 0) {
+    String digits = Long.toString(Math.abs(rounded));
+    if (rounded < 0) {
       sb.append('-');
     }
 
@@ -384,8 +361,8 @@ public final class SmallSciNum implements TruffleObject {
 
     // 2. Magnitude Check (The "Exponent + Magnitude" trick)
     // We calculate the power of 10 of the most significant digit.
-    int mag1 = getLongMagnitude(this.unscaled) + this.exponent;
-    int mag2 = getLongMagnitude(other.unscaled) + other.exponent;
+    int mag1 = getPaddedMagnitude(this.unscaled) + this.exponent;
+    int mag2 = getPaddedMagnitude(other.unscaled) + other.exponent;
 
     if (mag1 != mag2) {
       // If they are different magnitudes, the higher one is larger
@@ -397,8 +374,8 @@ public final class SmallSciNum implements TruffleObject {
     int targetExp = Math.min(this.exponent, other.exponent);
     try {
       // We use our existing alignment logic
-      long v1 = alignExponent(this, targetExp);
-      long v2 = alignExponent(other, targetExp);
+      long v1 = reScale(getUnscaled(), exponent, targetExp);
+      long v2 = reScale(other.getUnscaled(), other.exponent, targetExp);
       return Long.compare(v1, v2);
     } catch (ArithmeticException e) {
       // This only happens if they have a huge precision gap but identical top-end magnitudes.
@@ -481,7 +458,7 @@ public final class SmallSciNum implements TruffleObject {
     int targetP = (this.precision == 0) ? 6 : this.precision;
 
     // 2. Perform the Calculation via Double
-    double valAsDouble = this.unscaled * Math.pow(10, this.exponent);
+    double valAsDouble = this.unscaled / 8.0d * Math.pow(10, this.exponent);
     double root = Math.sqrt(valAsDouble);
 
     // 3. Safety Check for Promotion
@@ -495,10 +472,10 @@ public final class SmallSciNum implements TruffleObject {
 
   public static SmallSciNum fromDouble(double val, int precision) {
     if (val == 0) {
-      return new SmallSciNum(0, 0, precision);
+      return new SmallSciNum(0, 1-precision, precision);
     }
 
-    // 1. Get the "Magnitude" of the double
+    // 1. Get the "Magnitude" of the double.
     // log10(123.45) is ~2.09, so floor is 2.
     int mag = (int) Math.floor(Math.log10(Math.abs(val)));
 
@@ -519,11 +496,20 @@ public final class SmallSciNum implements TruffleObject {
       exponent += 1;
     }
 
-    return new SmallSciNum(unscaled, exponent, precision);
+    return new SmallSciNum(unscaled * 8, exponent, precision);
+  }
+
+  private long roundBy(long value, long divisor) {
+    long remainder = Math.abs(value % divisor);
+    long rounded = value / divisor;
+    if (remainder * 2 >= divisor) {
+      rounded += (rounded >= 0 ? 1 : -1);
+    }
+    return rounded;
   }
 
   public long getUnscaled() {
-    return unscaled;
+    return roundBy(unscaled, 8);
   }
 
   public int getExponent() {

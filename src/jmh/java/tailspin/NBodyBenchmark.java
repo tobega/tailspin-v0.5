@@ -288,7 +288,8 @@ public class NBodyBenchmark extends TruffleBenchmark {
   @Benchmark
   public void nbody_tailspin_6digits() {
     SmallSciNum energy = (SmallSciNum) truffleContext.eval("tt", tailspinProgram6digits).as(Measure.class).value();
-    if (energy.compareTo(SmallSciNum.fromDigits("-169054", -6,6)) != 0) throw new AssertionError("Wrong result " + energy);
+    SmallSciNum expected = SmallSciNum.fromDigits("-169022", -6,6);
+    if (energy.compareTo(expected) != 0) throw new AssertionError("Wrong result " + energy + " expected " + expected);
   }
 
   @Benchmark

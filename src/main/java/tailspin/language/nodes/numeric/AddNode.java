@@ -75,21 +75,21 @@ public abstract class AddNode extends ValueNode {
       return new Rational(left.asBigInteger(), BigInteger.ONE).add(value);
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object doSmallSciNum(SmallSciNum left, SmallSciNum right) {
+    protected SmallSciNum doSmallSciNum(SmallSciNum left, SmallSciNum right) {
       return left.add(right);
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object doSmallSciNumLong(SmallSciNum left, Long right) {
+    protected SmallSciNum doSmallSciNumLong(SmallSciNum left, Long right) {
       return left.add(SmallSciNum.fromLong(right));
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object doLongSmallSciNum(Long left, SmallSciNum right) {
+    protected SmallSciNum doLongSmallSciNum(Long left, SmallSciNum right) {
       return SmallSciNum.fromLong(left).add(right);
     }
 

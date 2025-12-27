@@ -73,21 +73,18 @@ public abstract class SubtractNode extends ValueNode {
       return new Rational(left.asBigInteger(), BigInteger.ONE).subtract(value);
     }
 
-    @Specialization
-    @TruffleBoundary
-    protected Object doSmallSciNum(SmallSciNum left, SmallSciNum right) {
+    @Specialization(rewriteOn = ArithmeticException.class)
+    protected SmallSciNum doSmallSciNum(SmallSciNum left, SmallSciNum right) {
       return left.subtract(right);
     }
 
-    @Specialization
-    @TruffleBoundary
-    protected Object doSmallSciNumLong(SmallSciNum left, Long right) {
+    @Specialization(rewriteOn = ArithmeticException.class)
+    protected SmallSciNum doSmallSciNumLong(SmallSciNum left, Long right) {
       return left.subtract(SmallSciNum.fromLong(right));
     }
 
-    @Specialization
-    @TruffleBoundary
-    protected Object doLongSmallSciNum(Long left, SmallSciNum right) {
+    @Specialization(rewriteOn = ArithmeticException.class)
+    protected SmallSciNum doLongSmallSciNum(Long left, SmallSciNum right) {
       return SmallSciNum.fromLong(left).subtract(right);
     }
 
