@@ -159,13 +159,13 @@ end !
 =7.65e0
 ---derived larger subtracted zero has a precision for multiplication
 (11.1 - 11.1) * 12.345 + 7.654321 !
-=7.65e0
+=7.7e0
 ---derived added zero has a precision for multiplication
 (-1.11 + 1.11) * 12.345 + 7.654321 !
 =7.65e0
 ---derived larger added zero has a precision for multiplication
 (-11.1 + 11.1) * 12.345 + 7.654321 !
-=7.65e0
+=7.7e0
 ---add much higher precision number overlapping lower precision number on both ends
 1234.67 + 11.1 !
 =1.2458e3

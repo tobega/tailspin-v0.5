@@ -29,7 +29,8 @@ public class SciNum implements TruffleObject {
     }
   }
 
-  private static BigDecimal fixPrecision(BigDecimal result, int precision) {
+  public static BigDecimal fixPrecision(BigDecimal result, int precision) {
+    if (precision == 0) return result;
     if (result.compareTo(BigDecimal.ZERO) == 0) {
       result = result.setScale(precision - 1, RoundingMode.HALF_UP);
     } else if (precisionOf(result) < precision) {
@@ -55,7 +56,7 @@ public class SciNum implements TruffleObject {
   }
 
   public static SciNum fromSmallSciNum(SmallSciNum smallSciNum) {
-    return new SciNum(new BigDecimal(BigInteger.valueOf(smallSciNum.getUnscaled()), -smallSciNum.getExponent()), smallSciNum.getPrecision());
+    return new SciNum(new BigDecimal(smallSciNum.getValue()), smallSciNum.getPrecision());
   }
 
   public static SciNum fromBigInteger(BigInteger bigInteger) {

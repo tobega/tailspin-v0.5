@@ -76,19 +76,16 @@ public abstract class AddNode extends ValueNode {
     }
 
     @Specialization(rewriteOn = ArithmeticException.class)
-    @TruffleBoundary
     protected SmallSciNum doSmallSciNum(SmallSciNum left, SmallSciNum right) {
       return left.add(right);
     }
 
     @Specialization(rewriteOn = ArithmeticException.class)
-    @TruffleBoundary
     protected SmallSciNum doSmallSciNumLong(SmallSciNum left, Long right) {
       return left.add(SmallSciNum.fromLong(right));
     }
 
     @Specialization(rewriteOn = ArithmeticException.class)
-    @TruffleBoundary
     protected SmallSciNum doLongSmallSciNum(Long left, SmallSciNum right) {
       return SmallSciNum.fromLong(left).add(right);
     }

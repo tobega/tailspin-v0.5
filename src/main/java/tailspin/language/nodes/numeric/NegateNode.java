@@ -52,7 +52,6 @@ public abstract class NegateNode extends ValueNode {
     }
 
     @Specialization
-    @TruffleBoundary
     protected SmallSciNum doSmallSciNum(SmallSciNum value) {
       return value.negate();
     }

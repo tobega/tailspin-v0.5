@@ -74,19 +74,16 @@ public abstract class MultiplyNode extends ValueNode {
     }
 
     @Specialization(rewriteOn = ArithmeticException.class)
-    @TruffleBoundary
     protected SmallSciNum doSmallSciNum(SmallSciNum left, SmallSciNum right) {
       return left.multiply(right);
     }
 
     @Specialization(rewriteOn = ArithmeticException.class)
-    @TruffleBoundary
     protected SmallSciNum doSmallSciNumLong(SmallSciNum left, Long right) {
       return left.multiply(SmallSciNum.fromLong(right));
     }
 
     @Specialization(rewriteOn = ArithmeticException.class)
-    @TruffleBoundary
     protected SmallSciNum doLongSmallSciNum(Long left, SmallSciNum right) {
       return SmallSciNum.fromLong(left).multiply(right);
     }
