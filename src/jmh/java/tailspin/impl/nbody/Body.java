@@ -8,7 +8,7 @@ package tailspin.impl.nbody;
 public final class Body {
   private static final double PI = 3.141592653589793;
   private static final double SOLAR_MASS = 4 * PI * PI;
-  private static final double DAYS_PER_YER = 365.24;
+  private static final double DAYS_PER_YEAR = 365.24;
 
   private double x;
   private double y;
@@ -47,9 +47,9 @@ public final class Body {
     this.x = x;
     this.y = y;
     this.z = z;
-    this.vx = vx * DAYS_PER_YER;
-    this.vy = vy * DAYS_PER_YER;
-    this.vz = vz * DAYS_PER_YER;
+    this.vx = vx * DAYS_PER_YEAR;
+    this.vy = vy * DAYS_PER_YEAR;
+    this.vz = vz * DAYS_PER_YEAR;
     this.mass = mass * SOLAR_MASS;
   }
 

@@ -1,6 +1,9 @@
 package tailspin;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import org.openjdk.jmh.annotations.Benchmark;
+import tailspin.impl.nbody.BdNBodySystem;
 import tailspin.impl.nbody.NBodySystem;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.SciNum;
@@ -280,7 +283,7 @@ public class NBodyBenchmark extends TruffleBenchmark {
   """;
 
   @Benchmark
-  public void nbody_tailspin_18digits() {
+  public void nbody_tailspin_16digits() {
     SciNum energy = (SciNum) truffleContext.eval("tt", tailspinProgram).as(Measure.class).value();
     if (energy.compareTo(SciNum.fromDigits("-1690184748576635", -16, 16)) != 0) throw new AssertionError("Wrong result " + energy);
   }
@@ -293,12 +296,22 @@ public class NBodyBenchmark extends TruffleBenchmark {
   }
 
   @Benchmark
-  public void nbody_java() {
+  public void nbody_java_double() {
     NBodySystem system = new NBodySystem();
     for (int i = 0; i < 250; i++) {
       system.advance(0.01);
     }
     double energy = system.energy();
     if (energy != -0.16901847485766353) throw new AssertionError("Wrong result " + energy);
+  }
+
+  @Benchmark
+  public void nbody_java_big_decimal() {
+    BdNBodySystem system = new BdNBodySystem();
+    for (int i = 0; i < 250; i++) {
+      system.advance(new BigDecimal("0.01"));
+    }
+    BigDecimal energy = system.energy().round(new MathContext(16));
+    if (energy.compareTo(new BigDecimal("-0.1690184748576638")) != 0) throw new AssertionError("Wrong result " + energy);
   }
 }
