@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallRational;
 import tailspin.language.runtime.SmallSciNum;
 
 @TypeSystem({long.class, BigNumber.class, Rational.class, SmallSciNum.class, SciNum.class})
@@ -15,6 +16,12 @@ public abstract class TailspinTypes {
   @TruffleBoundary
   public static BigNumber castBigNumber(long value) {
     return new BigNumber(BigInteger.valueOf(value));
+  }
+
+  @ImplicitCast
+  @TruffleBoundary
+  public static Rational castRational(SmallRational value) {
+    return new Rational(BigInteger.valueOf(value.numerator()), BigInteger.valueOf(value.denominator()));
   }
 
   @ImplicitCast

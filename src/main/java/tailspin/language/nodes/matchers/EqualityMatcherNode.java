@@ -24,6 +24,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallRational;
 import tailspin.language.runtime.SmallSciNum;
 import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.TaggedValue;
@@ -54,6 +55,24 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     @TruffleBoundary
     protected boolean bigNumberEquals(BigNumber toMatch, BigNumber value) {
       return toMatch.equals(value);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean smallRationalEquals(SmallRational toMatch, SmallRational value) {
+      return toMatch.equals(value);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean smallRationalLong(SmallRational toMatch, long value) {
+      return toMatch.equals(SmallRational.of(value, 1L));
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected boolean longSmallRational(long toMatch, SmallRational value) {
+      return SmallRational.of(toMatch, 1L).equals(value);
     }
 
     @Specialization

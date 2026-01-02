@@ -17,6 +17,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallRational;
 import tailspin.language.runtime.SmallSciNum;
 
 public abstract class SquareRootNode extends ValueNode {
@@ -37,30 +38,36 @@ public abstract class SquareRootNode extends ValueNode {
   public static abstract class DoSquareRootNode extends Node {
     public abstract Object executeSquareRoot(VirtualFrame frame, Node node, Object square);
 
-    @Specialization
-    protected Object doLong(long square) {
+    @Specialization(rewriteOn = ArithmeticException.class)
+    protected SmallSciNum doLong(long square) {
       return SmallSciNum.fromLong(square).squareRoot();
     }
 
-    @Specialization
+    @Specialization(replaces = "doLong")
     @TruffleBoundary
     protected SciNum doBigNumber(BigNumber square) {
       return SciNum.fromBigInteger(square.asBigInteger()).squareRoot();
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
+    @TruffleBoundary
+    protected SmallSciNum doSmallRational(SmallRational square) {
+      return SmallSciNum.fromLong(square.numerator()).squareRoot().divide(SmallSciNum.fromLong(square.denominator()).squareRoot());
+    }
+
+    @Specialization(replaces = "doSmallRational")
     @TruffleBoundary
     protected SciNum doRational(Rational square) {
       return SciNum.fromBigInteger(square.numerator()).squareRoot().divide(SciNum.fromBigInteger(square.denominator()).squareRoot());
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object doSmallSciNum(SmallSciNum square) {
+    protected SmallSciNum doSmallSciNum(SmallSciNum square) {
       return square.squareRoot();
     }
 
-    @Specialization
+    @Specialization(replaces = "doSmallSciNum")
     @TruffleBoundary
     protected SciNum doSciNum(SciNum square) {
       return square.squareRoot();

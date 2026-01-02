@@ -18,6 +18,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallRational;
 import tailspin.language.runtime.SmallSciNum;
 
 public abstract class TruncateDivideNode extends ValueNode {
@@ -49,61 +50,103 @@ public abstract class TruncateDivideNode extends ValueNode {
       return Math.divideExact(left, right);
     }
 
-    @Specialization
+    @Specialization(replaces = "doLong")
     @TruffleBoundary
     protected BigNumber doBigNumber(BigNumber left, BigNumber right) {
       return left.divide(right);
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object doRational(Rational left, Rational right) {
+    protected long doSmallRational(SmallRational left, SmallRational right) {
       return left.truncateDivide(right);
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object rationalBigNumber(Rational left, BigNumber value) {
+    protected long smallRationalLong(SmallRational left, long value) {
+      return left.truncateDivide(SmallRational.of(value, 1L));
+    }
+
+    @Specialization(rewriteOn = ArithmeticException.class)
+    @TruffleBoundary
+    protected long longSmallRational(long left, SmallRational value) {
+      return SmallRational.of(left, 1L).truncateDivide(value);
+    }
+
+    @Specialization(replaces = "doSmallRational")
+    @TruffleBoundary
+    protected BigNumber doRational(Rational left, Rational right) {
+      return left.truncateDivide(right);
+    }
+
+    @Specialization(replaces = "smallRationalLong")
+    @TruffleBoundary
+    protected BigNumber rationalBigNumber(Rational left, BigNumber value) {
       return left.truncateDivide(new Rational(value.asBigInteger(), BigInteger.ONE));
     }
 
-    @Specialization
+    @Specialization(replaces = "longSmallRational")
     @TruffleBoundary
-    protected Object bigNumberRational(BigNumber left, Rational value) {
+    protected BigNumber bigNumberRational(BigNumber left, Rational value) {
       return new Rational(left.asBigInteger(), BigInteger.ONE).truncateDivide(value);
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object doSmallSciNum(SmallSciNum left, SmallSciNum right) {
+    protected long doSmallSciNum(SmallSciNum left, SmallSciNum right) {
       return left.truncateDivide(right);
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object doSmallSciNumLong(SmallSciNum left, Long right) {
+    protected long doSmallSciNumLong(SmallSciNum left, Long right) {
       return left.truncateDivide(SmallSciNum.fromLong(right));
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object doLongSmallSciNum(Long left, SmallSciNum right) {
+    protected long doLongSmallSciNum(Long left, SmallSciNum right) {
       return SmallSciNum.fromLong(left).truncateDivide(right);
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object doSciNum(SciNum left, SciNum right) {
+    protected long doSmallRationalSmallSciNum(SmallRational left, SmallSciNum right) {
+      return SmallSciNum.fromLong(left.numerator()).divide(right).truncateDivide(SmallSciNum.fromLong(left.denominator()));
+    }
+
+    @Specialization(rewriteOn = ArithmeticException.class)
+    @TruffleBoundary
+    protected long doSmallSciNumSmallRational(SmallSciNum left, SmallRational right) {
+      return left.multiply(SmallSciNum.fromLong(right.denominator())).truncateDivide(SmallSciNum.fromLong(right.numerator()));
+    }
+
+    @Specialization(replaces = "doSmallSciNum")
+    @TruffleBoundary
+    protected BigNumber doSciNum(SciNum left, SciNum right) {
       return left.truncateDivide(right);
     }
 
-    @Specialization
+    @Specialization(replaces = "doSmallSciNumLong")
+    @TruffleBoundary
+    protected Object doSciNumBigNum(SciNum left, BigNumber right) {
+      return left.truncateDivide(SciNum.fromBigInteger(right.asBigInteger()));
+    }
+
+    @Specialization(replaces = "doLongSmallSciNum")
+    @TruffleBoundary
+    protected Object doBigNumSciNum(BigNumber left, SciNum right) {
+      return SciNum.fromBigInteger(left.asBigInteger()).truncateDivide(right);
+    }
+
+    @Specialization(replaces = "doSmallRationalSmallSciNum")
     @TruffleBoundary
     protected Object doRationalSciNum(Rational left, SciNum right) {
       return SciNum.fromBigInteger(left.numerator()).divide(right).truncateDivide(SciNum.fromBigInteger(left.denominator()));
     }
 
-    @Specialization
+    @Specialization(replaces = "doSmallSciNumSmallRational")
     @TruffleBoundary
     protected Object doSciNumRational(SciNum left, Rational right) {
       return left.multiply(SciNum.fromBigInteger(right.denominator())).truncateDivide(SciNum.fromBigInteger(right.numerator()));

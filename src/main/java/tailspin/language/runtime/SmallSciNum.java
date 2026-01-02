@@ -18,7 +18,9 @@ import java.util.Set;
 @ValueType
 @ExportLibrary(InteropLibrary.class)
 public final class SmallSciNum implements TruffleObject {
+
   private static final double BITS_PER_DIGIT = 3.322;
+  public static final int DEFAULT_SMALL_PRECISION = 6;
 
   private final double value;
   private final int precision;
@@ -134,7 +136,7 @@ public final class SmallSciNum implements TruffleObject {
     return new SmallSciNum(product, newPrecision);
   }
 
-  public Object divide(SmallSciNum other) {
+  public SmallSciNum divide(SmallSciNum other) {
     double quotient = value / other.value;
     if (Double.isInfinite(quotient) || (quotient != 0.0 && (quotient < 0 ? -quotient : quotient) < Double.MIN_NORMAL)) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -189,10 +191,16 @@ public final class SmallSciNum implements TruffleObject {
     return (int) Math.signum(diff.value);
   }
 
-  public Object mod(SmallSciNum modulus) {
+  public SmallSciNum mod(SmallSciNum modulus) {
+    int bottomDigit = getBottomDigit(modulus);
     double result = value % modulus.value;
     if (result < 0.0) {
       result += (modulus.value < 0 ? -modulus.value : modulus.value);
+    }
+    int resultTop = getTopDigit(result);
+    int addPrecision = resultTop - bottomDigit + 1;
+    if (addPrecision <= 0) {
+      return new SmallSciNum(0.0, 1 - bottomDigit);
     }
     int newPrecision;
     if (precision == 0) {
@@ -202,6 +210,7 @@ public final class SmallSciNum implements TruffleObject {
     } else {
       newPrecision = (precision < modulus.precision ? precision : modulus.precision);
     }
+    newPrecision = newPrecision < addPrecision ? newPrecision : addPrecision;
     return new SmallSciNum(result, newPrecision);
   }
 
@@ -209,13 +218,13 @@ public final class SmallSciNum implements TruffleObject {
     return (long) (value / divisor.value);
   }
 
-  public Object squareRoot() {
+  public SmallSciNum squareRoot() {
     double root = Math.sqrt(value);
     if (Double.isInfinite(root) || (root != 0.0 && root < Double.MIN_NORMAL)) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
       return handleLossOfPrecision(this);
     }
-    int newPrecision = (precision == 0) ? 6 : precision;
+    int newPrecision = (precision == 0) ? DEFAULT_SMALL_PRECISION : precision;
     return new SmallSciNum(root, newPrecision);
   }
 

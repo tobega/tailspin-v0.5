@@ -27,15 +27,7 @@ public class Rational implements TruffleObject, Comparable<Rational> {
 
   @Override
   public String toString() {
-    return numerator.toString() + "/" + denominator.toString();
-  }
-
-  public Object simplestForm() {
-    if (denominator.equals(BigInteger.ONE)) {
-      // Can't go back to long, because Truffle blows up
-      return new BigNumber(numerator);
-    }
-    return this;
+    return numerator.toString() + (denominator.equals(BigInteger.ONE) ? "" : ("/" + denominator));
   }
 
   public Rational divide(Rational right) {

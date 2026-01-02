@@ -19,6 +19,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallRational;
 import tailspin.language.runtime.SmallSciNum;
 
 @NodeChild(type = ValueNode.class)
@@ -39,24 +40,30 @@ public abstract class NegateNode extends ValueNode {
       return Math.negateExact(value);
     }
 
-    @Specialization
+    @Specialization(replaces = "doLong")
     @TruffleBoundary
     protected BigNumber doBigNumber(BigNumber value) {
       return value.negate();
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object doRational(Rational value) {
+    protected SmallRational doSmallRational(SmallRational value) {
       return value.negate();
     }
 
-    @Specialization
+    @Specialization(replaces = "doSmallRational")
+    @TruffleBoundary
+    protected Rational doRational(Rational value) {
+      return value.negate();
+    }
+
+    @Specialization(rewriteOn = ArithmeticException.class)
     protected SmallSciNum doSmallSciNum(SmallSciNum value) {
       return value.negate();
     }
 
-    @Specialization
+    @Specialization(replaces = "doSmallSciNum")
     @TruffleBoundary
     protected SciNum doSciNum(SciNum value) {
       return value.negate();

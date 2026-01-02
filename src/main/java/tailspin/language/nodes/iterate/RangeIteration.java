@@ -36,6 +36,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallRational;
 import tailspin.language.runtime.SmallSciNum;
 
 @NodeChild(value = "start", type = ValueNode.class)
@@ -323,6 +324,11 @@ public abstract class RangeIteration extends TransformNode {
     @Specialization
     boolean compareBigNumber(BigNumber value) {
       return value.compareTo(new BigNumber(BigInteger.ZERO)) > 0;
+    }
+
+    @Specialization
+    boolean compareSmallRational(SmallRational value) {
+      return value.compareTo(SmallRational.of(0, 1)) > 0;
     }
 
     @Specialization

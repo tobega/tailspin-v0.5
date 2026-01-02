@@ -16,6 +16,8 @@ import java.util.Set;
 @ValueType
 @ExportLibrary(InteropLibrary.class)
 public class SciNum implements TruffleObject {
+
+  public static final int DEFAULT_LARGE_PRECISION = 18;
   private final BigDecimal value;
   private final boolean isExact;
 
@@ -118,17 +120,14 @@ public class SciNum implements TruffleObject {
     if (remainder.signum() < 0) {
       remainder = remainder.add(modulus.value.abs());
     }
+    BigDecimal result = remainder.setScale(additiveScale(modulus), RoundingMode.HALF_UP);
     int newPrecision = multiplicativePrecision(modulus);
-    return new SciNum(remainder, newPrecision);
+    return new SciNum(result, newPrecision);
   }
 
-  public Object truncateDivide(SciNum divisor) {
+  public BigNumber truncateDivide(SciNum divisor) {
     BigDecimal result = value.divideToIntegralValue(divisor.value);
-    try {
-      return result.longValueExact();
-    } catch (ArithmeticException e) {
-      return new BigNumber(result.toBigInteger());
-    }
+    return new BigNumber(result.toBigInteger());
   }
 
   public SciNum divide(SciNum divisor) {
@@ -154,7 +153,7 @@ public class SciNum implements TruffleObject {
   }
 
   public SciNum squareRoot() {
-    int precision = isExact ? 6 : precisionOf(value);
+    int precision = isExact ? DEFAULT_LARGE_PRECISION : precisionOf(value);
     BigDecimal sqrt = value.sqrt(new MathContext(precision));
     return new SciNum(sqrt, precision);
   }

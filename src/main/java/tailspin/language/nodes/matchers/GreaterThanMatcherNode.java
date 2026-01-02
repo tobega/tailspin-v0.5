@@ -20,6 +20,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallRational;
 import tailspin.language.runtime.SmallSciNum;
 import tailspin.language.runtime.TaggedValue;
 import tailspin.language.runtime.VocabularyType;
@@ -49,25 +50,43 @@ public abstract class GreaterThanMatcherNode extends MatcherNode {
       return toMatch > value || inclusive && toMatch == value;
     }
 
-    @Specialization(replaces = "longMore")
+    @Specialization
     @TruffleBoundary
     protected boolean bigNumberMore(BigNumber toMatch, BigNumber value, boolean inclusive) {
       return toMatch.compareTo(value) >= (inclusive ? 0 : 1);
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
+    @TruffleBoundary
+    protected boolean smallRationalMore(SmallRational toMatch, SmallRational value, boolean inclusive) {
+      return toMatch.compareTo(value) >= (inclusive ? 0 : 1);
+    }
+
+    @Specialization(rewriteOn = ArithmeticException.class)
+    @TruffleBoundary
+    protected boolean smallRationalLong(SmallRational toMatch, long value, boolean inclusive) {
+      return toMatch.compareTo(SmallRational.of(value, 1L)) >= (inclusive ? 0 : 1);
+    }
+
+    @Specialization(rewriteOn = ArithmeticException.class)
+    @TruffleBoundary
+    protected boolean longSmallRational(long toMatch, SmallRational value, boolean inclusive) {
+      return SmallRational.of(toMatch, 1L).compareTo(value) >= (inclusive ? 0 : 1);
+    }
+
+    @Specialization(replaces = "smallRationalMore")
     @TruffleBoundary
     protected boolean rationalMore(Rational toMatch, Rational value, boolean inclusive) {
       return toMatch.compareTo(value) >= (inclusive ? 0 : 1);
     }
 
-    @Specialization
+    @Specialization(replaces = "smallRationalLong")
     @TruffleBoundary
     protected boolean rationalBigNumber(Rational toMatch, BigNumber value, boolean inclusive) {
       return toMatch.compareTo(new Rational(value.asBigInteger(), BigInteger.ONE)) >= (inclusive ? 0 : 1);
     }
 
-    @Specialization
+    @Specialization(replaces = "longSmallRational")
     @TruffleBoundary
     protected boolean bigNumberRational(BigNumber toMatch, Rational value, boolean inclusive) {
       return new Rational(toMatch.asBigInteger(), BigInteger.ONE).compareTo(value) >= (inclusive ? 0 : 1);

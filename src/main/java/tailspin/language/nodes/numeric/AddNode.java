@@ -18,6 +18,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.Measure;
 import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
+import tailspin.language.runtime.SmallRational;
 import tailspin.language.runtime.SmallSciNum;
 
 public abstract class AddNode extends ValueNode {
@@ -51,27 +52,45 @@ public abstract class AddNode extends ValueNode {
       return Math.addExact(left, right);
     }
 
-    @Specialization
+    @Specialization(replaces = "doLong")
     @TruffleBoundary
     protected BigNumber doBigNumber(BigNumber left, BigNumber right) {
       return left.add(right);
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object doRational(Rational left, Rational right) {
-      return left.add(right).simplestForm();
+    protected SmallRational doSmallRational(SmallRational left, SmallRational right) {
+      return left.add(right);
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
     @TruffleBoundary
-    protected Object rationalBigNumber(Rational left, BigNumber value) {
+    protected SmallRational smallRationalLong(SmallRational left, long value) {
+      return left.add(SmallRational.of(value, 1L));
+    }
+
+    @Specialization(rewriteOn = ArithmeticException.class)
+    @TruffleBoundary
+    protected SmallRational longSmallRational(long left, SmallRational value) {
+      return SmallRational.of(left, 1L).add(value);
+    }
+
+    @Specialization(replaces = "doSmallRational")
+    @TruffleBoundary
+    protected Rational doRational(Rational left, Rational right) {
+      return left.add(right);
+    }
+
+    @Specialization(replaces = "smallRationalLong")
+    @TruffleBoundary
+    protected Rational rationalBigNumber(Rational left, BigNumber value) {
       return left.add(new Rational(value.asBigInteger(), BigInteger.ONE));
     }
 
-    @Specialization
+    @Specialization(replaces = "longSmallRational")
     @TruffleBoundary
-    protected Object bigNumberRational(BigNumber left, Rational value) {
+    protected Rational bigNumberRational(BigNumber left, Rational value) {
       return new Rational(left.asBigInteger(), BigInteger.ONE).add(value);
     }
 
@@ -90,33 +109,45 @@ public abstract class AddNode extends ValueNode {
       return SmallSciNum.fromLong(left).add(right);
     }
 
-    @Specialization
+    @Specialization(rewriteOn = ArithmeticException.class)
+    @TruffleBoundary
+    protected SmallSciNum doSmallRationalSmallSciNum(SmallRational left, SmallSciNum right) {
+      return SmallSciNum.fromLong(left.numerator()).add(SmallSciNum.fromLong(left.denominator()).multiply(right)).divide(SmallSciNum.fromLong(left.denominator()));
+    }
+
+    @Specialization(rewriteOn = ArithmeticException.class)
+    @TruffleBoundary
+    protected SmallSciNum doSmallSciNumSmallRational(SmallSciNum left, SmallRational right) {
+      return left.multiply(SmallSciNum.fromLong(right.denominator())).add(SmallSciNum.fromLong(right.numerator())).divide(SmallSciNum.fromLong(right.denominator()));
+    }
+
+    @Specialization(replaces = "doSmallSciNum")
     @TruffleBoundary
     protected SciNum doSciNum(SciNum left, SciNum right) {
       return left.add(right);
     }
 
-    @Specialization
+    @Specialization(replaces = "doLongSmallSciNum")
     @TruffleBoundary
-    protected Object doBigNumSciNum(BigNumber left, SciNum right) {
+    protected SciNum doBigNumSciNum(BigNumber left, SciNum right) {
       return SciNum.fromBigInteger(left.asBigInteger()).add(right);
     }
 
-    @Specialization
+    @Specialization(replaces = "doSmallSciNumLong")
     @TruffleBoundary
-    protected Object doSciNumBigNum(SciNum left, BigNumber right) {
+    protected SciNum doSciNumBigNum(SciNum left, BigNumber right) {
       return left.add(SciNum.fromBigInteger(right.asBigInteger()));
     }
 
-    @Specialization
+    @Specialization(replaces = "doSmallRationalSmallSciNum")
     @TruffleBoundary
-    protected Object doRationalSciNum(Rational left, SciNum right) {
+    protected SciNum doRationalSciNum(Rational left, SciNum right) {
       return SciNum.fromBigInteger(left.numerator()).add(SciNum.fromBigInteger(left.denominator()).multiply(right)).divide(SciNum.fromBigInteger(left.denominator()));
     }
 
-    @Specialization
+    @Specialization(replaces = "doSmallSciNumSmallRational")
     @TruffleBoundary
-    protected Object doSciNumRational(SciNum left, Rational right) {
+    protected SciNum doSciNumRational(SciNum left, Rational right) {
       return left.multiply(SciNum.fromBigInteger(right.denominator())).add(SciNum.fromBigInteger(right.numerator())).divide(SciNum.fromBigInteger(right.denominator()));
     }
 
