@@ -22,6 +22,33 @@ public final class SmallSciNum implements TruffleObject {
   private static final double BITS_PER_DIGIT = 3.322;
   public static final int DEFAULT_SMALL_PRECISION = 6;
 
+  private static final int[] EXP_TO_LOG10 = new int[2048];
+  private static final long[] MANTISSA_TOP_BREAKPOINT = new long[2048];
+
+  static  {
+    int previousIndex = -1;
+    for (int i = (int) Math.floor(-1023 / BITS_PER_DIGIT); i < 1 + (int) Math.ceil(1023 / BITS_PER_DIGIT); i++) {
+      double value = Math.pow(10, i);
+      int exponent = Math.getExponent(value);
+      int index = exponent + 1023;
+      long mantissaTop = getMantissaTop(value);
+      for (int j = previousIndex + 1; j <= index && j < 2048; j++) {
+        EXP_TO_LOG10[j] = i - 1;
+        MANTISSA_TOP_BREAKPOINT[j] = 32;
+      }
+      if (index < 2048) MANTISSA_TOP_BREAKPOINT[index] = mantissaTop;
+      previousIndex = index;
+    }
+  }
+
+  static long getMantissaTop(double value) {
+    return (Double.doubleToRawLongBits(value) >>> 48) & 0b1111;
+  }
+
+  public int getBinaryExponent() {
+    return Math.getExponent(value);
+  }
+
   private final double value;
   private final int precision;
 
@@ -47,24 +74,14 @@ public final class SmallSciNum implements TruffleObject {
     }
     int bottomDigit = getBottomDigit(other);
     if (sum == 0.0) {
-      return new SmallSciNum(0.0, 1 - bottomDigit);
+      return new SmallSciNum(0.0, bottomDigit > 0 ? 1 : 1 - bottomDigit);
     }
     int resultTop = getTopDigit(sum);
     int newPrecision = resultTop - bottomDigit + 1;
     if (newPrecision <= 0) {
-      return new SmallSciNum(0.0, 1 - bottomDigit);
+      return new SmallSciNum(0.0, bottomDigit > 0 ? 1 : 1 - bottomDigit);
     }
     return new SmallSciNum(sum, newPrecision);
-  }
-
-  private static final int[] EXP_TO_LOG10 = precomputeLog10Table();
-
-  private static int[] precomputeLog10Table() {
-    int[] table = new int[2048];
-    for (int i = 0; i < 2048; i++) {
-      table[i] = (int) Math.floor((i - 1023) / BITS_PER_DIGIT);
-    }
-    return table;
   }
 
   private int getBottomDigit(SmallSciNum other) {
@@ -96,12 +113,12 @@ public final class SmallSciNum implements TruffleObject {
     }
     int bottomDigit = getBottomDigit(other);
     if (diff == 0.0) {
-      return new SmallSciNum(0.0, 1 - bottomDigit);
+      return new SmallSciNum(0.0, bottomDigit > 0 ? 1 : 1 - bottomDigit);
     }
     int resultTop = getTopDigit(diff);
     int newPrecision = resultTop - bottomDigit + 1;
     if (newPrecision <= 0) {
-      return new SmallSciNum(0.0, 1 - bottomDigit);
+      return new SmallSciNum(0.0, bottomDigit > 0 ? 1 : 1 - bottomDigit);
     }
     return new SmallSciNum(diff, newPrecision);
   }
@@ -110,11 +127,8 @@ public final class SmallSciNum implements TruffleObject {
     if (number == 0.0) return 0;
     int exponent = Math.getExponent(number);
     int resultTop = EXP_TO_LOG10[exponent + 1023];
-    if (EXP_TO_LOG10[exponent + 1 + 1023] > resultTop) {
-      long topBits = (Double.doubleToRawLongBits(number) >>> 50) & 0b11;
-      if (topBits > 0) {
-        resultTop++;
-      }
+    if (getMantissaTop(number) >= MANTISSA_TOP_BREAKPOINT[exponent + 1023]) {
+      resultTop++;
     }
     return resultTop;
   }
@@ -200,7 +214,7 @@ public final class SmallSciNum implements TruffleObject {
     int resultTop = getTopDigit(result);
     int addPrecision = resultTop - bottomDigit + 1;
     if (addPrecision <= 0) {
-      return new SmallSciNum(0.0, 1 - bottomDigit);
+      return new SmallSciNum(0.0, bottomDigit > 0 ? 1 : 1 - bottomDigit);
     }
     int newPrecision;
     if (precision == 0) {
@@ -210,7 +224,6 @@ public final class SmallSciNum implements TruffleObject {
     } else {
       newPrecision = (precision < modulus.precision ? precision : modulus.precision);
     }
-    newPrecision = newPrecision < addPrecision ? newPrecision : addPrecision;
     return new SmallSciNum(result, newPrecision);
   }
 
