@@ -31,18 +31,7 @@ public class SmallRational implements TruffleObject, Comparable<SmallRational> {
     return new SmallRational(numerator, denominator);
   }
 
-  static long gcd(long a, long b) {
-    long x = Math.abs(a);
-    long y = Math.abs(b);
-    while (y != 0) {
-      long temp = y;
-      y = x % y;
-      x = temp;
-    }
-    return x;
-  }
-
-  public static long binaryGcd(long a, long b) {
+  public static long gcd(long a, long b) {
     if (a == 0) return Math.abs(b);
     if (b == 0) return Math.abs(a);
 
@@ -62,13 +51,6 @@ public class SmallRational implements TruffleObject, Comparable<SmallRational> {
     } while (b != 0);
 
     return a << shift;
-  }
-
-  static long lcm(long a, long b) {
-    if (a == 0 || b == 0) return 0;
-    long gcd = gcd(a, b);
-    // Divide first to reduce the size of the intermediate product
-    return Math.abs(a / gcd * b);
   }
 
   @Override
