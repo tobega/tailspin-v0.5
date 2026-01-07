@@ -8,9 +8,6 @@ version = '0.5-SNAPSHOT'
 
 repositories {
     mavenCentral()
-    flatDir {
-        dirs("../tailspin-v0")
-    }
 }
 ext {
     graal_version = '23.1.2'
@@ -39,5 +36,21 @@ test {
     testLogging {
         events 'failed'
         exceptionFormat 'full'
+    }
+}
+
+jar {
+    // Explicitly include only your classes and resources (resources includes META-INF)
+    from sourceSets.main.output
+
+    destinationDirectory = file(".")
+    archiveFileName = "tailspin-v0.5.jar"
+
+    manifest {
+        attributes(
+                'Implementation-Title': 'Tailspin',
+                'Implementation-Version': project.version,
+                'Truffle-Language-ID': 'tt'
+        )
     }
 }
