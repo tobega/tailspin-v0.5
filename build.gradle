@@ -50,7 +50,8 @@ jar {
         attributes(
                 'Implementation-Title': 'Tailspin',
                 'Implementation-Version': project.version,
-                'Truffle-Language-ID': 'tt'
+                'Truffle-Language-ID': 'tt',
+                'Main-Class': 'tailspin.Tailspin'
         )
     }
 }

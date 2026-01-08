@@ -6,9 +6,51 @@ Examples of programs with updated syntax in the [samples](samples) folder.
 
 Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.com/graal-truffle-tutorial-part-0-what-is-truffle)
 
-## Status update 2025-11-02
-I have now figured out mostly how I will [handle errors](https://tobega.blogspot.com/2025/08/exploring-error-handling-concepts-for.html),
-which unblocks my further work.
+## How to run your tailspin-v0.5 code
+Tailspin is a graalvm polyglot language with language code "tt", download the tailspin-v0.5.jar to get the tailspin module.
+Unfortunately Oracle doesn't make it entirely easy to figure out how to run this, but they have [docs here](https://www.graalvm.org/latest/reference-manual/embed-languages/)
+
+### Setting up deps manually
+Using GraalVM CE 21.0.2+13.1, I got it working by downloading the following into a lib directory, with xx being 23.1.1:
+- tailspin-v0.5.jar
+- polyglot-xx.jar (org.graalvm.polyglot)
+- truffle-api-xx.jar (org.graalvm.truffle)
+
+When running plain OpenJdk21, I also needed to add:
+- collections-xx.jar (org.graalvm.sdk)
+- nativeimage-xx.jar (org.graalvm.sdk)
+- word-xx.jar (org.graalvm.sdk)
+
+That will run in interpreted mode. To get truffle optimizations for graalVM, I needed to add:
+- truffle-runtime-xx.jar (org.graalvm.truffle)
+- jniutils-xx.jar (org.graalvm.sdk)
+
+Running optimized in OpenJdk21 requires a bit more
+
+### Commands to run
+Running a Tailspin file directly (see [Tailspin.java](src/main/java/tailspin/Tailspin.java))
+```shell
+java --module-path lib --add-modules org.graalvm.polyglot -jar ./lib/tailspin-v0.5.jar ./twelve_days_of_christmas.tt
+```
+
+Another option is to take more control of the call by creating your own java class to run tailspin code
+```java
+public class HelloTailspin {
+  public static void main(String[] args) {
+    try (Context truffleContext = Context.create()) {
+      System.out.println(truffleContext.eval("tt", "'Hello Tailspin!' !"));
+    }
+  }
+}
+```
+
+Then you can run with
+```shell
+java --module-path lib --add-modules tailspin.language -cp . HelloTailspin.java
+```
+
+## Status update 2026-01-04
+Settled the numeric types and added faster versions for non-gigantic numbers
 
 ## Breaking changes
 ### Names first and more words
