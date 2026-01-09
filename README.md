@@ -6,12 +6,17 @@ Examples of programs with updated syntax in the [samples](samples) folder.
 
 Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.com/graal-truffle-tutorial-part-0-what-is-truffle)
 
+## Status update 2026-01-04
+Settled the numeric types and added faster versions for non-gigantic numbers
+
 ## How to run your tailspin-v0.5 code
 Tailspin is a graalvm polyglot language with language code "tt", download the tailspin-v0.5.jar to get the tailspin module.
 Unfortunately Oracle doesn't make it entirely easy to figure out how to run this, but they have [docs here](https://www.graalvm.org/latest/reference-manual/embed-languages/)
 
 ### Setting up deps manually
-Using GraalVM CE 21.0.2+13.1, I got it working by downloading the following into a lib directory, with xx being 23.1.1:
+The recommended way is to use a build system like gradle or maven, but since I wouldn't want to subject anyone to have to use gradle, here is how to set it up manually:
+
+Using GraalVM CE 21.0.2+13.1, I got it working by downloading the following into a lib directory, with xx being 23.1.1 (change as appropriate for jdk version):
 - tailspin-v0.5.jar
 - polyglot-xx.jar (org.graalvm.polyglot)
 - truffle-api-xx.jar (org.graalvm.truffle)
@@ -25,12 +30,18 @@ That will run in interpreted mode. To get truffle optimizations for graalVM, I n
 - truffle-runtime-xx.jar (org.graalvm.truffle)
 - jniutils-xx.jar (org.graalvm.sdk)
 
-Running optimized in OpenJdk21 requires a bit more
+Running optimized in OpenJdk21 requires a bit more.
+For a start, you need to add to the command-line `-XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI --upgrade-module-path lib`
+Then you also need to add the JVMCI and truffle compiler to lib:
+- truffle-compiler-xx.jar (org.graalvm.truffle)
+- compiler-xx.jar (org.graalvm.compiler)
+
+For OpenJdk25, set xx=25.0.1
 
 ### Commands to run
 Running a Tailspin file directly (see [Tailspin.java](src/main/java/tailspin/Tailspin.java))
 ```shell
-java --module-path lib --add-modules org.graalvm.polyglot -jar ./lib/tailspin-v0.5.jar ./twelve_days_of_christmas.tt
+java --module-path lib --add-modules tailspin.language tailspin.Tailspin ./twelve_days_of_christmas.tt
 ```
 
 Another option is to take more control of the call by creating your own java class to run tailspin code
@@ -46,11 +57,8 @@ public class HelloTailspin {
 
 Then you can run with
 ```shell
-java --module-path lib --add-modules tailspin.language -cp . HelloTailspin.java
+java --module-path lib --add-modules tailspin.language HelloTailspin.java
 ```
-
-## Status update 2026-01-04
-Settled the numeric types and added faster versions for non-gigantic numbers
 
 ## Breaking changes
 ### Names first and more words
