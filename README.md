@@ -36,7 +36,9 @@ Then you also need to add the JVMCI and truffle compiler to lib:
 - truffle-compiler-xx.jar (org.graalvm.truffle)
 - compiler-xx.jar (org.graalvm.compiler)
 
-For OpenJdk25, set xx=25.0.1
+For OpenJdk25, set xx=25.0.1. For reasons of silly games with version checks, you may have to go down to 25.0.0 of compiler-xx-jar.
+You may get a warning about native access and also need to add the flag `--enable-native-access=org.graalvm.truffle`
+because of how the jdk is evolving over versions and I am compiling on an older one.
 
 ### Commands to run
 Running a Tailspin file directly (see [Tailspin.java](src/main/java/tailspin/Tailspin.java))
@@ -59,6 +61,14 @@ Then you can run with
 ```shell
 java --module-path lib --add-modules tailspin.language HelloTailspin.java
 ```
+
+### Using the returned values
+If you want to do anything other than print the returned values from Tailspin code, there are methods on the [polyglot Value](https://www.graalvm.org/truffle/javadoc/org/graalvm/polyglot/Value.html) returned.
+
+If you want to be more scrappy, it will be either a long, a TruffleString or one of the classes in the [runtime folder](src/main/java/tailspin/language/runtime)
+
+### Passing values in
+WIP
 
 ## Breaking changes
 ### Names first and more words
