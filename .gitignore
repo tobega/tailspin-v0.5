@@ -1,3 +1,4 @@
+,DS_Store
 # Compiled class file
 *.class
 
@@ -22,3 +23,6 @@ replay_pid*
 bin/
 
 .jj/
+
+*.jar
+!tailspin-v0.5.jar
