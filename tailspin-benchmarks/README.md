@@ -13,6 +13,15 @@ java -jar tailspin-benchmarks/target/benchmarks.jar -f 1 -wi 2 -i 3
 List benchmarks `java -jar tailspin-benchmarks/target/benchmarks.jar -l`
 Run particular benchmarks, select by regex `java -jar tailspin-benchmarks/target/benchmarks.jar nacci`
 
+### Profiling
+```bash
+# Check GC allocation rates
+java -jar tailspin-benchmarks/target/benchmarks.jar -prof gc
+
+# See which methods are "hot" (requires perf on Linux or DTrace on Mac)
+java -jar tailspin-benchmarks/target/benchmarks.jar -prof stack
+```
+
 ## Results
 
 2024-06-23

@@ -19,6 +19,7 @@ hs_err_pid*
 replay_pid*
 /build/
 /.gradle/
+target/
 
 bin/
 
