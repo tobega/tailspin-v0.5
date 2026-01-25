@@ -1,0 +1,179 @@
+---create and show rational
+3 / 5 !
+=3/5
+---divide rationals
+foo is 3/5;
+bar is 2/3;
+$foo / $bar !
+=9/10
+---divide rationals to integer
+foo is 3/5;
+bar is 1/5;
+$foo / $bar !
+=3
+---multiply rationals
+foo is 3/5;
+bar is 2/3;
+$foo * $bar !
+=2/5
+---multiply rationals to integer
+foo is 6/5;
+bar is 5/2;
+$foo * $bar !
+=3
+---add rationals
+foo is 3/5;
+bar is 2/3;
+$foo + $bar !
+=19/15
+---add rationals to integer
+foo is 6/5;
+bar is 4/5;
+$foo + $bar !
+=2
+---subtract rationals
+foo is 3/5;
+bar is 2/3;
+$foo - $bar !
+=-1/15
+---subtract rationals to integer
+foo is 6/5;
+bar is 1/5;
+$foo - $bar !
+=1
+---negative is always on numerator
+3 / -5 !
+=-3/5
+---negative works correctly on simplification
+15 / -25 !
+=-3/5
+---negative works correctly on simplification of double negative
+-15 / -25 !
+=3/5
+---rational modulus same base
+foo is 8/5;
+bar is 3/5;
+$foo mod $bar !
+=2/5
+---rational modulus different base
+foo is 8/5;
+bar is 3/7;
+$foo mod $bar !
+=11/35
+---zero modulus is just zero
+foo is 6/5;
+bar is 3/5;
+$foo mod $bar !
+=0
+---rational negative modulus
+foo is 8/5;
+bar is -3/7;
+$foo mod $bar !
+=11/35
+---rational modulus of negative dividend
+foo is -8/5;
+bar is 3/7;
+$foo mod $bar !
+=4/35
+---is numeric type
+3/4 -> templates
+  when <|..> do 1 !
+  otherwise 0 !
+end !
+=1
+---literal match
+3/4 -> templates
+  when <|=3/4> do 1 !
+  otherwise 0 !
+end !
+=1
+---literal match false
+4/3 -> templates
+  when <|=3/4> do 1 !
+  otherwise 0 !
+end !
+=0
+---greater than
+3/4 -> templates
+  when <|2/3..> do 1 !
+  otherwise 0 !
+end !
+=1
+---greater than false
+3/4 -> templates
+  when <|4/5..> do 1 !
+  otherwise 0 !
+end !
+=0
+---less than
+3/4 -> templates
+  when <|..4/5> do 1 !
+  otherwise 0 !
+end !
+=1
+---less than false
+3/4 -> templates
+  when <|..2/3> do 1 !
+  otherwise 0 !
+end !
+=0
+---range
+[1/3..1:1/7] !
+=[1/3, 10/21, 13/21, 16/21, 19/21]
+---square root is SciNum
+foo is 1/4;
+√$foo !
+=5.00000e-1
+---truncate divide
+foo is 7/8;
+bar is 1/5;
+$foo ~/ $bar !
+=4
+---Rationals autotype numeric
+{ foo: 1 / 5 } -> { foo: 3 } !
+={ foo: 3 }
+---autotyped numeric accepts Rational
+{ foo: 1 } -> { foo: 1 / 5 } !
+={ foo: 1/5 }
+---Rationals do not autotype string
+{ foo: 1 / 5 } -> { foo: '3' } !
+=*TypeError
+---raw message
+7/5 -> $::raw !
+=7/5
+---add integer to rational
+1 + 2/3 !
+=5/3
+---add rational to integer
+2/3 + 1 !
+=5/3
+---subtract integer from rational
+5/3 - 1 !
+=2/3
+---subtract rational from integer
+2 - 1/3 !
+=5/3
+---multiply integer to rational
+2 * 2/3 !
+=4/3
+---multiply rational to integer
+2/3 * 2 !
+=4/3
+---divide integer by rational
+1 / (2/3) !
+=3/2
+---divide rational by integer
+(2/3) / 2 !
+=1/3
+---rational mod integer
+(2/3) mod 2 !
+=2/3
+---integer mod rational
+2 mod (3/5) !
+=1/5
+---truncate divide integer by rational
+5 ~/ (2/3) !
+=7
+---truncate divide rational by integer
+(7/3) ~/ 2 !
+=1

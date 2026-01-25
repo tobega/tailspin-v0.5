@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>tailspin</groupId>
+    <artifactId>tailspin</artifactId>
+    <version>0.5-SNAPSHOT</version>
+  </parent>
+
+<artifactId>tailspin-core</artifactId>
+
+<dependencies>
+<dependency>
+  <groupId>org.graalvm.truffle</groupId>
+  <artifactId>truffle-api</artifactId>
+  <version>${graal_version}</version>
+</dependency>
+<dependency>
+  <groupId>org.graalvm.sdk</groupId>
+  <artifactId>graal-sdk</artifactId>
+  <version>${graal_version}</version>
+</dependency>
+
+<dependency>
+  <groupId>org.graalvm.truffle</groupId>
+  <artifactId>truffle-runtime</artifactId>
+  <version>23.1.2</version>
+  <scope>runtime</scope>
+</dependency>
+
+<dependency>
+  <groupId>org.junit.jupiter</groupId>
+  <artifactId>junit-jupiter</artifactId>
+  <version>${junit.version}</version>
+  <scope>test</scope>
+</dependency>
+</dependencies>
+
+<build>
+<plugins>
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.11.0</version>
+    <configuration>
+      <annotationProcessorPaths>
+        <path>
+          <groupId>org.graalvm.truffle</groupId>
+          <artifactId>truffle-dsl-processor</artifactId>
+          <version>${graal_version}</version>
+        </path>
+      </annotationProcessorPaths>
+    </configuration>
+  </plugin>
+
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>3.1.2</version>
+    <configuration>
+      <argLine>-ea -Dgraalvm.locatorDisabled=true</argLine>
+    </configuration>
+  </plugin>
+
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-jar-plugin</artifactId>
+    <version>3.3.0</version>
+    <configuration>
+      <outputDirectory>${project.basedir}</outputDirectory>
+      <finalName>../tailspin-v0.5</finalName>
+      <archive>
+        <manifest>
+          <mainClass>tailspin.Tailspin</mainClass>
+          <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+        </manifest>
+        <manifestEntries>
+          <Implementation-Title>Tailspin</Implementation-Title>
+          <Truffle-Language-ID>tt</Truffle-Language-ID>
+        </manifestEntries>
+      </archive>
+    </configuration>
+  </plugin>
+</plugins>
+</build>
+  </project>

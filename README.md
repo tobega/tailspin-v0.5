@@ -153,4 +153,4 @@ I think I want to enable another type of when-clause, `when any maybe-nothing do
 There will probably be a `when try something do`, or should it have to be a `when any try something do`? YES.
 
 ## Performance check
-See the [performance tests](src/jmh/README.md) for how Tailspin performs relative to java
+See the [performance tests](tailspin-benchmarks/README.md) for how Tailspin performs relative to java

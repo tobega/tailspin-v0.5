@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+    <groupId>tailspin</groupId>
+    <artifactId>tailspin</artifactId>
+    <version>0.5-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>tailspin-core</module>
+        <module>tailspin-benchmarks</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <graal_version>23.1.2</graal_version>
+        <junit.version>5.9.1</junit.version>
+        <jmh.version>1.37</jmh.version>
+    </properties>
+    <build>
+        <plugins>
+            <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.4.0</version>
+        <configuration>
+            <filesets>
+                <fileset>
+                    <directory>${project.basedir}</directory>
+                    <includes>
+                        <include>tailspin-v0.5.jar</include>
+                    </includes>
+                    <followSymlinks>false</followSymlinks>
+                </fileset>
+            </filesets>
+        </configuration>
+    </plugin>
+    </plugins>
+    </build>
+</project>

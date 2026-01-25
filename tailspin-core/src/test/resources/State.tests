@@ -1,0 +1,230 @@
+---define and access state
+2 -> templates
+  @ set $;
+  $@ !
+end !
+=2
+---access state from matcher
+2 -> templates
+  @ set $;
+  $@ -> # !
+  otherwise ($ + 1) * $@ !
+end !
+=6
+---set state from matcher
+2 -> templates
+  $ -> # !
+  $@ !
+  otherwise @ set $ + 1;
+end !
+=3
+---read state from outer templates
+outer templates
+  @ set $;
+  1 -> templates
+    $ + $@outer !
+  end !
+end outer
+
+4 -> outer !
+=5
+---write state to outer templates
+outer templates
+  $ -> templates
+    @outer set $ + 1;
+    $ + 2!
+  end
+  -> $ * $@ !
+end outer
+
+1 -> outer !
+=6
+---write state to outer templates at end of chain
+outer templates
+  $ -> templates
+    $ -> @outer set $ + 1;
+    $ + 2!
+  end
+  -> $ * $@!
+end outer
+
+1 -> outer !
+=6
+---read single value index of state array
+[2, 3, 4, 5] -> templates
+  @ set $;
+  $@(3) !
+end !
+=4
+---set array element
+[1, 2, 3] -> templates
+  @ set $;
+  @(1) set 5;
+  $@ !
+end !
+=[5, 2, 3]
+---set array element after output
+[1, 2, 3] -> templates
+  @ set $;
+  $@ !
+  @(1) set 5;
+end !
+=[1, 2, 3]
+---array values are immutable
+a is [1, 2, 3];
+$a -> templates
+  @ set $;
+  @(1) set 5;
+  $@ !
+end -> $(1) + $a(1) !
+=6
+---mutable array gets refrozen after modification
+[1, 2, 3] -> templates
+  @ set $;
+  @(1) set 5;
+  a is $@;
+  @(1) set 3;
+  b is $@;
+  @(1) set 79;
+  $a(1) + $b(1) !
+end !
+=8
+---read structure state
+{ foo: 3, bar: 4} -> templates
+  @ set $;
+  $@(foo:) !
+end !
+=foo´3
+---set structure property
+{ foo: 3, bar: 4} -> templates
+  @ set $;
+  @(foo:) set 5;
+  $@ !
+end !
+={ bar: 4, foo: 5 }
+---set structure property after output
+{ foo: 3, bar: 4} -> templates
+  @ set $;
+  $@ !
+  @(foo:) set 5;
+end !
+={ bar: 4, foo: 3 }
+---structure values are immutable
+a is { foo: 3"1", bar: 4};
+$a -> templates
+  @ set $;
+  @(foo:) set 5"1";
+  $@ !
+end -> $(foo:) + $a(foo:) !
+=8"1"
+---mutable structure gets refrozen after modification
+{ foo: 1"1", bar: 4}  -> templates
+  @ set $;
+  @(foo:) set 5"1";
+  a is $@;
+  @(foo:) set 3"1";
+  b is $@;
+  @(foo:) set 79"1";
+  $a(foo:) + $b(foo:) !
+end !
+=8"1"
+---read multilevel state
+5"1" -> templates
+  @ set [{ foo: [ { bar: 3"1" } ] }];
+  $ + $@(1; foo:; 1; bar:) !
+end !
+=8"1"
+---set multilevel state, with freeze and thaw
+5"1" -> templates
+  @ set [{ foo: [ { bar: 3"1" } ] }];
+  a is $@(1; foo:; 1; bar:);
+  @(1; foo:; 1; bar:) set $;
+  b is $@(1; foo:; 1; bar:);
+  @(1; foo:; 1; bar:) set 39"1";
+  $a + $b !
+end !
+=8"1"
+---set is typechecked
+{ foo: 3 } -> templates
+  @ set $;
+  @(foo:) set [];
+end -> !VOID
+=*TypeError
+---accumulator
+4 -> templates
+  @ set 0;
+  1..$ -> @ set $@ + $;
+  $@ !
+end !
+=10
+---set 3D
+5 -> templates
+  @ set [
+    [
+      [1, 2],
+      [3, 4]
+    ],
+    [
+      [6, 7],
+      [8, 9]
+    ]
+  ];
+  @(2; 1; 2) set $;
+  $@!
+end !
+=[[[1, 2], [3, 4]], [[6, 5], [8, 9]]]
+---set multiple array values
+5 -> templates
+  foo is $;
+  @ set [
+    [
+      [1, 2],
+      [3, 4]
+    ],
+    [
+      [6, 7],
+      [8, 9]
+    ]
+  ];
+  @([1, 2]; 1; 2) set 1..2 -> $foo - $;
+  $@!
+end !
+=[[[1, 4], [3, 4]], [[6, 3], [8, 9]]]
+---set multiple structure keys
+5 -> templates
+  foo is $;
+  @ set [
+    [
+      {foo: 1, bar: 2},
+      {foo: 3, bar: 4}
+    ],
+    [
+      {foo: 6, bar: 7},
+      {foo: 8, bar: 9}
+    ]
+  ];
+  @([1, 2]; 1; bar:) set 1..2 -> $foo - $;
+  $@!
+end !
+=[[{ bar: 4, foo: 1 }, { bar: 4, foo: 3 }], [{ bar: 3, foo: 6 }, { bar: 9, foo: 8 }]]
+---append array
+5 -> templates
+  @ set [1];
+  ..|@ set $;
+  $@ !
+end !
+=[1, 5]
+---append next dimension array
+5 -> templates
+  @ set [[1], [1]];
+  ..|@(1) set $;
+  $@ !
+end !
+=[[1, 5], [1]]
+---append array many values
+5 -> templates
+  @ set [1];
+  ..|@ set $..6;
+  $@ !
+end !
+=[1, 5, 6]

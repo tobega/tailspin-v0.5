@@ -1,0 +1,11 @@
+/Users/tobe/code/tailspin-v0.5/tailspin-core/src/test/java/tailspin/language/nodes/transform/ChainTest.java
+/Users/tobe/code/tailspin-v0.5/tailspin-core/src/test/java/tailspin/language/parser/ParserParserTest.java
+/Users/tobe/code/tailspin-v0.5/tailspin-core/src/test/java/tailspin/language/nodes/array/ArrayTest.java
+/Users/tobe/code/tailspin-v0.5/tailspin-core/src/test/java/tailspin/language/nodes/numeric/IntegerTest.java
+/Users/tobe/code/tailspin-v0.5/tailspin-core/src/test/java/tailspin/samples/SampleTests.java
+/Users/tobe/code/tailspin-v0.5/tailspin-core/src/test/java/tailspin/language/runtime/SmallSciNumTest.java
+/Users/tobe/code/tailspin-v0.5/tailspin-core/src/test/java/tailspin/language/nodes/structure/StructureTest.java
+/Users/tobe/code/tailspin-v0.5/tailspin-core/src/test/java/tailspin/language/nodes/transform/TemplatesTest.java
+/Users/tobe/code/tailspin-v0.5/tailspin-core/src/test/java/tailspin/language/nodes/transform/TransformTest.java
+/Users/tobe/code/tailspin-v0.5/tailspin-core/src/test/java/tailspin/language/nodes/TestUtil.java
+/Users/tobe/code/tailspin-v0.5/tailspin-core/src/test/java/tailspin/StringInput.java

@@ -1,0 +1,25 @@
+---Free comment statement
+foo is 1;
+-- Ignore this comment
+$foo !
+=1
+---Comment in array literal
+[ 1, -- the first element
+  2] !
+=[1, 2]
+---multiple ignorable text
+foo is 1;
+
+-- Ignore this comment
+-- And this
+$foo !
+=1
+---comment at end
+4 !
+-- this is a comment
+=4
+---void statement
+[1 -> templates
+  VOID
+end] !
+=[]

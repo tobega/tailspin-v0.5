@@ -1,0 +1,212 @@
+---always-true inline templates
+2 -> templates
+  otherwise 5 !
+end !
+=5
+---true inline templates
+2 -> templates
+  when <|..3> do 5 !
+end !
+=5
+---recurse on matchers
+1 -> templates
+  when <|=3> do $ !
+  otherwise $ + 1 -> # !
+end !
+=3
+---call matchers
+1 -> templates
+  $ -> # -> $ + 3 !
+  otherwise $ + 1 !
+end !
+=5
+---define and access value
+2 -> templates
+  a is $;
+  $a !
+end !
+=2
+---access block defined value from matcher
+2 -> templates
+  a is $;
+  $a -> # !
+  otherwise ($ + 1) * $a !
+end !
+=6
+---access block defined value from templates in matcher
+2 -> templates
+  a is $;
+  $a -> # !
+  otherwise ($ + 1) -> templates
+    $ * $a !
+  end !
+end !
+=6
+---access block defined value from recursive matcher
+2 -> templates
+  a is $;
+  $a -> # !
+  when <|..7> do $ + $a -> # !
+  otherwise $ + $a !
+end !
+=10
+---access defined value on many levels
+increment is 3;
+1 + $increment
+-> templates
+  $ + $increment
+  -> templates
+    $ + $increment !
+  end !
+end !
+=10
+---named templates
+add1 templates
+  $ + 1 !
+end add1
+
+3 -> add1 !
+=4
+---named source
+val source
+  5 !
+end val
+
+$val !
+=5
+---range matcher bounded by defined value
+3 -> templates
+  upper is 4;
+  $ -> # !
+  when <|1..$upper> do 5 !
+  otherwise 0 !
+end !
+=5
+---range matcher bounded by defined value in outer scope
+upper is 4;
+3 -> templates
+  when <|1..$upper> do 5 !
+  otherwise 0 !
+end !
+=5
+---sink matchers
+3 -> templates
+  @ set 0;
+  $ -> ! #
+  $@ !
+  otherwise @ set $;
+end !
+=3
+---sink templates
+foo templates
+  bar sink
+    @foo set $ + 1;
+  end bar
+  $ -> ! bar
+  $@ !
+end foo
+
+3 -> foo !
+=4
+---access defined templates needing scope from matcher
+bar templates
+  @ set 1;
+  foo templates
+    $ + $@bar !
+  end foo
+  $ -> #!
+  otherwise $ -> foo !
+end bar
+5 -> bar!
+=6
+---use defined value in recursive templates call
+  bar is 4;
+  1 -> templates
+    when <|..$bar> do $ + 1 -> # !
+    otherwise $ !
+  end !
+=5
+---access outer defined value from matcher-only templates
+foo templates
+  bar is $;
+  1 -> templates
+    when <|..1> do $bar!
+  end !
+end foo
+5 -> foo !
+=5
+---access outer state from matcher-only templates
+foo templates
+  @ set $;
+  1 -> templates
+    when <|..1> do $@foo!
+  end !
+end foo
+5 -> foo !
+=5
+---unused matcher local variable (this should really throw for being unused)
+3 -> templates
+  $ -> # !
+  otherwise
+    n is $;
+    1 !
+end !
+=1
+---matcher-only local variable
+3 -> templates
+  otherwise
+    n is $;
+    $n - 1 !
+end !
+=2
+---temporary matcher block variables
+3 -> templates
+  when <|5..> do
+    n is $;
+    $ !
+  otherwise
+    $n !
+end !
+=*java.lang.IllegalStateException
+---nested temporary variables work match,lens
+[ 5..7 ] -> templates
+  otherwise
+    foo is 3;
+    $(.. as i; -> $i + $foo) !
+end !
+=[4, 5, 6]
+---nested temporary variables work match,match
+[ 5..7 ] -> templates
+  otherwise
+    foo is 3;
+    $(.. as i; -> $i + $) -> $foo !
+end !
+=3
+---call templates needing scope from templates that don't directly need scope
+inc is 1;
+foo templates
+  $ + $inc !
+end foo
+
+1 -> templates
+  $ -> foo !
+end !
+=2
+---recursed temporary matcher variables work without template block
+[1 -> templates
+  when <|..3> do
+    n is $;
+    $ + 1 -> # !
+    $n !
+end] !
+=[3, 2, 1]
+---recursed temporary matcher variables work with template block
+[1 -> templates
+  foo is 2;
+  $ -> # !
+  when <|..3> do
+    n is $;
+    $ + 1 -> # !
+    $n + $foo !
+end] !
+=[5, 4, 3]
