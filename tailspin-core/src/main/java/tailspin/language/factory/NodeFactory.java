@@ -143,9 +143,10 @@ public class NodeFactory {
 
   public CallTarget createCallTarget(ParseNode program) {
     enterNewScope(null, sourceCode.createSection(0, sourceCode.getLength()));
+    Reference bindingsRef = currentScope().defineValue("BINDINGS");
     StatementNode programBody = visitBlock(program.content());
     Scope scope = exitScope();
-    return scope.createProgramRootNode(language, programBody);
+    return scope.createProgramRootNode(language, programBody, bindingsRef);
   }
 
   private StatementNode visitBlock(Object block) {

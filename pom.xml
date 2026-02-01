@@ -21,7 +21,15 @@
         <junit.version>5.9.1</junit.version>
         <jmh.version>1.37</jmh.version>
     </properties>
-    <build>
+  <dependencies>
+    <dependency>
+      <groupId>org.graalvm.polyglot</groupId>
+      <artifactId>polyglot</artifactId>
+      <version>23.1.2</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+  <build>
         <plugins>
             <plugin>
         <groupId>org.apache.maven.plugins</groupId>

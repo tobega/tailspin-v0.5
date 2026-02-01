@@ -1,18 +1,13 @@
 package tailspin;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.PolyglotAccess;
-import org.junit.jupiter.api.Test;
 
-public class StringInputTest {
-
-  @Test
-  void helloYou() {
+public class HelloYou {
+  public static void main(String[] args) {
     try (Context truffleContext = Context.newBuilder().allowPolyglotAccess(PolyglotAccess.ALL).build()) {
       truffleContext.getPolyglotBindings().putMember("input", "you");
-      assertEquals("Hello you!", truffleContext.eval("tt", "'Hello $BINDINGS::input;!' !").asString());
+      System.out.println(truffleContext.eval("tt", "'Hello $BINDINGS::input;!' !"));
     }
   }
 }

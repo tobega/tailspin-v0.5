@@ -48,6 +48,8 @@ java --module-path lib --add-modules tailspin.language tailspin.Tailspin ./twelv
 
 Another option is to take more control of the call by creating your own java class to run tailspin code
 ```java
+import org.graalvm.polyglot.Context;
+
 public class HelloTailspin {
   public static void main(String[] args) {
     try (Context truffleContext = Context.create()) {
@@ -59,7 +61,7 @@ public class HelloTailspin {
 
 Then you can run with
 ```shell
-java --module-path lib --add-modules tailspin.language HelloTailspin.java
+java --module-path lib --add-modules tailspin.language tailspin.HelloTailspin.java
 ```
 
 ### Using the returned values
@@ -68,7 +70,27 @@ If you want to do anything other than print the returned values from Tailspin co
 If you want to be more scrappy, it will be either a long, a TruffleString or one of the classes in the [runtime folder](src/main/java/tailspin/language/runtime)
 
 ### Passing values in
-WIP
+You may need to add `--add-opens=org.graalvm.truffle/com.oracle.truffle.polyglot=ALL-UNNAMED` on the command-line
+
+When you create the Context, you can open up access to the polyglot bindings (and more).
+Then you can add values to the polyglot bindings where `my_value` will be made accessible as `$BINDINGS::my_value` in Tailspin code.
+
+Example:
+```java
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.PolyglotAccess;
+
+public class HelloYou {
+  public static void main(String[] args) {
+    try (Context truffleContext = Context.newBuilder().allowPolyglotAccess(PolyglotAccess.ALL).build()) {
+      truffleContext.getPolyglotBindings().putMember("input", "you");
+      System.out.println(truffleContext.eval("tt", "'Hello $BINDINGS::input;!' !"));
+    }
+  }
+}
+```
+
+Longs, strings or one of the classes in the [runtime folder](src/main/java/tailspin/language/runtime) should work, other things may work.
 
 ## Breaking changes
 ### Names first and more words

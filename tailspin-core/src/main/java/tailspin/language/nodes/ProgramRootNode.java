@@ -14,7 +14,9 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import tailspin.language.TailspinLanguage;
+import tailspin.language.nodes.value.WriteContextValueNode;
 import tailspin.language.runtime.DefiningScope;
+import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.TailspinArray;
 
 public class ProgramRootNode extends RootNode {
@@ -25,18 +27,24 @@ public class ProgramRootNode extends RootNode {
 
   @SuppressWarnings("FieldMayBeFinal")
   @Child
+  private StatementNode writeBindings;
+
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child
   private StatementNode statement;
 
   private ProgramRootNode(TruffleLanguage<?> language,
-      FrameDescriptor frameDescriptor, FrameDescriptor scopeDescriptor, StatementNode statement) {
+      FrameDescriptor frameDescriptor, FrameDescriptor scopeDescriptor, Reference bindingsRef, StatementNode statement) {
     super(language, frameDescriptor);
     this.createScope = CreateProgramScopeNode.create(scopeDescriptor, INTERNAL_CODE_SOURCE);
+    this.writeBindings = WriteContextValueNode.create(bindingsRef, new GetPolyglotBindings());
     this.statement = statement;
   }
 
   @Override
   public Object execute(VirtualFrame frame) {
     createScope.executeVoid(frame);
+    writeBindings.executeVoid(frame);
     statement.executeVoid(frame);
     Object results = frame.getObjectStatic(EMIT_SLOT);
     frame.setObjectStatic(EMIT_SLOT, null);
@@ -47,8 +55,8 @@ public class ProgramRootNode extends RootNode {
     return results;
   }
 
-  public static CallTarget create(TailspinLanguage language, FrameDescriptor fd, FrameDescriptor scopeDescriptor, StatementNode body) {
-    return new ProgramRootNode(language, fd, scopeDescriptor, body).getCallTarget();
+  public static CallTarget create(TailspinLanguage language, FrameDescriptor fd, FrameDescriptor scopeDescriptor, Reference bindingsRef, StatementNode body) {
+    return new ProgramRootNode(language, fd, scopeDescriptor, bindingsRef, body).getCallTarget();
   }
 
   public static class CreateProgramScopeNode extends StatementNode {
@@ -71,6 +79,18 @@ public class ProgramRootNode extends RootNode {
     public void executeVoid(VirtualFrame frame) {
       MaterializedFrame scope = Truffle.getRuntime().createMaterializedFrame(EMPTY_ARGS, scopeDescriptor);
       frame.setObjectStatic(SCOPE_SLOT, new DefiningScope(scope, null));
+    }
+  }
+
+  public static class GetPolyglotBindings extends ValueNode {
+
+    public GetPolyglotBindings() {
+      super(INTERNAL_CODE_SOURCE);
+    }
+
+    @Override
+    public Object executeGeneric(VirtualFrame frame) {
+      return TailspinLanguage.getEnv(this).getPolyglotBindings();
     }
   }
 }

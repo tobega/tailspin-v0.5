@@ -108,9 +108,10 @@ public class Scope {
     return templates;
   }
 
-  public CallTarget createProgramRootNode(TailspinLanguage language, StatementNode programBody) {
+  public CallTarget createProgramRootNode(TailspinLanguage language, StatementNode programBody,
+      Reference bindingsRef) {
     assignReferences();
-    return ProgramRootNode.create(language, rootFdb.build(), scopeFdb.build(), programBody);
+    return ProgramRootNode.create(language, rootFdb.build(), scopeFdb.build(), bindingsRef, programBody);
   }
 
   public Reference defineValue(String identifier) {

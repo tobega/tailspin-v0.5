@@ -12,6 +12,9 @@ import tailspin.language.parser.TailspinParser;
 
 @TruffleLanguage.Registration(id = "tt", name = "Tailspin")
 public class TailspinLanguage extends TruffleLanguage<TailspinLanguageContext> {
+  private static final ContextReference<TailspinLanguageContext> CONTEXT_REF =
+      ContextReference.create(TailspinLanguage.class);
+
   private static final LanguageReference<TailspinLanguage> REF =
       LanguageReference.create(TailspinLanguage.class);
 
@@ -20,6 +23,10 @@ public class TailspinLanguage extends TruffleLanguage<TailspinLanguageContext> {
   /** Retrieve the current language instance for the given {@link Node}. */
   public static TailspinLanguage get(Node node) {
     return REF.get(node);
+  }
+
+  public static Env getEnv(Node node) {
+    return CONTEXT_REF.get(node).getEnv();
   }
 
   public final Shape rootShape = Shape.newBuilder().build();
@@ -32,6 +39,6 @@ public class TailspinLanguage extends TruffleLanguage<TailspinLanguageContext> {
 
   @Override
   protected TailspinLanguageContext createContext(Env env) {
-    return new TailspinLanguageContext();
+    return new TailspinLanguageContext(env);
   }
 }
