@@ -7,9 +7,13 @@ import static tailspin.language.runtime.Templates.SCOPE_SLOT;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.TruffleLanguage.Env;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
@@ -83,6 +87,7 @@ public class ProgramRootNode extends RootNode {
   }
 
   public static class GetPolyglotBindings extends ValueNode {
+    static final Object EMPTY_BINDINGS = new EmptyObject();
 
     public GetPolyglotBindings() {
       super(INTERNAL_CODE_SOURCE);
@@ -90,7 +95,16 @@ public class ProgramRootNode extends RootNode {
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-      return TailspinLanguage.getEnv(this).getPolyglotBindings();
+      Env env = TailspinLanguage.getEnv(this);
+      boolean canAccessBindings = env.isPolyglotBindingsAccessAllowed();
+      if (canAccessBindings) {
+        return env.getPolyglotBindings();
+      } else {
+        return EMPTY_BINDINGS;
+      }
     }
   }
+
+  @ExportLibrary(InteropLibrary.class)
+  public static class EmptyObject implements TruffleObject {}
 }
