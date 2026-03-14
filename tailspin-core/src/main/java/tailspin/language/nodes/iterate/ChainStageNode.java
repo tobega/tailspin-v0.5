@@ -22,6 +22,7 @@ import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNodeGen.GetNextStreamValueNodeGen;
 import tailspin.language.nodes.iterate.ChainStageNodeGen.SetChainCvNodeGen;
+import tailspin.language.runtime.stream.ListStream;
 
 public abstract class ChainStageNode extends TransformNode {
 
@@ -68,7 +69,16 @@ public abstract class ChainStageNode extends TransformNode {
 
   @Specialization(guards = "stream != null")
   @SuppressWarnings("unused")
-  public void doValueStream(VirtualFrame frame, ArrayList<?> stream) {
+  public void doOldValueStream(VirtualFrame frame, ArrayList<?> stream) {
+    loop.execute(frame);
+    frame.setObjectStatic(valuesSlot, null);
+  }
+
+  @Specialization
+  @SuppressWarnings("unused")
+  public void doValueStream(
+      VirtualFrame frame,
+      ListStream stream) {
     loop.execute(frame);
     frame.setObjectStatic(valuesSlot, null);
   }
@@ -142,11 +152,19 @@ public abstract class ChainStageNode extends TransformNode {
     final CountingConditionProfile emptyProfile = CountingConditionProfile.create();
 
     @Specialization(guards = {"stream != null"})
-    public Object doStream(ArrayList<?> stream) {
+    public Object doOldStream(ArrayList<?> stream) {
       if (emptyProfile.profile(stream.isEmpty())) {
         throw new EndOfStreamException();
       }
       return stream.removeFirst();
+    }
+
+    @Specialization
+    protected Object doStream(VirtualFrame frame, ListStream stream) {
+      if (emptyProfile.profile(!stream.hasNext())) {
+        throw new EndOfStreamException();
+      }
+      return stream.next();
     }
 
     public static GetNextStreamValueNode create(int valuesSlot, SourceSection sourceSection) {

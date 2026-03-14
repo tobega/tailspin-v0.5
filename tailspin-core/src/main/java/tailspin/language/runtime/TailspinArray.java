@@ -11,6 +11,7 @@ import com.oracle.truffle.api.strings.TruffleString;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
+import tailspin.language.runtime.stream.ListStream;
 
 @ExportLibrary(InteropLibrary.class)
 public class TailspinArray implements TruffleObject {
@@ -58,7 +59,7 @@ public class TailspinArray implements TruffleObject {
   public Object stream() {
     if (length == 0) return null;
     if (length == 1) return arrayElements[0];
-    return new ArrayList<>(Arrays.asList(arrayElements).subList(0, (int) length));
+    return new ListStream(arrayElements);
   }
 
   public void append(Object value) {

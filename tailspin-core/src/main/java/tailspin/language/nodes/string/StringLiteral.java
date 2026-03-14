@@ -15,6 +15,7 @@ import java.util.Objects;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.string.StringLiteralNodeGen.AppendStringNodeGen;
 import tailspin.language.runtime.TailspinStrings;
+import tailspin.language.runtime.stream.ListStream;
 
 public abstract class StringLiteral extends ValueNode {
   @Children
@@ -50,10 +51,19 @@ public abstract class StringLiteral extends ValueNode {
     }
 
     @Specialization(guards = "suffix != null")
-    TruffleString doAppendMany(TruffleString prefix, ArrayList<?> suffix) {
+    TruffleString doOldAppendMany(TruffleString prefix, ArrayList<?> suffix) {
       TruffleString result = prefix;
       for (Object part : suffix) {
         result = executeAppend(result, part);
+      }
+      return result;
+    }
+
+    @Specialization
+    TruffleString doAppendMany(TruffleString prefix, ListStream suffix) {
+      TruffleString result = prefix;
+      while (suffix.hasNext()) {
+        result = executeAppend(result, suffix.next());
       }
       return result;
     }
