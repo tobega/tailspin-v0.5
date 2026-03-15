@@ -5,7 +5,7 @@ import tailspin.language.runtime.Measure;
 
 /**
  * A benchmark that uses the naive implementation of the Fibonacci function.
- * The code calculates the 20th Fibonacci number.
+ * Tests addition speed in different number types
  */
 @SuppressWarnings("unused")
 public class FibonacciBenchmark extends TruffleBenchmark {

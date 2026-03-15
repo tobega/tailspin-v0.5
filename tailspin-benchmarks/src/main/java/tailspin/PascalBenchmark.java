@@ -5,10 +5,6 @@ import java.util.List;
 import org.openjdk.jmh.annotations.Benchmark;
 import tailspin.language.runtime.TailspinArray;
 
-/**
- * A benchmark that uses the naive implementation of the Fibonacci function.
- * The code calculates the 20th Fibonacci number.
- */
 @SuppressWarnings("unused")
 public class PascalBenchmark extends TruffleBenchmark {
   private static final String tailspinProgram = """

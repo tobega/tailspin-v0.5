@@ -9,8 +9,7 @@ import tailspin.language.runtime.SmallRational;
 import tailspin.language.runtime.TailspinArray;
 
 /**
- * A benchmark that uses the naive implementation of the Fibonacci function.
- * The code calculates the 20th Fibonacci number.
+ * Testing the performace of rational number arithmetic
  */
 @SuppressWarnings("unused")
 public class HilbertBenchmark extends TruffleBenchmark {

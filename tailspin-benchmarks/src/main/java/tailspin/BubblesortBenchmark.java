@@ -10,6 +10,7 @@ import tailspin.language.runtime.TailspinArray;
 
 /**
  * A benchmark that uses a simple implementation of bubblesort.
+ * Tests iteration, recursion and state changes
  */
 @SuppressWarnings("unused")
 public class BubblesortBenchmark extends TruffleBenchmark {

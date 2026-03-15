@@ -4,6 +4,7 @@ import org.openjdk.jmh.annotations.Benchmark;
 
 /**
  * Modified List benchmark from "arewefastenoughyet" for SOM
+ * Tests struct creation and manipulation
  */
 @SuppressWarnings("unused")
 public class ListBenchmark extends TruffleBenchmark {
