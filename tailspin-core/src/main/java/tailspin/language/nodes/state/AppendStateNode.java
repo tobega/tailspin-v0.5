@@ -3,10 +3,10 @@ package tailspin.language.nodes.state;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.TailspinArray;
+import tailspin.language.runtime.stream.ListStream;
 
 @NodeChild(value = "target", type = ValueNode.class)
 @NodeChild(value = "value", type = ValueNode.class)
@@ -19,10 +19,10 @@ public abstract class AppendStateNode extends ValueNode {
   public abstract Object executeDirect(Object target, Object value);
 
   @Specialization
-  protected Object appendArrayMany(TailspinArray array, ArrayList<?> values) {
+  protected Object appendArrayMany(TailspinArray array, ListStream values) {
     TailspinArray result = array.getThawed();
-    for (Object value : values) {
-      executeDirect(result, value);
+    while (values.hasNext()) {
+      executeDirect(result, values.next());
     }
     return result;
   }

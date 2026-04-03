@@ -3,11 +3,12 @@ package tailspin.language.nodes.array;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.TailspinArray;
+import tailspin.language.runtime.stream.ListStream;
 
 public class ArrayLiteral extends ValueNode {
   private final int buildSlot;
@@ -31,12 +32,12 @@ public class ArrayLiteral extends ValueNode {
   @Override
   @ExplodeLoop
   public Object executeGeneric(VirtualFrame frame) {
-    frame.setObjectStatic(buildSlot, new ArrayList<>());
+    frame.setObjectStatic(buildSlot, new ListStream());
     for (TransformNode content : this.contents) {
       content.executeTransform(frame);
     }
-    ArrayList<?> collector = (ArrayList<?>) frame.getObjectStatic(buildSlot);
+    ListStream collector = (ListStream) frame.getObjectStatic(buildSlot);
     frame.setObjectStatic(buildSlot, null);
-    return TailspinArray.value(collector == null ? new Object[0] : collector.toArray());
+    return TailspinArray.value(collector == null ? new Object[0] : Arrays.copyOf(collector.getArray(), collector.size()));
   }
 }

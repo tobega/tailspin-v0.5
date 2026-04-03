@@ -7,7 +7,6 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.GetContextFrameNode;
@@ -78,10 +77,10 @@ public abstract class ArrayReadNode extends ValueNode {
     }
 
     @Specialization
-    protected Object doRange(TailspinArray array, ArrayList<?> range, Reference indexVar) {
-      ArrayList<Object> elements = new ArrayList<>();
-      for (Object o : range) {
-        elements.add(executeArrayRead(array, o, indexVar));
+    protected Object doRange(TailspinArray array, ListStream range, Reference indexVar) {
+      ListStream elements = new ListStream();
+      while (range.hasNext()) {
+        elements.append(executeArrayRead(array, range.next(), indexVar));
       }
       return elements;
     }
@@ -99,20 +98,13 @@ public abstract class ArrayReadNode extends ValueNode {
 
   @Specialization
   @SuppressWarnings("unchecked")
-  protected Object doOldMultiSelect(VirtualFrame frame, ArrayList<?> multiple) {
-    ((ArrayList<Object>) multiple).replaceAll(array -> executeDirect(frame, array));
-    return multiple;
-  }
-
-  @Specialization
-  @SuppressWarnings("unchecked")
   protected Object doMultiSelect(VirtualFrame frame, ListStream multiple) {
-    Object[] arrays = multiple.getItems();
-    Object[] result = new Object[arrays.length];
-    for (int i = 0; i < arrays.length; i++) {
-      result[i] = executeDirect(frame, arrays[i]);
+    Object[] arrays = multiple.getArray();
+    int size = multiple.size();
+    for (int i = 0; i < size; i++) {
+      arrays[i] = executeDirect(frame, arrays[i]);
     }
-    return new ListStream(result);
+    return multiple;
   }
 
   @Specialization

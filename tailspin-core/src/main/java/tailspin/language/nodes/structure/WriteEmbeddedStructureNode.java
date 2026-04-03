@@ -7,9 +7,9 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.Structure;
+import tailspin.language.runtime.stream.ListStream;
 
 @NodeChild(value = "target", type = ValueNode.class)
 @NodeChild(value = "value", type = ValueNode.class)
@@ -35,11 +35,11 @@ public abstract class WriteEmbeddedStructureNode extends ValueNode {
   }
 
   @Specialization
-  protected Structure writeManyEmbedded(Structure target, ArrayList<?> values,
+  protected Structure writeManyEmbedded(Structure target, ListStream values,
       @CachedLibrary(limit = "2") @Shared("get") DynamicObjectLibrary getLibrary,
       @CachedLibrary(limit = "2") @Shared("put") DynamicObjectLibrary putLibrary) {
-    for (Object valueObject : values) {
-      Structure value = (Structure) valueObject;
+    while (values.hasNext()) {
+      Structure value = (Structure) values.next();
       for (Object key : getLibrary.getKeyArray(value)) {
         putLibrary.put(target, key, getLibrary.getOrDefault(value, key, null));
       }

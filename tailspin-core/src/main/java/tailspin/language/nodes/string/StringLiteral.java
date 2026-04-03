@@ -9,7 +9,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.strings.TruffleString;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import tailspin.language.nodes.ValueNode;
@@ -48,15 +47,6 @@ public abstract class StringLiteral extends ValueNode {
     TruffleString doAppendString(TruffleString prefix, TruffleString suffix,
         @Cached @Shared TruffleString.ConcatNode concatNode) {
       return TailspinStrings.concat(prefix, suffix, concatNode);
-    }
-
-    @Specialization(guards = "suffix != null")
-    TruffleString doOldAppendMany(TruffleString prefix, ArrayList<?> suffix) {
-      TruffleString result = prefix;
-      for (Object part : suffix) {
-        result = executeAppend(result, part);
-      }
-      return result;
     }
 
     @Specialization

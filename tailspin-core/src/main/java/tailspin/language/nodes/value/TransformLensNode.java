@@ -6,13 +6,14 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
+import java.util.Arrays;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.transform.AppendResultNode.MergeResultNode;
 import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
 import tailspin.language.runtime.IndexedArrayValue;
 import tailspin.language.runtime.TailspinArray;
+import tailspin.language.runtime.stream.ListStream;
 
 @NodeChild(type = ValueNode.class)
 public abstract class TransformLensNode extends ValueNode {
@@ -38,14 +39,14 @@ public abstract class TransformLensNode extends ValueNode {
 
   @Specialization
   @SuppressWarnings("unchecked")
-  TailspinArray doTransformMany(VirtualFrame frame, ArrayList<?> many,
+  TailspinArray doTransformMany(VirtualFrame frame, ListStream many,
       @Cached(inline = true) MergeResultNode mergeResultNode) {
-    ArrayList<Object> elements = new ArrayList<>();
-    for (Object one : many) {
-      elements = (ArrayList<Object>) mergeResultNode.execute(this, elements,
-          executeDirect(frame, one));
+    ListStream elements = new ListStream();
+    while (many.hasNext()) {
+      elements = (ListStream) mergeResultNode.execute(this, elements,
+          executeDirect(frame, many.next()));
     }
-    return TailspinArray.value(elements.toArray());
+    return TailspinArray.value(Arrays.copyOf(elements.getArray(), elements.size()));
   }
 
   @Specialization

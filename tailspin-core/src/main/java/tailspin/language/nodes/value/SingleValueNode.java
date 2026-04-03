@@ -6,10 +6,10 @@ import com.oracle.truffle.api.dsl.Executed;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
+import tailspin.language.runtime.stream.ListStream;
 
 public abstract class SingleValueNode extends ValueNode {
   @SuppressWarnings("FieldMayBeFinal")
@@ -36,9 +36,9 @@ public abstract class SingleValueNode extends ValueNode {
   }
 
   @Specialization
-  Object doResultIterator(ArrayList<?> values) {
+  Object doResultIterator(ListStream values) {
     if (values.size() != 1) throw new AssertionError("Not single value " + values);
-    return values.getFirst();
+    return values.next();
   }
 
   @Specialization(guards = "value == null")

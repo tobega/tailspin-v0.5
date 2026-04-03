@@ -7,8 +7,6 @@ import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.nodes.TestUtil;
@@ -24,6 +22,7 @@ import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
 import tailspin.language.nodes.value.TransformResultNode;
 import tailspin.language.runtime.Templates;
+import tailspin.language.runtime.stream.ListStream;
 
 public class ChainTest {
   SourceSection sourceSection = INTERNAL_CODE_SOURCE;
@@ -45,13 +44,13 @@ public class ChainTest {
         sourceSection);
     source.setResultSlot(resultSlot);
     @SuppressWarnings("unchecked")
-    Iterator<Object> result = ((ArrayList<Object>) TestUtil.evaluate(new TransformResultNode(source,
+    ListStream stream = (ListStream) TestUtil.evaluate(new TransformResultNode(source,
             sourceSection), fdb.build(),
-        List.of())).iterator();
-    assertEquals(13L, result.next());
-    assertEquals(14L, result.next());
-    assertEquals(15L, result.next());
-    assertFalse(result.hasNext());
+        List.of());
+    assertEquals(13L, stream.next());
+    assertEquals(14L, stream.next());
+    assertEquals(15L, stream.next());
+    assertFalse(stream.hasNext());
   }
 
   @Test

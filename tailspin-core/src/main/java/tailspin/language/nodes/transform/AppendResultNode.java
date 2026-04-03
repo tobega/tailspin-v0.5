@@ -7,7 +7,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
-import java.util.ArrayList;
+import tailspin.language.runtime.stream.ListStream;
 
 public class AppendResultNode extends Node {
   final CountingConditionProfile previousNull = CountingConditionProfile.create();
@@ -21,19 +21,19 @@ public class AppendResultNode extends Node {
     if (previousNull.profile(previous == null)) {
       frame.setObjectStatic(resultSlot, result);
     } else if (hasResult.profile(result != null)) {
-      if (previousStream.profile(previous instanceof ArrayList<?>)) {
-        if (resultStream.profile(result instanceof ArrayList<?>)) {
-          castExact(previous, ArrayList.class).addAll(castExact(result, ArrayList.class));
+      if (previousStream.profile(previous instanceof ListStream)) {
+        if (resultStream.profile(result instanceof ListStream)) {
+          castExact(previous, ListStream.class).merge(castExact(result, ListStream.class));
         } else {
-          castExact(previous, ArrayList.class).add(result);
+          castExact(previous, ListStream.class).append(result);
         }
-      } else if (resultStream.profile(result instanceof ArrayList<?>)) {
-        castExact(result, ArrayList.class).addFirst(previous);
+      } else if (resultStream.profile(result instanceof ListStream)) {
+        castExact(result, ListStream.class).prepend(previous);
         frame.setObjectStatic(resultSlot, result);
       } else {
-        ArrayList<Object> values = new ArrayList<>();
-        values.add(previous);
-        values.add(result);
+        ListStream values = new ListStream();
+        values.append(previous);
+        values.append(result);
         frame.setObjectStatic(resultSlot, values);
       }
     }
@@ -59,30 +59,30 @@ public class AppendResultNode extends Node {
 
     @Specialization
     @SuppressWarnings("unchecked")
-    ArrayList<?> doMerge(ArrayList<?> previous, ArrayList<?> result) {
-      castExact(previous, ArrayList.class).addAll(castExact(result, ArrayList.class));
+    ListStream doMerge(ListStream previous, ListStream result) {
+      previous.merge(result);
       return previous;
     }
 
     @Specialization(guards = "result != null")
     @SuppressWarnings("unchecked")
-    ArrayList<?> doAppend(ArrayList<?> previous, Object result) {
-      castExact(previous, ArrayList.class).add(result);
+    ListStream doAppend(ListStream previous, Object result) {
+      previous.append(result);
       return previous;
     }
 
     @Specialization(guards = "previous != null")
     @SuppressWarnings("unchecked")
-    ArrayList<?> doPrepend(Object previous, ArrayList<?> result) {
-      castExact(result, ArrayList.class).addFirst(previous);
+    ListStream doPrepend(Object previous, ListStream result) {
+      result.prepend(previous);
       return result;
     }
 
     @Specialization
-    ArrayList<?> doNewList(Object previous, Object result) {
-      ArrayList<Object> list = new ArrayList<>();
-      list.add(previous);
-      list.add(result);
+    ListStream doNewList(Object previous, Object result) {
+      ListStream list = new ListStream();
+      list.append(previous);
+      list.append(result);
       return list;
     }
   }

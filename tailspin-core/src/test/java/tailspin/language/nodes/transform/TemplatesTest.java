@@ -10,8 +10,6 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import tailspin.language.nodes.MatcherNode;
@@ -28,6 +26,7 @@ import tailspin.language.nodes.numeric.SubtractNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.Templates;
+import tailspin.language.runtime.stream.ListStream;
 
 public class TemplatesTest {
   SourceSection sourceSection = INTERNAL_CODE_SOURCE;
@@ -51,10 +50,10 @@ public class TemplatesTest {
             sourceSection),
         sourceSection);
     @SuppressWarnings("unchecked")
-    Iterator<Object> result = ((ArrayList<Object>) callTarget.call(null, 3L, null)).iterator();
-    assertEquals(8L, result.next());
-    assertEquals(10L, result.next());
-    assertFalse(result.hasNext());
+    ListStream stream = (ListStream) callTarget.call(null, 3L, null);
+    assertEquals(8L, stream.next());
+    assertEquals(10L, stream.next());
+    assertFalse(stream.hasNext());
   }
 
   @Test

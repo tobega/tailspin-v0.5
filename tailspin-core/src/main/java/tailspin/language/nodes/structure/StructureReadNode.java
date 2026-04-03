@@ -7,7 +7,6 @@ import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.Structure;
@@ -38,20 +37,13 @@ public abstract class StructureReadNode extends ValueNode {
 
   @Specialization
   @SuppressWarnings("unchecked")
-  protected Object doOldMultiSelect(ArrayList<?> multiple) {
-    ((ArrayList<Object>) multiple).replaceAll(this::executeDirect);
-    return multiple;
-  }
-
-  @Specialization
-  @SuppressWarnings("unchecked")
   protected Object doMultiSelect(ListStream multiple) {
-    Object[] arrays = multiple.getItems();
-    Object[] result = new Object[arrays.length];
-    for (int i = 0; i < arrays.length; i++) {
-      result[i] = executeDirect(arrays[i]);
+    Object[] arrays = multiple.getArray();
+    int size = multiple.size();
+    for (int i = 0; i < size; i++) {
+      arrays[i] = executeDirect(arrays[i]);
     }
-    return new ListStream(result);
+    return multiple;
   }
 
   @Specialization

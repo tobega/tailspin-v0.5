@@ -7,7 +7,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.TagNode;
@@ -44,34 +43,16 @@ public abstract class WriteKeyValueNode extends ValueNode {
     return target;
   }
 
-  @Specialization(guards = "targets.size() == values.size()")
-  @SuppressWarnings("unchecked")
-  protected Object doOldMany(VirtualFrame frame, ArrayList<?> targets, ArrayList<?> values) {
-    for (int i = 0; i < targets.size(); i++) {
-      ((ArrayList<Object>) targets).set(i, executeDirect(frame, targets.get(i), values.get(i)));
-    }
-    return targets;
-  }
-
-  @Specialization(guards = "targetStream.getItems().length == values.size()")
-  @SuppressWarnings("unchecked")
-  protected Object doDeprecatedMany(VirtualFrame frame, ListStream targetStream, ArrayList<?> values) {
-    Object[] targets = targetStream.getItems();
-    for (int i = 0; i < targets.length; i++) {
-      targets[i] = executeDirect(frame, targets[i], values.get(i));
-    }
-    return targetStream;
-  }
-
-  @Specialization(guards = "targetStream.getItems().length == valueStream.getItems().length")
+  @Specialization(guards = "targetStream.size() == valueStream.size()")
   @SuppressWarnings("unchecked")
   protected Object doMany(VirtualFrame frame, ListStream targetStream, ListStream valueStream) {
-    Object[] targets = targetStream.getItems();
-    Object[] values = valueStream.getItems();
-    for (int i = 0; i < targets.length; i++) {
+    Object[] targets = targetStream.getArray();
+    Object[] values = valueStream.getArray();
+    int size = targetStream.size();
+    for (int i = 0; i < size; i++) {
       targets[i] = executeDirect(frame, targets[i], values[i]);
     }
-    return targets;
+    return targetStream;
   }
 
   @Fallback

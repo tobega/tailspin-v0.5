@@ -3,7 +3,6 @@ package tailspin.language.nodes.array;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
@@ -40,50 +39,23 @@ public abstract class ArrayMutateNode extends ValueNode {
     return result;
   }
 
-  @Specialization(guards = "indexes.getArraySize() == values.size()")
-  protected Object doOldArray(TailspinArray array, TailspinArray indexes, ArrayList<?> values) {
-    TailspinArray result = array.getThawed();
-    for (int i = 0; i < indexes.getArraySize(); i++) {
-      executeDirect(result, indexes.getNative(i, false), values.get(i));
-    }
-    return result;
-  }
-
-  @Specialization(guards = "indexes.getArraySize() == valueStream.getItems().length")
+  @Specialization(guards = "indexes.getArraySize() == valueStream.size()")
   protected Object doArray(TailspinArray array, TailspinArray indexes, ListStream valueStream) {
     TailspinArray result = array.getThawed();
-    Object[] values = valueStream.getItems();
+    Object[] values = valueStream.getArray();
     for (int i = 0; i < indexes.getArraySize(); i++) {
       executeDirect(result, indexes.getNative(i, false), values[i]);
     }
     return result;
   }
 
-  @Specialization(guards = "arrays.size() == values.size()")
-  @SuppressWarnings("unchecked")
-  protected Object doOldMany(ArrayList<?> arrays, Object index, ArrayList<?> values) {
-    for (int i = 0; i < arrays.size(); i++) {
-      ((ArrayList<Object>) arrays).set(i, executeDirect(arrays.get(i), index, values.get(i)));
-    }
-    return arrays;
-  }
-
-  @Specialization(guards = "arrayStream.getItems().length == values.size()")
-  @SuppressWarnings("unchecked")
-  protected Object doDeprecatedMany(ListStream arrayStream, Object index, ArrayList<?> values) {
-    Object[] arrays = arrayStream.getItems();
-    for (int i = 0; i < arrays.length; i++) {
-      arrays[i] = executeDirect(arrays[i], index, values.get(i));
-    }
-    return arrayStream;
-  }
-
-  @Specialization(guards = "arrayStream.getItems().length == valueStream.getItems().length")
+  @Specialization(guards = "arrayStream.size() == valueStream.size()")
   @SuppressWarnings("unchecked")
   protected Object doMany(ListStream arrayStream, Object index, ListStream valueStream) {
-    Object[] arrays = arrayStream.getItems();
-    Object[] values = valueStream.getItems();
-    for (int i = 0; i < arrays.length; i++) {
+    Object[] arrays = arrayStream.getArray();
+    Object[] values = valueStream.getArray();
+    int size = arrayStream.size();
+    for (int i = 0; i < size; i++) {
       arrays[i] = executeDirect(arrays[i], index, values[i]);
     }
     return arrayStream;

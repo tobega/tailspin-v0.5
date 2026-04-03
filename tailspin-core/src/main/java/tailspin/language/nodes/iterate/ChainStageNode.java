@@ -17,7 +17,6 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNodeGen.GetNextStreamValueNodeGen;
@@ -65,13 +64,6 @@ public abstract class ChainStageNode extends TransformNode {
   @SuppressWarnings("unused")
   public void doNull(VirtualFrame frame, Object value) {
     // Do nothing
-  }
-
-  @Specialization(guards = "stream != null")
-  @SuppressWarnings("unused")
-  public void doOldValueStream(VirtualFrame frame, ArrayList<?> stream) {
-    loop.execute(frame);
-    frame.setObjectStatic(valuesSlot, null);
   }
 
   @Specialization
@@ -150,14 +142,6 @@ public abstract class ChainStageNode extends TransformNode {
     public abstract Object executeStream(VirtualFrame frame);
 
     final CountingConditionProfile emptyProfile = CountingConditionProfile.create();
-
-    @Specialization(guards = {"stream != null"})
-    public Object doOldStream(ArrayList<?> stream) {
-      if (emptyProfile.profile(stream.isEmpty())) {
-        throw new EndOfStreamException();
-      }
-      return stream.removeFirst();
-    }
 
     @Specialization
     protected Object doStream(VirtualFrame frame, ListStream stream) {

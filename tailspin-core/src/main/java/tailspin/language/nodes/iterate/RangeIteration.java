@@ -19,7 +19,6 @@ import com.oracle.truffle.api.nodes.RepeatingNode;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
 import com.oracle.truffle.api.source.SourceSection;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNode.SetChainCvNode;
@@ -38,6 +37,7 @@ import tailspin.language.runtime.Rational;
 import tailspin.language.runtime.SciNum;
 import tailspin.language.runtime.SmallRational;
 import tailspin.language.runtime.SmallSciNum;
+import tailspin.language.runtime.stream.ListStream;
 
 @NodeChild(value = "start", type = ValueNode.class)
 @NodeChild(value = "end", type = ValueNode.class)
@@ -139,7 +139,7 @@ public abstract class RangeIteration extends TransformNode {
   public void doIterate(VirtualFrame frame, Object start, Object end, Object increment) {
     initializeNode.executeInitialize(frame, start, end, increment);
     if (isLensRange) {
-      frame.setObjectStatic(getResultSlot(), new ArrayList<>());
+      frame.setObjectStatic(getResultSlot(), new ListStream());
     }
     loop.execute(frame);
   }
