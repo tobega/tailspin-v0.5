@@ -16,6 +16,7 @@ import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.IndexedArrayValue;
 import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.TailspinArray;
+import tailspin.language.runtime.stream.ListStream;
 
 @NodeChild(value = "array", type = ValueNode.class)
 public abstract class ArrayReadNode extends ValueNode {
@@ -69,11 +70,11 @@ public abstract class ArrayReadNode extends ValueNode {
     @Specialization
     protected Object doArray(TailspinArray array, TailspinArray selection, Reference indexVar) {
       long length = selection.getArraySize();
-      ArrayList<Object> elements = new ArrayList<>();
+      Object[] elements = new Object[Math.toIntExact(length)];
       for (int i = 0; i < length; i++) {
-        elements.add(executeArrayRead(array, selection.getNative(i, false), indexVar));
+        elements[i] = executeArrayRead(array, selection.getNative(i, false), indexVar);
       }
-      return elements;
+      return new ListStream(elements);
     }
 
     @Specialization
@@ -98,9 +99,20 @@ public abstract class ArrayReadNode extends ValueNode {
 
   @Specialization
   @SuppressWarnings("unchecked")
-  protected Object doMultiSelect(VirtualFrame frame, ArrayList<?> multiple) {
+  protected Object doOldMultiSelect(VirtualFrame frame, ArrayList<?> multiple) {
     ((ArrayList<Object>) multiple).replaceAll(array -> executeDirect(frame, array));
     return multiple;
+  }
+
+  @Specialization
+  @SuppressWarnings("unchecked")
+  protected Object doMultiSelect(VirtualFrame frame, ListStream multiple) {
+    Object[] arrays = multiple.getItems();
+    Object[] result = new Object[arrays.length];
+    for (int i = 0; i < arrays.length; i++) {
+      result[i] = executeDirect(frame, arrays[i]);
+    }
+    return new ListStream(result);
   }
 
   @Specialization

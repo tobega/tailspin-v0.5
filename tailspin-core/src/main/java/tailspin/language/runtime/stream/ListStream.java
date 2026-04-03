@@ -9,4 +9,6 @@ public final class ListStream {
   public boolean hasNext() { return index < items.length; }
 
   public Object next() { return items[index++]; }
+
+  public Object[] getItems() { return items; }
 }

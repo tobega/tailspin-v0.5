@@ -13,6 +13,7 @@ import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.TagNode;
 import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.VocabularyType;
+import tailspin.language.runtime.stream.ListStream;
 
 @NodeChild(value = "target", type = ValueNode.class)
 @NodeChild(value = "value", type = ValueNode.class)
@@ -45,15 +46,36 @@ public abstract class WriteKeyValueNode extends ValueNode {
 
   @Specialization(guards = "targets.size() == values.size()")
   @SuppressWarnings("unchecked")
-  protected Object doMany(VirtualFrame frame, ArrayList<?> targets, ArrayList<?> values) {
+  protected Object doOldMany(VirtualFrame frame, ArrayList<?> targets, ArrayList<?> values) {
     for (int i = 0; i < targets.size(); i++) {
       ((ArrayList<Object>) targets).set(i, executeDirect(frame, targets.get(i), values.get(i)));
     }
     return targets;
   }
 
+  @Specialization(guards = "targetStream.getItems().length == values.size()")
+  @SuppressWarnings("unchecked")
+  protected Object doDeprecatedMany(VirtualFrame frame, ListStream targetStream, ArrayList<?> values) {
+    Object[] targets = targetStream.getItems();
+    for (int i = 0; i < targets.length; i++) {
+      targets[i] = executeDirect(frame, targets[i], values.get(i));
+    }
+    return targetStream;
+  }
+
+  @Specialization(guards = "targetStream.getItems().length == valueStream.getItems().length")
+  @SuppressWarnings("unchecked")
+  protected Object doMany(VirtualFrame frame, ListStream targetStream, ListStream valueStream) {
+    Object[] targets = targetStream.getItems();
+    Object[] values = valueStream.getItems();
+    for (int i = 0; i < targets.length; i++) {
+      targets[i] = executeDirect(frame, targets[i], values[i]);
+    }
+    return targets;
+  }
+
   @Fallback
-  protected Object doIllegal(Object target, Object ignored) {
-    throw new TypeError(String.format("Cannot write %s by %s", target.getClass(), type), this);
+  protected Object doIllegal(Object target, Object values) {
+    throw new TypeError(String.format("Cannot write %s by %s for %s", target.getClass(), type, values.getClass()), this);
   }
 }

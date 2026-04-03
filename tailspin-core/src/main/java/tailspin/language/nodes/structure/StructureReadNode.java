@@ -12,6 +12,7 @@ import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.Structure;
 import tailspin.language.runtime.VocabularyType;
+import tailspin.language.runtime.stream.ListStream;
 
 @NodeChild(value = "structure", type = ValueNode.class)
 public abstract class StructureReadNode extends ValueNode {
@@ -37,9 +38,20 @@ public abstract class StructureReadNode extends ValueNode {
 
   @Specialization
   @SuppressWarnings("unchecked")
-  protected Object doMultiSelect(ArrayList<?> multiple) {
+  protected Object doOldMultiSelect(ArrayList<?> multiple) {
     ((ArrayList<Object>) multiple).replaceAll(this::executeDirect);
     return multiple;
+  }
+
+  @Specialization
+  @SuppressWarnings("unchecked")
+  protected Object doMultiSelect(ListStream multiple) {
+    Object[] arrays = multiple.getItems();
+    Object[] result = new Object[arrays.length];
+    for (int i = 0; i < arrays.length; i++) {
+      result[i] = executeDirect(arrays[i]);
+    }
+    return new ListStream(result);
   }
 
   @Specialization

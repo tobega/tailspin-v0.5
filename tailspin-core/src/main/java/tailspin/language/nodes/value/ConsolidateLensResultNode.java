@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.IndexedArrayValue;
 import tailspin.language.runtime.TailspinArray;
+import tailspin.language.runtime.stream.ListStream;
 
 @NodeChild(type = ValueNode.class)
 public abstract class ConsolidateLensResultNode extends ValueNode {
@@ -21,10 +22,20 @@ public abstract class ConsolidateLensResultNode extends ValueNode {
   public abstract Object executeDirect(VirtualFrame frame, Object value);
 
   @Specialization
-  TailspinArray doConsolidateMany(VirtualFrame frame, ArrayList<?> many) {
+  TailspinArray doOldConsolidateMany(VirtualFrame frame, ArrayList<?> many) {
     Object[] elements = new Object[many.size()];
     for (int i = 0; i < many.size(); i++) {
       elements[i] = executeDirect(frame, many.get(i));
+    }
+    return TailspinArray.value(elements);
+  }
+
+  @Specialization
+  TailspinArray doConsolidateMany(VirtualFrame frame, ListStream many) {
+    Object[] result = many.getItems();
+    Object[] elements = new Object[result.length];
+    for (int i = 0; i < result.length; i++) {
+      elements[i] = executeDirect(frame, result[i]);
     }
     return TailspinArray.value(elements);
   }

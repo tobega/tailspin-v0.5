@@ -8,6 +8,7 @@ import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.TailspinArray;
+import tailspin.language.runtime.stream.ListStream;
 
 @NodeChild(value = "array", type = ValueNode.class)
 @NodeChild(value = "lens", type = ValueNode.class)
@@ -40,7 +41,7 @@ public abstract class ArrayMutateNode extends ValueNode {
   }
 
   @Specialization(guards = "indexes.getArraySize() == values.size()")
-  protected Object doArray(TailspinArray array, TailspinArray indexes, ArrayList<?> values) {
+  protected Object doOldArray(TailspinArray array, TailspinArray indexes, ArrayList<?> values) {
     TailspinArray result = array.getThawed();
     for (int i = 0; i < indexes.getArraySize(); i++) {
       executeDirect(result, indexes.getNative(i, false), values.get(i));
@@ -48,19 +49,50 @@ public abstract class ArrayMutateNode extends ValueNode {
     return result;
   }
 
+  @Specialization(guards = "indexes.getArraySize() == valueStream.getItems().length")
+  protected Object doArray(TailspinArray array, TailspinArray indexes, ListStream valueStream) {
+    TailspinArray result = array.getThawed();
+    Object[] values = valueStream.getItems();
+    for (int i = 0; i < indexes.getArraySize(); i++) {
+      executeDirect(result, indexes.getNative(i, false), values[i]);
+    }
+    return result;
+  }
+
   @Specialization(guards = "arrays.size() == values.size()")
   @SuppressWarnings("unchecked")
-  protected Object doMany(ArrayList<?> arrays, Object index, ArrayList<?> values) {
+  protected Object doOldMany(ArrayList<?> arrays, Object index, ArrayList<?> values) {
     for (int i = 0; i < arrays.size(); i++) {
       ((ArrayList<Object>) arrays).set(i, executeDirect(arrays.get(i), index, values.get(i)));
     }
     return arrays;
   }
 
+  @Specialization(guards = "arrayStream.getItems().length == values.size()")
+  @SuppressWarnings("unchecked")
+  protected Object doDeprecatedMany(ListStream arrayStream, Object index, ArrayList<?> values) {
+    Object[] arrays = arrayStream.getItems();
+    for (int i = 0; i < arrays.length; i++) {
+      arrays[i] = executeDirect(arrays[i], index, values.get(i));
+    }
+    return arrayStream;
+  }
+
+  @Specialization(guards = "arrayStream.getItems().length == valueStream.getItems().length")
+  @SuppressWarnings("unchecked")
+  protected Object doMany(ListStream arrayStream, Object index, ListStream valueStream) {
+    Object[] arrays = arrayStream.getItems();
+    Object[] values = valueStream.getItems();
+    for (int i = 0; i < arrays.length; i++) {
+      arrays[i] = executeDirect(arrays[i], index, values[i]);
+    }
+    return arrayStream;
+  }
+
   @Specialization
   @SuppressWarnings("unused")
   protected Object doIllegal(Object receiver, Object lens, Object value) {
-    throw new TypeError(String.format("Cannot access %s by %s", receiver.getClass(), lens.getClass()),
+    throw new TypeError(String.format("Cannot access %s by %s for %s", receiver.getClass(), lens.getClass(), value.getClass()),
         this);
   }
 }
