@@ -4,6 +4,9 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.strings.TruffleString;
 import com.oracle.truffle.api.strings.TruffleStringBuilder;
@@ -61,6 +64,18 @@ public abstract class StreamNode extends TransformNode {
     }
     if (!part.isEmpty()) {
       appendResultNode.execute(frame, getResultSlot(), toStringNode.execute(part));
+    }
+  }
+
+  @Specialization(guards = "interop.hasIterator(iterable)", limit = "3")
+  void doInteropIterable(VirtualFrame frame, Object iterable,
+      @CachedLibrary("iterable") InteropLibrary interop) {
+    try {
+      Object iterator = interop.getIterator(iterable);
+      appendResultNode.execute(frame, getResultSlot(), iterator);
+
+    } catch (UnsupportedMessageException e) {
+      throw new AssertionError(e);
     }
   }
 

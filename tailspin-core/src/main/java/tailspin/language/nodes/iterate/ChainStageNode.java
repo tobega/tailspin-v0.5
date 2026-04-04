@@ -12,6 +12,10 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.StopIterationException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
@@ -71,6 +75,14 @@ public abstract class ChainStageNode extends TransformNode {
   public void doValueStream(
       VirtualFrame frame,
       ListStream stream) {
+    loop.execute(frame);
+    frame.setObjectStatic(valuesSlot, null);
+  }
+
+  @Specialization(guards = "interop.isIterator(iterator)", limit = "3")
+  @SuppressWarnings("unused")
+   public void doIterator(VirtualFrame frame, Object iterator,
+      @CachedLibrary("iterator") InteropLibrary interop) {
     loop.execute(frame);
     frame.setObjectStatic(valuesSlot, null);
   }
@@ -149,6 +161,22 @@ public abstract class ChainStageNode extends TransformNode {
         throw new EndOfStreamException();
       }
       return stream.next();
+    }
+
+    @Specialization(guards = "interop.isIterator(iterator)", limit = "3")
+    protected Object doInteropIterator(Object iterator,
+        @CachedLibrary("iterator") InteropLibrary interop) {
+      try {
+        if (interop.hasIteratorNextElement(iterator)) {
+          return interop.getIteratorNextElement(iterator);
+        } else {
+          throw new EndOfStreamException();
+        }
+      } catch (UnsupportedMessageException e) {
+        throw new AssertionError(e);
+      } catch (StopIterationException e) {
+        throw new EndOfStreamException();
+      }
     }
 
     public static GetNextStreamValueNode create(int valuesSlot, SourceSection sourceSection) {
