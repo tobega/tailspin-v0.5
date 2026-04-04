@@ -16,13 +16,10 @@ import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
-import java.util.Arrays;
 import tailspin.language.TailspinLanguage;
 import tailspin.language.nodes.value.WriteContextValueNode;
 import tailspin.language.runtime.DefiningScope;
 import tailspin.language.runtime.Reference;
-import tailspin.language.runtime.TailspinArray;
-import tailspin.language.runtime.stream.ListStream;
 
 public class ProgramRootNode extends RootNode {
 
@@ -53,10 +50,6 @@ public class ProgramRootNode extends RootNode {
     statement.executeVoid(frame);
     Object results = frame.getObjectStatic(EMIT_SLOT);
     frame.setObjectStatic(EMIT_SLOT, null);
-    if (results instanceof ListStream arrayList) {
-      // Wrap in a double array for now
-      results = TailspinArray.value(new Object[] {TailspinArray.value(Arrays.copyOf(arrayList.getArray(), arrayList.size()))});
-    }
     return results;
   }
 

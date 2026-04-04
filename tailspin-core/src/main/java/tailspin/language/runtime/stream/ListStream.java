@@ -1,9 +1,17 @@
 package tailspin.language.runtime.stream;
 
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.StopIterationException;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-public final class ListStream {
+@ExportLibrary(InteropLibrary.class)
+public final class ListStream implements TruffleObject {
   private static final Object[] EMPTY = new Object[0];
   private Object[] elements;
   private int size = 0;
@@ -76,5 +84,27 @@ public final class ListStream {
 
   private Object[] grow(int newSize) {
     return elements = Arrays.copyOf(elements, newSize + (newSize >> 1));
+  }
+  // --- EXTERNAL INTEROP PATH ---
+  // This only runs when a foreign language touches the object
+  @ExportMessage
+  boolean isIterator() { return true; }
+
+  @ExportMessage
+  boolean hasIteratorNextElement() {
+    return hasNext();
+  }
+
+  @ExportMessage
+  Object getIteratorNextElement() throws StopIterationException {
+    if (hasIteratorNextElement()) {
+      return next();
+    }
+    throw StopIterationException.create();
+  }
+
+  @ExportMessage
+  Object toDisplayString(boolean allowSideEffects) {
+    return Arrays.stream(Arrays.copyOf(elements, size)).map(Objects::toString).collect(Collectors.joining(", "));
   }
 }
