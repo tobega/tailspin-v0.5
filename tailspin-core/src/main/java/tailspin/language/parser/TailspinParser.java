@@ -137,7 +137,11 @@ public class TailspinParser {
     SequenceSubComposer composer = new SequenceSubComposer(List.of(
         new NamedComposition(rule)), new ParseNodeScope(null), resolver);
     Memo end = composer.nibble(s, Memo.root(0));
-    if (end.pos != s.length()) throw new AssertionError("Parse failed at \n" + s.substring(end.pos));
+    if (end.pos != s.length()) {
+      int unparsedEnd = Math.min(s.length(), end.maxParsed + 20);
+      int parsedStart = Math.max(0, end.maxParsed - 20);
+      throw new AssertionError("Parse failed at\n" + s.substring(end.maxParsed, unparsedEnd) + "\nafter\n" + s.substring(parsedStart, end.maxParsed));
+    }
     return  (ParseNode) ParseNode.normalizeValues(composer.getValues());
   }
 

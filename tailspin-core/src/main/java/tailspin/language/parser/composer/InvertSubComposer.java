@@ -28,7 +28,7 @@ public class InvertSubComposer implements SubComposer {
   @Override
   public Memo backtrack(String s, Memo memo) {
     result = null;
-    return memo.previous;
+    return memo.previous();
   }
 
   @Override

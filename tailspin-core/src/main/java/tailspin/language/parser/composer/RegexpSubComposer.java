@@ -29,7 +29,7 @@ class RegexpSubComposer implements SubComposer {
   @Override
   public Memo backtrack(String s, Memo memo) {
     latestValue = null;
-    return memo.previous;
+    return memo.previous();
   }
 
   @Override

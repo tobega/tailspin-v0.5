@@ -22,7 +22,7 @@ public class LiteralSubComposer implements SubComposer {
   @Override
   public Memo backtrack(String s, Memo memo) {
     matchedValue = false;
-    return memo.previous;
+    return memo.previous();
   }
 
   @Override

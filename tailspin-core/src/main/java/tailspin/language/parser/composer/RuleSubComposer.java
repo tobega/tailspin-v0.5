@@ -79,8 +79,8 @@ class RuleSubComposer implements SubComposer {
 
   @Override
   public Memo backtrack(String s, Memo memo) {
-    if (name.equals(memo.caughtLeftRecursion) && memo.previous.leftRecursionResult != null) {
-      throw new PoppedLeftRecursionException(memo.previous);
+    if (name.equals(memo.caughtLeftRecursion) && memo.previous().leftRecursionResult != null) {
+      throw new PoppedLeftRecursionException(memo.previous());
     } else {
       try {
         memo = sequenceSubComposer.backtrack(s, memo);
