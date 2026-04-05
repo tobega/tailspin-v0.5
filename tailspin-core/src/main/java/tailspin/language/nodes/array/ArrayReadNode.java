@@ -1,17 +1,16 @@
 package tailspin.language.nodes.array;
 
 import com.oracle.truffle.api.dsl.Cached;
-import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.GetContextFrameNode;
 import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
-import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.IndexedArrayValue;
 import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.TailspinArray;
@@ -35,56 +34,6 @@ public abstract class ArrayReadNode extends ValueNode {
   }
 
   public abstract Object executeDirect(VirtualFrame frame, Object array);
-
-  @GenerateInline(value = false)
-  public static abstract class DoArrayReadNode extends Node {
-    final boolean noFail;
-
-    protected DoArrayReadNode(boolean noFail) {
-      this.noFail = noFail;
-    }
-
-    public abstract Object executeArrayRead(TailspinArray array, Object index, Reference indexVar);
-
-    @Specialization
-    protected Object doLong(TailspinArray array, long index, Reference indexVar) {
-      Object value = array.getNative((int) index - 1, noFail);
-      if (indexVar == null) {
-        return value;
-      } else {
-        return new IndexedArrayValue(indexVar, index, value);
-      }
-    }
-
-    @Specialization
-    protected Object doBigNumber(TailspinArray array, BigNumber index, Reference indexVar) {
-      Object value = array.getNative(index.intValueExact() - 1, noFail);
-      if (indexVar == null) {
-        return value;
-      } else {
-        return new IndexedArrayValue(indexVar, index, value);
-      }
-    }
-
-    @Specialization
-    protected Object doArray(TailspinArray array, TailspinArray selection, Reference indexVar) {
-      long length = selection.getArraySize();
-      Object[] elements = new Object[Math.toIntExact(length)];
-      for (int i = 0; i < length; i++) {
-        elements[i] = executeArrayRead(array, selection.getNative(i, false), indexVar);
-      }
-      return new ListStream(elements);
-    }
-
-    @Specialization
-    protected Object doRange(TailspinArray array, ListStream range, Reference indexVar) {
-      ListStream elements = new ListStream();
-      while (range.hasNext()) {
-        elements.append(executeArrayRead(array, range.next(), indexVar));
-      }
-      return elements;
-    }
-  }
 
   @Specialization
   protected Object doIndexed(VirtualFrame frame, IndexedArrayValue indexedArrayValue,
@@ -111,6 +60,13 @@ public abstract class ArrayReadNode extends ValueNode {
   protected Object doSimpleRead(VirtualFrame frame, TailspinArray array,
       @Cached(parameters = "noFail") DoArrayReadNode arrayReadNode) {
     return arrayReadNode.executeArrayRead(array, lensNode.executeGeneric(frame), indexVar);
+  }
+
+  @Specialization(guards = "interop.hasArrayElements(array)", limit = "3")
+  protected Object doInteropRead(VirtualFrame frame, Object array,
+      @Cached(parameters = "noFail") DoInteropArrayReadNode arrayReadNode,
+      @CachedLibrary("array") InteropLibrary interop) {
+    return arrayReadNode.executeInteropRead(array, lensNode.executeGeneric(frame), indexVar);
   }
 
   @Specialization

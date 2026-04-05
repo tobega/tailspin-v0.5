@@ -6,6 +6,8 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
@@ -61,6 +63,16 @@ public abstract class ArrayRangeReadNode extends ValueNode {
       arrays[i] = executeDirect(frame, arrays[i]);
     }
     return multiple;
+  }
+
+  @Specialization(guards = "interop.hasArrayElements(array)", limit = "3")
+  @SuppressWarnings("unused")
+  protected Object doInteropArray(VirtualFrame frame, Object array,
+      @CachedLibrary("array") InteropLibrary interop) {
+    frame.setObjectStatic(LENS_CONTEXT_SLOT, array);
+    frame.setObjectStatic(resultSlot, new ListStream());
+    iterationNode.executeTransform(frame);
+    return frame.getObjectStatic(resultSlot);
   }
 
   @Specialization
