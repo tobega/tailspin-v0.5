@@ -51,7 +51,7 @@ public class TailspinParser {
      tag rule <|ID> (<|='´'>)
      
      lens-expression rule (<|='('> ?<|ignorable-text>) <|lens-dimension>  ?<|lens-transform> (<|=')'>)
-     lens-transform rule (<|=';'> ?<|ignorable-text>) +<|transform>
+     lens-transform rule (<|=';'> ?<|ignorable-text>) <|transform> *<|transform|stream>
      lens-dimension rule <|lens-range|source|key> (?<|ignorable-text>) ?<|index-variable> ?<|next-lens-dimension> (?<|ignorable-text>)
      index-variable rule (<|='as'> <|ignorable-text>) <|ID> (?<|ignorable-text>)
      key rule <|ID> (<|=':'> ?<|ignorable-text>)

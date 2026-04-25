@@ -54,6 +54,12 @@ $a(3) !
   when <|$@..> do @ set $;
 end !
 =9
+---output stream
+[1, 2, 3, 4]...!
+=1, 2, 3, 4
+---build from stream
+[2,3] -> [1,$...,4] !
+=[1, 2, 3, 4]
 ---arrays autotype
 { foo: [6] } -> { foo: [3] } !
 ={ foo: [3] }
@@ -121,6 +127,9 @@ a is [2, 4, 6];
 ---lens transform
 [3..1:-1] -> $(.. as i; -> $ * $i) !
 =[3, 4, 3]
+---lens transform chain
+[1, 2] -> $(.. as i; -> $ + $i -> $ * $) !
+=[4, 16]
 ---scoped index variable
 [3..1:-1] -> $(.. as i; -> templates
   $ * $i !
@@ -133,6 +142,9 @@ $i !
 ---transform to nothing
 [1..5] -> $(..; -> if <|=-1>) !
 =[]
+---transform to stream
+[[1, 2], [3, 4]] -> $(..; -> $ ...) !
+=[1, 2, 3, 4]
 ---Number is not array
 5 -> $(1) !
 =*TypeError

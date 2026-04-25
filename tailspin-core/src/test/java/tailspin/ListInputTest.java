@@ -100,4 +100,34 @@ public class ListInputTest {
           "[5, 6]", truffleContext.eval("tt", "$BINDINGS::input -> $(1..2) !").toString());
     }
   }
+
+  @Test
+  public void repackage() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", List.of(3L, 5L, 6L, 8L));
+      assertEquals(
+          "[3, 5, 6, 8]", truffleContext.eval("tt", """
+          $BINDINGS::input -> [$...]!
+          """).toString());
+    }
+  }
+
+  @Test
+  public void projectionStream() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", List.of(3L, 5L));
+      assertEquals(
+          "[3, 5, 3, 5]", truffleContext.eval("tt", """
+          [1, 2] -> $(..; -> $BINDINGS::input ...) !
+          """).toString());
+    }
+  }
 }

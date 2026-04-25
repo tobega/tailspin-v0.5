@@ -64,7 +64,7 @@ public abstract class ArrayMutateNode extends ValueNode {
   @Specialization
   @SuppressWarnings("unused")
   protected Object doIllegal(Object receiver, Object lens, Object value) {
-    throw new TypeError(String.format("Cannot access %s by %s for %s", receiver.getClass(), lens.getClass(), value.getClass()),
+    throw new TypeError(String.format("Cannot access %s by %s to set %s", receiver.getClass(), lens.getClass(), value.getClass()),
         this);
   }
 }
