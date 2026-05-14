@@ -103,7 +103,7 @@ public class TailspinParser {
      key-matcher rule ?<|='?'> <|ID> (<|=':'> ?<|ignorable-text>) ?<|content-matcher>
      additional-key-matcher rule (<|=','> ?<|ignorable-text>) <|key-matcher>
      content-matcher rule (<|='<'>) ?<|='~'> (?<|ignorable-text>) +<|membrane> (<|='>'> ?<|ignorable-text>)
-     measure-type-match rule <|='""'|unit> (?<|ignorable-text>)
+     measure-type-match rule <|='""'|='"1"'|unit> (?<|ignorable-text>)
      
      arithmetic-expression rule <|addition|multiplication|numeric-literal|square-root|negated-term>
      addition rule <|addition|multiplication|term> <|'[+-]'> (?<|ignorable-text>) <|multiplication|term> (?<|ignorable-text>)

@@ -139,6 +139,23 @@ end !
   otherwise 0 !
 end !
 =0
+---scalar measure is scalar
+1"1" -> templates
+  when <|"1"> do $!
+end !
+=1"1"
+---non-scalar measure is not scalar
+1"m" -> templates
+  when <|"1"> do $!
+  otherwise 'ok' !
+end !
+=ok
+---scalar measure is not other measure
+1"1" -> templates
+  when <|"m"> do $!
+  otherwise 'ok' !
+end !
+=ok
 ---SciNum is a number
 2.0 -> templates
   when <|..> do 1!
