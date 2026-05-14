@@ -17,6 +17,9 @@ public record Measure(Object value, TruffleString unit) implements TruffleObject
 
   @Override
   public String toString() {
+    if (value instanceof SmallRational || value instanceof Rational) {
+      return "(" + value.toString() + ")" + "\"" + unit + "\"";
+    }
     return value.toString() + "\"" + unit + "\"";
   }
 

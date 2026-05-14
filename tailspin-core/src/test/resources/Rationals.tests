@@ -177,3 +177,6 @@ $foo ~/ $bar !
 ---truncate divide rational by integer
 (7/3) ~/ 2 !
 =1
+---rational measure constant
+(5/2)"m" !
+=(5/2)"m"

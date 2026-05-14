@@ -58,6 +58,15 @@ end !
 ---Scalar does not divide by measure
 5"1" ~/ 2"s" !
 =*TypeError
+---measure rational by scalar
+5"m" / 2"1" !
+=(5/2)"m"
+---measure does not rational by measure
+5"m" / 2"s" !
+=*TypeError
+---Scalar does not rational by measure
+5"1" / 2"s" !
+=*TypeError
 ---modulo equal measures
 5"apples" mod 2"apples" !
 =1"apples"
@@ -129,7 +138,7 @@ end !
 =2"1"
 ---divide same unit gives scalar
 7"m" / 3"m" !
-=7/3"1"
+=(7/3)"1"
 ---raw message
 7"m" -> $::raw !
 =7
