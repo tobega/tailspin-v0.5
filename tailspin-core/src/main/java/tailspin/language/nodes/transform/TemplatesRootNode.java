@@ -5,6 +5,7 @@ import static tailspin.language.runtime.Templates.EMIT_SLOT;
 import static tailspin.language.runtime.Templates.SCOPE_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -12,6 +13,7 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
+import tailspin.language.TailCallException;
 import tailspin.language.nodes.StatementNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.value.WriteContextValueNode;
@@ -32,10 +34,12 @@ public class TemplatesRootNode extends RootNode {
   @SuppressWarnings("FieldMayBeFinal")
   @Child
   private StatementNode statement;
+  private final FrameDescriptor scopeDescriptor;
   private TemplatesRootNode(TruffleLanguage<?> language,
       FrameDescriptor frameDescriptor, FrameDescriptor scopeDescriptor, StatementNode statement,
       SourceSection sourceSection) {
     super(language, frameDescriptor);
+    this.scopeDescriptor = scopeDescriptor;
     this.createScope = CreateScopeNode.create(scopeDescriptor, sourceSection);
     this.setCurrentValue = WriteContextValueNode.create(-1, CV_SLOT, new ReadArgumentNode(CV_ARG,
         sourceSection));
@@ -47,10 +51,32 @@ public class TemplatesRootNode extends RootNode {
     createScope.executeVoid(frame);
     setCurrentValue.executeVoid(frame);
     frame.setObjectStatic(EMIT_SLOT, frame.getArguments()[RESULT_BUILDER_ARG]);
-    statement.executeVoid(frame);
+    try {
+      statement.executeVoid(frame);
+    } catch (TailCallException e) {
+      StatementNode loopingBody = activateTailRecursionLoop();
+      recycleFrameState(frame, e);
+      loopingBody.executeVoid(frame);
+    }
     Object results = frame.getObjectStatic(EMIT_SLOT);
     frame.setObjectStatic(EMIT_SLOT, null);
     return results;
+  }
+
+  private StatementNode activateTailRecursionLoop() {
+    // Tell the compiler this is a slow path; it shouldn't compile the mutation logic itself
+    CompilerDirectives.transferToInterpreterAndInvalidate();
+
+    return this.atomic(() -> {
+      this.statement = insert(new TailRecursiveLoopNode(this.statement, scopeDescriptor));
+      return this.statement;
+    });
+  }
+
+  private void recycleFrameState(VirtualFrame frame, TailCallException e) {
+    frame.setObjectStatic(CV_SLOT, e.getNextValue());
+    createScope.executeVoid(frame);
+    frame.setObjectStatic(EMIT_SLOT, e.getResultBuilder());
   }
 
   // scopeDescriptor is null for matchers and fake range templates

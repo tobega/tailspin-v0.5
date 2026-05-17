@@ -1,6 +1,7 @@
 package tailspin.language.nodes.iterate;
 
 import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
+import static tailspin.language.runtime.Templates.IN_STREAM_SLOT;
 
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
@@ -60,6 +61,7 @@ public abstract class ChainStageNode extends TransformNode {
   @Specialization
   public void doLong(VirtualFrame frame, long value, @Shared("cvSetters") @Cached(parameters = "cvSlot") SetChainCvNode setCv) {
     setCv.setObject(frame, value);
+    frame.setBooleanStatic(IN_STREAM_SLOT, false);
     frame.setObjectStatic(valuesSlot, null);
     stage.executeTransform(frame);
   }
@@ -75,6 +77,7 @@ public abstract class ChainStageNode extends TransformNode {
   public void doValueStream(
       VirtualFrame frame,
       ListStream stream) {
+    frame.setBooleanStatic(IN_STREAM_SLOT, true);
     loop.execute(frame);
     frame.setObjectStatic(valuesSlot, null);
   }
@@ -83,6 +86,7 @@ public abstract class ChainStageNode extends TransformNode {
   @SuppressWarnings("unused")
    public void doIterator(VirtualFrame frame, Object iterator,
       @CachedLibrary("iterator") InteropLibrary interop) {
+    frame.setBooleanStatic(IN_STREAM_SLOT, true);
     loop.execute(frame);
     frame.setObjectStatic(valuesSlot, null);
   }
@@ -91,6 +95,7 @@ public abstract class ChainStageNode extends TransformNode {
   @SuppressWarnings("unused")
   public void doSingle(VirtualFrame frame, Object value, @Shared("cvSetters") @Cached(parameters = "cvSlot") SetChainCvNode setCv) {
     setCv.execute(frame, value);
+    frame.setBooleanStatic(IN_STREAM_SLOT, false);
     frame.setObjectStatic(valuesSlot, null);
     stage.executeTransform(frame);
   }

@@ -1,6 +1,7 @@
 package tailspin.language.nodes.iterate;
 
 import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
+import static tailspin.language.runtime.Templates.IN_STREAM_SLOT;
 import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
@@ -141,6 +142,7 @@ public abstract class RangeIteration extends TransformNode {
     if (isLensRange) {
       frame.setObjectStatic(getResultSlot(), new ListStream());
     }
+    frame.setBooleanStatic(IN_STREAM_SLOT, true);
     loop.execute(frame);
   }
 

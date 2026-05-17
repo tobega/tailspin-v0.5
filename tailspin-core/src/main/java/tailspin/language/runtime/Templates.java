@@ -8,13 +8,15 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 public class Templates {
   public static final int SCOPE_SLOT = 0;
   public static final int CV_SLOT = 1;
-  public static final int EMIT_SLOT = 2;
-  public static final int LENS_CONTEXT_SLOT = 3;
+  public static final int IN_STREAM_SLOT = 2;
+  public static final int EMIT_SLOT = 3;
+  public static final int LENS_CONTEXT_SLOT = 4;
 
   public static FrameDescriptor.Builder createBasicFdb() {
     FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
     assertSlot(SCOPE_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
     assertSlot(CV_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
+    assertSlot(IN_STREAM_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
     assertSlot(EMIT_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
     assertSlot(LENS_CONTEXT_SLOT, fdb.addSlot(FrameSlotKind.Static, null, null));
     return fdb;

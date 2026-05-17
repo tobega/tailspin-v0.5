@@ -1,5 +1,8 @@
 package tailspin.language.nodes.transform;
 
+import static tailspin.language.runtime.Templates.IN_STREAM_SLOT;
+
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.GenerateInline;
@@ -10,6 +13,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
+import tailspin.language.TailCallException;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.state.FreezeNode;
@@ -23,11 +27,18 @@ public abstract class SendToTemplatesNode extends TransformNode {
   protected final int callLevel;
   protected final boolean noTransaction;
 
+  @CompilationFinal
+  protected boolean isTailPosition = false;
+
   protected SendToTemplatesNode(boolean noTransaction, Templates templates, int callLevel, SourceSection sourceSection) {
     super(sourceSection);
     this.callLevel = callLevel;
     this.templates = templates;
     this.noTransaction = noTransaction;
+  }
+
+  public void setTailPosition() {
+    this.isTailPosition = true;
   }
 
   public static SendToTemplatesNode create(ValueNode valueNode, int callLevel, Templates templates,
@@ -42,7 +53,7 @@ public abstract class SendToTemplatesNode extends TransformNode {
     DefiningScope scope = getScope.execute(frame, this, contextFrameLevel());
     Object resultBuilder = frame.getObjectStatic(getResultSlot());
     Object result = dispatchNode.executeDispatch(templates, value, scope,
-        resultBuilder);
+        resultBuilder, false);
     frame.setObjectStatic(getResultSlot(), result);
   }
 
@@ -56,7 +67,7 @@ public abstract class SendToTemplatesNode extends TransformNode {
     scope = createTransaction.execute(scope);
     Object resultBuilder = frame.getObjectStatic(getResultSlot());
     Object result = dispatchNode.executeDispatch(templates, value, scope,
-        resultBuilder);
+        resultBuilder, false);
     frame.setObjectStatic(getResultSlot(), result);
     commitTransaction.execute(scope);
   }
@@ -70,20 +81,33 @@ public abstract class SendToTemplatesNode extends TransformNode {
   public void doFree(@SuppressWarnings("unused") VirtualFrame frame, Object value,
       @Cached @Shared DispatchNode dispatchNode) {
     Object resultBuilder = frame.getObjectStatic(getResultSlot());
-    Object result = dispatchNode.executeDispatch(templates, value, null, resultBuilder);
+    boolean doTailCall = isTailPosition && !frame.getBooleanStatic(IN_STREAM_SLOT);
+    Object result = dispatchNode.executeDispatch(templates, value, null, resultBuilder, doTailCall);
     frame.setObjectStatic(getResultSlot(), result);
   }
 
   @GenerateInline(value = false)
   public static abstract class DispatchNode extends Node {
-    public abstract Object executeDispatch(Templates templates, Object currentValue, DefiningScope definingScope, Object resultBuilder);
+    public abstract Object executeDispatch(Templates templates, Object currentValue, DefiningScope definingScope,
+        Object resultBuilder, boolean doTailCall);
 
-    @Specialization
-    protected static Object dispatchDirectly(
+    @Specialization(guards = "doTailCall")
+    protected static Object dispatchTail(
         @SuppressWarnings("unused") Templates templates,
         Object currentValue,
         DefiningScope definingScope,
         Object resultBuilder,
+        @SuppressWarnings("unused") boolean doTailCall) {
+
+      throw new TailCallException(currentValue, definingScope, resultBuilder);
+    }
+
+    @Specialization(guards = "!doTailCall")    protected static Object dispatchDirectly(
+        @SuppressWarnings("unused") Templates templates,
+        Object currentValue,
+        DefiningScope definingScope,
+        Object resultBuilder,
+        @SuppressWarnings("unused") boolean doTailCall,
         @Cached("create(templates.getCallTarget())") DirectCallNode directCallNode) {
       return directCallNode.call(definingScope, currentValue, resultBuilder);
     }

@@ -14,6 +14,46 @@ end !
   otherwise $ + 1 -> # !
 end !
 =3
+---recurse on matchers continuations
+1 -> templates
+  @ set [];
+  $ -> !#
+  $@ !
+  when <|..3> do $ + 1 -> # -> ..|@ set $;
+    ..|@ set $;
+  otherwise $ !
+end !
+=[4, 3, 2, 1]
+---tail recurse on matchers a LOT (stack overflow)
+1 -> templates
+  when <|=400> do $ !
+  otherwise $ + 1 -> # !
+end !
+-=400
+---recurse for range does not tail call (we can't prove this other than that it works)
+1 -> templates
+  when <|..3> do $+1..4 ->  #!
+  otherwise $ !
+end !
+-=4, 4, 4, 4
+---recurse for streams does not tail call (we can't prove this other than that it works)
+1 -> templates
+  when <|..3> do [$+1..4]... ->  #!
+  otherwise $ !
+end !
+=4, 4, 4, 4
+---recurse for transformed range does not tail call (we can't prove this other than that it works)
+1 -> templates
+  when <|..3> do $+1..4 -> $ + 1 -> #!
+  otherwise $ !
+end !
+=5, 4, 5
+---recurse for transformed streams does not tail call (we can't prove this other than that it works)
+1 -> templates
+  when <|..3> do [$+1..4]... -> $ + 1 -> #!
+  otherwise $ !
+end !
+=5, 4, 5
 ---call matchers
 1 -> templates
   $ -> # -> $ + 3 !

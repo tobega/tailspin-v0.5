@@ -17,12 +17,13 @@ import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.processor.MessageNode;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.runtime.TailspinArray;
+import tailspin.language.runtime.Templates;
 
 public class ArrayTest {
   SourceSection sourceSection = INTERNAL_CODE_SOURCE;
   @Test
   void reads_array_value() {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int startSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int endSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
@@ -47,7 +48,7 @@ public class ArrayTest {
 
   @Test
   void write_array_value() {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int startSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int endSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
@@ -74,7 +75,7 @@ public class ArrayTest {
 
   @Test
   void get_array_length() {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int startSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int endSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
@@ -98,7 +99,7 @@ public class ArrayTest {
 
   @Test
   void create_zeroes() {
-    FrameDescriptor.Builder fdb = FrameDescriptor.newBuilder();
+    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
     int rangeSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int startSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
     int endSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
