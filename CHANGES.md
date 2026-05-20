@@ -43,6 +43,7 @@
 - Multiplication and division of measures by raw numbers is not allowed, it needs to be a scalar.
 - The mod operator on measures needs to have the same measure on both sides
 - Dividing by the same measure gives a scalar.
+- Recursion is only allowed on matchers (unless you pass the function as a parameter - not yet enabled)
 
 ## New features
 - Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `if <.....>`

@@ -52,8 +52,9 @@ public abstract class SendToTemplatesNode extends TransformNode {
       @Cached @Shared DispatchNode dispatchNode) {
     DefiningScope scope = getScope.execute(frame, this, contextFrameLevel());
     Object resultBuilder = frame.getObjectStatic(getResultSlot());
+    boolean doTailCall = isTailPosition && !frame.getBooleanStatic(IN_STREAM_SLOT);
     Object result = dispatchNode.executeDispatch(templates, value, scope,
-        resultBuilder, false);
+        resultBuilder, doTailCall);
     frame.setObjectStatic(getResultSlot(), result);
   }
 

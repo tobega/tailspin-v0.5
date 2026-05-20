@@ -30,6 +30,16 @@ end !
   otherwise $ + 1 -> # !
 end !
 =400
+---tail recurse on matchers a LOT, with state (stack overflow)
+1 -> templates
+  @ set 0;
+  $ -> !#
+  $@ !
+  when <|..400> do
+    @ set $;
+    $ + 1 -> !#
+end !
+=400
 ---recurse for range does not tail call (we can't prove this other than that it works)
 1 -> templates
   when <|..3> do $+1..4 ->  #!
