@@ -29,7 +29,7 @@ end !
   when <|=400> do $ !
   otherwise $ + 1 -> # !
 end !
--=400
+=400
 ---recurse for range does not tail call (we can't prove this other than that it works)
 1 -> templates
   when <|..3> do $+1..4 ->  #!
