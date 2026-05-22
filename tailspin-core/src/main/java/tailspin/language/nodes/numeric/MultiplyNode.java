@@ -7,7 +7,6 @@ import com.oracle.truffle.api.dsl.Executed;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 import java.math.BigInteger;
@@ -40,10 +39,12 @@ public abstract class MultiplyNode extends ValueNode {
     this.isUntypedRegion = isUntypedRegion;
   }
 
+  public abstract Object executeMultiply(Object left, Object right);
+
   @GenerateInline
   @TypeSystemReference(TailspinTypes.class)
   public static abstract class DoMultiplyNode extends Node {
-    public abstract Object executeMultiply(VirtualFrame frame, Node node, Object left, Object right);
+    public abstract Object executeMultiply(Node node, Object left, Object right);
 
     @Specialization(rewriteOn = ArithmeticException.class)
     protected long doLong(long left, long right) {
@@ -156,9 +157,9 @@ public abstract class MultiplyNode extends ValueNode {
   }
 
   @Specialization(guards = "isScalar(right.unit())")
-  protected Measure doMeasureLeft(VirtualFrame frame, Measure left, Measure right,
+  protected Measure doMeasureLeft(Measure left, Measure right,
       @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
-    return new Measure(doMultiplyNode.executeMultiply(frame, this, left.value(), right.value()), left.unit());
+    return new Measure(doMultiplyNode.executeMultiply(this, left.value(), right.value()), left.unit());
   }
 
   boolean isScalar(Object unit) {
@@ -166,33 +167,33 @@ public abstract class MultiplyNode extends ValueNode {
   }
 
   @Specialization(guards = "isScalar(left.unit())")
-  protected Measure doMeasureRight(VirtualFrame frame, Measure left, Measure right,
+  protected Measure doMeasureRight(Measure left, Measure right,
       @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
-    return new Measure(doMultiplyNode.executeMultiply(frame, this, left.value(), right.value()), right.unit());
+    return new Measure(doMultiplyNode.executeMultiply(this, left.value(), right.value()), right.unit());
   }
 
   @Specialization(guards = "isUntypedRegion")
-  protected Object doUntypedMeasures(VirtualFrame frame, Measure left, Measure right,
+  protected Object doUntypedMeasures(Measure left, Measure right,
       @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
-    return doMultiplyNode.executeMultiply(frame, this, left.value(), right.value());
+    return doMultiplyNode.executeMultiply(this, left.value(), right.value());
   }
 
   @Specialization(guards = "isUntypedRegion")
-  protected Object doUntypedMeasureRight(VirtualFrame frame, Object left, Measure right,
+  protected Object doUntypedMeasureRight(Object left, Measure right,
       @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
-    return doMultiplyNode.executeMultiply(frame, this, left, right.value());
+    return doMultiplyNode.executeMultiply(this, left, right.value());
   }
 
   @Specialization(guards = "isUntypedRegion")
-  protected Object doUntypedMeasureLeft(VirtualFrame frame, Measure left, Object right,
+  protected Object doUntypedMeasureLeft(Measure left, Object right,
       @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
-    return doMultiplyNode.executeMultiply(frame, this, left.value(), right);
+    return doMultiplyNode.executeMultiply(this, left.value(), right);
   }
 
   @Specialization
-  protected Object doOther(VirtualFrame frame, Object left, Object right,
+  protected Object doOther(Object left, Object right,
       @Cached(inline = true) @Shared DoMultiplyNode doMultiplyNode) {
-    return doMultiplyNode.executeMultiply(frame, this, left, right);
+    return doMultiplyNode.executeMultiply(this, left, right);
   }
 
   public static MultiplyNode create(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion,

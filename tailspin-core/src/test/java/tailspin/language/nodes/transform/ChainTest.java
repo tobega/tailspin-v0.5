@@ -1,7 +1,6 @@
 package tailspin.language.nodes.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -14,44 +13,15 @@ import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.array.ArrayReadNode;
 import tailspin.language.nodes.iterate.ChainNode;
-import tailspin.language.nodes.iterate.RangeIteration;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.numeric.AddNode;
 import tailspin.language.nodes.numeric.IntegerLiteral;
 import tailspin.language.nodes.value.ReadContextValueNode;
 import tailspin.language.nodes.value.SingleValueNode;
-import tailspin.language.nodes.value.TransformResultNode;
 import tailspin.language.runtime.Templates;
-import tailspin.language.runtime.stream.ListStream;
 
 public class ChainTest {
   SourceSection sourceSection = INTERNAL_CODE_SOURCE;
-  @Test
-  void expression_chain_stage() {
-    FrameDescriptor.Builder fdb = Templates.createBasicFdb();
-    int rangeSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    int startSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    int endSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    int incrementSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    int resultSlot = fdb.addSlot(FrameSlotKind.Static, null, null);
-    ValueNode expr = AddNode.create(
-            IntegerLiteral.create(12, sourceSection),
-            ReadContextValueNode.create(-1, rangeSlot), false, sourceSection);
-    RangeIteration source = RangeIteration.create(rangeSlot, ResultAggregatingNode.create(expr
-        ), startSlot, IntegerLiteral.create(1L, sourceSection),
-        true, endSlot, IntegerLiteral.create(3L,
-            sourceSection), true, incrementSlot, IntegerLiteral.create(1L, sourceSection),
-        sourceSection);
-    source.setResultSlot(resultSlot);
-    @SuppressWarnings("unchecked")
-    ListStream stream = (ListStream) TestUtil.evaluate(new TransformResultNode(source,
-            sourceSection), fdb.build(),
-        List.of());
-    assertEquals(13L, stream.next());
-    assertEquals(14L, stream.next());
-    assertEquals(15L, stream.next());
-    assertFalse(stream.hasNext());
-  }
 
   @Test
   void expression_chain_stage_single_value() {

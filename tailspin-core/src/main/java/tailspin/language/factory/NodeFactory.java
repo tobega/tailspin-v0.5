@@ -2,7 +2,6 @@ package tailspin.language.factory;
 
 import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
 import static tailspin.language.runtime.Templates.CV_SLOT;
-import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.source.Source;
@@ -25,7 +24,7 @@ import tailspin.language.nodes.array.ArrayMutateNode;
 import tailspin.language.nodes.array.ArrayRangeReadNode;
 import tailspin.language.nodes.array.ArrayReadNode;
 import tailspin.language.nodes.iterate.ChainNode;
-import tailspin.language.nodes.iterate.RangeIteration;
+import tailspin.language.nodes.iterate.CreateRangeNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
 import tailspin.language.nodes.iterate.StatementTransformNode;
 import tailspin.language.nodes.iterate.StreamNode;
@@ -373,19 +372,12 @@ public class NodeFactory {
   private TailspinNode visitValueChain(ParseNode valueChain, boolean isTailCallEligible) {
     if (!valueChain.name().equals("value-chain")) throw new IllegalStateException("Unexpected value: " + valueChain);
     if (valueChain.content() instanceof ParseNode(String name, List<?> bounds, int start, int end) && name.equals("range")) {
-      RangeIteration r = visitRange(bounds, sourceCode.createSection(start, end - start));
-      pushCvSlot(currentScope().newTempSlot());
-      r.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())
-      ));
-      r.setResultSlot(currentScope().newResultSlot());
-      popCvSlot();
-      return r;
+      return visitRange(bounds, sourceCode.createSection(start, end - start));
     } else if (valueChain.content() instanceof ParseNode(String name, ParseNode source, int start, int end) && name.equals("source")) {
       return visitSource(source);
     } else if (valueChain.content() instanceof List<?> chain) {
       ChainSlots chainSlots = currentScope().newChainSlots();
       List<TransformNode> stages = new ArrayList<>();
-      RangeIteration pendingIteration = null;
       for (int i = 0; i < chain.size(); i++) {
         Object stage = chain.get(i);
         boolean isLast = i == chain.size() - 1;
@@ -404,28 +396,7 @@ public class NodeFactory {
         if (stages.isEmpty()) { // after the first
           pushCvSlot(chainSlots.cv());
         }
-        if (pendingIteration != null) {
-          pendingIteration.setStage(currentValueSlot(), asTransformNode(stageNode));
-          popCvSlot();
-          if (stageNode instanceof RangeIteration r) {
-            pendingIteration = r;
-            pushCvSlot(currentScope().newTempSlot());
-          } else {
-            pendingIteration = null;
-          }
-        } else if (stageNode instanceof RangeIteration r) {
-          stages.add(r);
-          pendingIteration = r;
-          pushCvSlot(currentScope().newTempSlot());
-        } else {
-          stages.add(asTransformNode(stageNode));
-        }
-      }
-      if (pendingIteration != null) {
-        pendingIteration.setStage(currentValueSlot(), ResultAggregatingNode.create(ReadContextValueNode.create(-1, currentValueSlot())
-        ));
-        pendingIteration.setResultSlot(currentScope().newResultSlot());
-        popCvSlot();
+        stages.add(asTransformNode(stageNode));
       }
       popCvSlot();
       return ChainNode.create(chainSlots.values(), chainSlots.cv(), chainSlots.result(), stages);
@@ -927,7 +898,7 @@ public class NodeFactory {
     return StructureLiteral.create(language.rootShape, keys, values, section);
   }
 
-  private RangeIteration visitRange(List<?> bounds, SourceSection sourceSection) {
+  private CreateRangeNode visitRange(List<?> bounds, SourceSection sourceSection) {
     ValueNode start = asSingleValueNode(visitSource(
         (ParseNode) ((ParseNode) bounds.getFirst()).content()));
     boolean inclusiveStart = true;
@@ -952,8 +923,7 @@ public class NodeFactory {
     } else {
       stride = VoidValue.create(INTERNAL_CODE_SOURCE);
     }
-    return RangeIteration.create(currentScope().newTempSlot(), start, inclusiveStart, currentScope().newTempSlot(), end, inclusiveEnd, currentScope().newTempSlot(), stride,
-        sourceSection);
+    return CreateRangeNode.create(start, inclusiveStart, end, inclusiveEnd, stride, sourceSection);
   }
 
   private ValueNode visitArrayLiteral(Object contents, SourceSection sourceSection) {
@@ -1071,7 +1041,7 @@ public class NodeFactory {
           -> ArrayReadNode.create(false, target, asSingleValueNode(visitSource(source)), indexVar,
           sourceCode.createSection(start, end - start));
       case ParseNode(String type, Object bounds, int start, int end) when type.equals("lens-range")
-          -> asTransformResult(visitLensRange(target, bounds, indexVar, sourceCode.createSection(start, end - start)));
+          -> visitLensRange(target, bounds, indexVar, sourceCode.createSection(start, end - start));
       case ParseNode(String type, ParseNode(String ignored, String key, int is, int ie), int start, int end) when type.equals("key")
           -> StructureReadNode.create(target, currentScope().getVocabularyType(key), sourceCode.createSection(start, end - start));
       case List<?> dimension -> {
@@ -1160,15 +1130,9 @@ public class NodeFactory {
       inclusiveEnd = separator + 1 == bounds.size();
       end = VoidValue.create(sourceSection);
     }
-    RangeIteration r = RangeIteration.create(currentScope().newTempSlot(), start, inclusiveStart, currentScope().newTempSlot(), end, inclusiveEnd, currentScope().newTempSlot(), stride,
-        sourceSection);
-    pushCvSlot(currentScope().newTempSlot());
-    r.setStage(currentValueSlot(), ResultAggregatingNode.create(ArrayReadNode.create(true, ReadContextValueNode.create(-1, LENS_CONTEXT_SLOT), ReadContextValueNode.create(-1, currentValueSlot()), indexVar,
-            sourceSection)
-    ));
-    r.setIsLensRange();
-    popCvSlot();
-    return ArrayRangeReadNode.create(r, currentScope().newResultSlot(), target, sourceSection);
+    return ArrayRangeReadNode.create(target,
+        CreateRangeNode.create(start, inclusiveStart, end, inclusiveEnd, stride, sourceSection),
+        indexVar, sourceSection);
   }
 
   private ValueNode visitArithmeticExpression(ParseNode ae) {

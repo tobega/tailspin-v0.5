@@ -12,9 +12,12 @@ import com.oracle.truffle.api.strings.TruffleString;
 import java.util.List;
 import java.util.Objects;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.iterate.EndOfStreamException;
+import tailspin.language.nodes.iterate.GetNextRangeValueNode;
 import tailspin.language.nodes.string.StringLiteralNodeGen.AppendStringNodeGen;
 import tailspin.language.runtime.TailspinStrings;
 import tailspin.language.runtime.stream.ListStream;
+import tailspin.language.runtime.stream.RangeStream;
 
 public abstract class StringLiteral extends ValueNode {
   @Children
@@ -34,37 +37,50 @@ public abstract class StringLiteral extends ValueNode {
       @Cached(neverDefault = true) AppendStringNode appendNode) {
     TruffleString result = TailspinStrings.EMPTY;
     for (ValueNode part : parts) {
-      result = appendNode.executeAppend(result, part.executeGeneric(frame));
+      result = appendNode.executeAppend(frame, result, part.executeGeneric(frame));
     }
     return result;
   }
 
   @GenerateInline(value = false)
   static abstract class AppendStringNode extends Node {
-    abstract TruffleString executeAppend(TruffleString prefix, Object suffix);
+    abstract TruffleString executeAppend(VirtualFrame frame, TruffleString prefix, Object suffix);
 
     @Specialization(guards = "suffix != null")
-    TruffleString doAppendString(TruffleString prefix, TruffleString suffix,
+    TruffleString doAppendString(VirtualFrame frame, TruffleString prefix, TruffleString suffix,
         @Cached @Shared TruffleString.ConcatNode concatNode) {
       return TailspinStrings.concat(prefix, suffix, concatNode);
     }
 
     @Specialization
-    TruffleString doAppendMany(TruffleString prefix, ListStream suffix) {
+    TruffleString doAppendMany(VirtualFrame frame, TruffleString prefix, ListStream suffix) {
       TruffleString result = prefix;
       while (suffix.hasNext()) {
-        result = executeAppend(result, suffix.next());
+        result = executeAppend(frame, result, suffix.next());
       }
       return result;
     }
 
+    @Specialization
+    TruffleString doAppendRange(VirtualFrame frame, TruffleString prefix, RangeStream range,
+        @Cached(neverDefault = true, inline = true) GetNextRangeValueNode getNextRangeValueNode) {
+      TruffleString result = prefix;
+      try {
+        while (true) {
+          Object suffix = getNextRangeValueNode.execute(frame, this, range);
+          result = executeAppend(frame, result, suffix);
+        }
+      } catch (EndOfStreamException e) {}
+      return result;
+    }
+
     @Specialization(guards = "ignored == null")
-    TruffleString doAppendNone(TruffleString prefix, Object ignored) {
+    TruffleString doAppendNone(VirtualFrame frame, TruffleString prefix, Object ignored) {
       return prefix;
     }
 
     @Fallback
-    TruffleString doAppendObject(TruffleString prefix, Object suffix,
+    TruffleString doAppendObject(VirtualFrame frame, TruffleString prefix, Object suffix,
         @Cached @Shared TruffleString.ConcatNode concatNode,
         @Cached TruffleString.FromJavaStringNode fromJavaStringNode) {
       return TailspinStrings.concat(prefix,

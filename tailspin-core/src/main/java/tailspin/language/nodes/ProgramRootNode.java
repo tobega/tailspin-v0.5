@@ -11,9 +11,7 @@ import com.oracle.truffle.api.TruffleLanguage.Env;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
-import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TailspinLanguage;
@@ -99,6 +97,6 @@ public class ProgramRootNode extends RootNode {
     }
   }
 
-  @ExportLibrary(InteropLibrary.class)
+  // @ExportLibrary(InteropLibrary.class)
   public static class EmptyObject implements TruffleObject {}
 }

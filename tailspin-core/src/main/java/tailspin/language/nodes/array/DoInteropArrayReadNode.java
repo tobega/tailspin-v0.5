@@ -1,17 +1,22 @@
 package tailspin.language.nodes.array;
 
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.InvalidArrayIndexException;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.Node;
+import tailspin.language.nodes.iterate.EndOfStreamException;
+import tailspin.language.nodes.iterate.GetNextRangeValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.IndexedArrayValue;
 import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.stream.ListStream;
+import tailspin.language.runtime.stream.RangeStream;
 
 @GenerateInline(value = false)
 public abstract class DoInteropArrayReadNode extends Node {
@@ -21,10 +26,10 @@ public abstract class DoInteropArrayReadNode extends Node {
     this.noFail = noFail;
   }
 
-  public abstract Object executeInteropRead(Object array, Object index, Reference indexVar);
+  public abstract Object executeInteropRead(VirtualFrame frame, Object array, Object index, Reference indexVar);
 
   @Specialization(limit = "3")
-  protected Object doLong(Object array, long index, Reference indexVar,
+  protected Object doLong(VirtualFrame frame, Object array, long index, Reference indexVar,
       @CachedLibrary("array") InteropLibrary interop) {
     Object value = null;
     try {
@@ -47,7 +52,7 @@ public abstract class DoInteropArrayReadNode extends Node {
   }
 
   @Specialization(limit = "3")
-  protected Object doBigNumber(Object array, BigNumber index, Reference indexVar,
+  protected Object doBigNumber(VirtualFrame frame, Object array, BigNumber index, Reference indexVar,
       @CachedLibrary("array") InteropLibrary interop) {
     Object value = null;
     try {
@@ -71,17 +76,31 @@ public abstract class DoInteropArrayReadNode extends Node {
   }
 
   @Specialization
-  protected Object doArray(Object array, TailspinArray selection, Reference indexVar) {
+  protected Object doArray(VirtualFrame frame, Object array, TailspinArray selection, Reference indexVar) {
     long length = selection.getArraySize();
     Object[] elements = new Object[Math.toIntExact(length)];
     for (int i = 0; i < length; i++) {
-      elements[i] = executeInteropRead(array, selection.getNative(i, false), indexVar);
+      elements[i] = executeInteropRead(frame, array, selection.getNative(i, false), indexVar);
     }
     return new ListStream(elements);
   }
 
+  @Specialization
+  protected Object doRange(VirtualFrame frame, Object array, RangeStream range, Reference indexVar,
+      @Cached(neverDefault = true, inline = true) GetNextRangeValueNode getNextRangeValueNode) {
+    ListStream result = new ListStream();
+    try {
+      while (true) {
+        Object index = getNextRangeValueNode.execute(frame, this, range);
+        result.append(executeInteropRead(frame, array, index, indexVar));
+      }
+    } catch (EndOfStreamException e) {}
+    return result;
+  }
+
   @Specialization(guards = "interop.hasArrayElements(selection)", limit = "3")
   protected Object doInteropArray(
+      VirtualFrame frame,
       Object array,
       Object selection,
       Reference indexVar,
@@ -90,7 +109,7 @@ public abstract class DoInteropArrayReadNode extends Node {
       long length = interop.getArraySize(selection);
       Object[] elements = new Object[Math.toIntExact(length)];
       for (int i = 0; i < length; i++) {
-        elements[i] = executeInteropRead(array, interop.readArrayElement(selection, i), indexVar);
+        elements[i] = executeInteropRead(frame, array, interop.readArrayElement(selection, i), indexVar);
       }
       return new ListStream(elements);
     } catch (UnsupportedMessageException | InvalidArrayIndexException e) {

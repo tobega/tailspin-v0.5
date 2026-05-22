@@ -7,7 +7,6 @@ import com.oracle.truffle.api.dsl.Executed;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 import java.math.BigInteger;
@@ -40,10 +39,12 @@ public abstract class TruncateDivideNode extends ValueNode {
     this.isUntypedRegion = isUntypedRegion;
   }
 
+  public abstract Object executeTruncateDivide(Object left, Object right);
+
   @GenerateInline
   @TypeSystemReference(TailspinTypes.class)
   public static abstract class DoTruncateDivideNode extends Node {
-    public abstract Object executeTruncateDivide(VirtualFrame frame, Node node, Object left, Object right);
+    public abstract Object executeTruncateDivide(Node node, Object left, Object right);
 
     @Specialization(rewriteOn = ArithmeticException.class)
     protected long doLong(long left, long right) {
@@ -159,9 +160,9 @@ public abstract class TruncateDivideNode extends ValueNode {
   }
 
   @Specialization(guards = "isScalar(right.unit())")
-  protected Measure doMeasure(VirtualFrame frame, Measure left, Measure right,
+  protected Measure doMeasure(Measure left, Measure right,
       @Cached(inline = true) @Shared DoTruncateDivideNode doTruncateDivideNode) {
-    return new Measure(doTruncateDivideNode.executeTruncateDivide(frame, this, left.value(), right.value()), left.unit());
+    return new Measure(doTruncateDivideNode.executeTruncateDivide(this, left.value(), right.value()), left.unit());
   }
 
   boolean isScalar(Object unit) {
@@ -169,33 +170,33 @@ public abstract class TruncateDivideNode extends ValueNode {
   }
 
   @Specialization(guards = "left.unit() == right.unit()")
-  protected Measure doSameMeasure(VirtualFrame frame, Measure left, Measure right,
+  protected Measure doSameMeasure(Measure left, Measure right,
       @Cached(inline = true) @Shared DoTruncateDivideNode doTruncateDivideNode) {
-    return new Measure(doTruncateDivideNode.executeTruncateDivide(frame, this, left.value(), right.value()), Measure.SCALAR);
+    return new Measure(doTruncateDivideNode.executeTruncateDivide(this, left.value(), right.value()), Measure.SCALAR);
   }
 
   @Specialization(guards = "isUntypedRegion")
-  protected Object doUntypedMeasures(VirtualFrame frame, Measure left, Measure right,
+  protected Object doUntypedMeasures(Measure left, Measure right,
       @Cached(inline = true) @Shared DoTruncateDivideNode doDivideNode) {
-    return doDivideNode.executeTruncateDivide(frame, this, left.value(), right.value());
+    return doDivideNode.executeTruncateDivide(this, left.value(), right.value());
   }
 
   @Specialization(guards = "isUntypedRegion")
-  protected Object doUntypedMeasureRight(VirtualFrame frame, Object left, Measure right,
+  protected Object doUntypedMeasureRight(Object left, Measure right,
       @Cached(inline = true) @Shared DoTruncateDivideNode doDivideNode) {
-    return doDivideNode.executeTruncateDivide(frame, this, left, right.value());
+    return doDivideNode.executeTruncateDivide(this, left, right.value());
   }
 
   @Specialization(guards = "isUntypedRegion")
-  protected Object doUntypedMeasureLeft(VirtualFrame frame, Measure left, Object right,
+  protected Object doUntypedMeasureLeft(Measure left, Object right,
       @Cached(inline = true) @Shared DoTruncateDivideNode doDivideNode) {
-    return doDivideNode.executeTruncateDivide(frame, this, left.value(), right);
+    return doDivideNode.executeTruncateDivide(this, left.value(), right);
   }
 
   @Specialization
-  protected Object doOther(VirtualFrame frame, Object left, Object right,
+  protected Object doOther(Object left, Object right,
       @Cached(inline = true) @Shared DoTruncateDivideNode doTruncateDivideNode) {
-    return doTruncateDivideNode.executeTruncateDivide(frame, this, left, right);
+    return doTruncateDivideNode.executeTruncateDivide(this, left, right);
   }
 
   public static TruncateDivideNode create(ValueNode leftNode, ValueNode rightNode, boolean isUntypedRegion,

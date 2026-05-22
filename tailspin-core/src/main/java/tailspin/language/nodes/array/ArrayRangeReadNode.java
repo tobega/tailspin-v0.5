@@ -11,30 +11,32 @@ import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.iterate.RangeIteration;
+import tailspin.language.nodes.iterate.CreateRangeNode;
 import tailspin.language.nodes.value.GetContextFrameNode;
 import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
 import tailspin.language.runtime.IndexedArrayValue;
+import tailspin.language.runtime.Reference;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.stream.ListStream;
+import tailspin.language.runtime.stream.RangeStream;
 
 @NodeChild(value = "array", type = ValueNode.class)
 public abstract class ArrayRangeReadNode extends ValueNode {
 
-  protected ArrayRangeReadNode(RangeIteration iterationNode, int resultSlot,
+  protected ArrayRangeReadNode(CreateRangeNode createRangeNode, Reference indexVar,
       SourceSection sourceSection) {
     super(sourceSection);
-    this.iterationNode = iterationNode;
-    this.resultSlot = resultSlot;
+    this.createRangeNode = createRangeNode;
+    this.indexVar = indexVar;
   }
 
   public abstract Object executeDirect(VirtualFrame frame, Object array);
 
   @SuppressWarnings("FieldMayBeFinal")
   @Child
-  RangeIteration iterationNode;
+  CreateRangeNode createRangeNode;
 
-  final int resultSlot;
+  final Reference indexVar;
 
   @Specialization
   protected Object doIndexed(VirtualFrame frame, IndexedArrayValue indexedArrayValue,
@@ -47,11 +49,13 @@ public abstract class ArrayRangeReadNode extends ValueNode {
   }
 
   @Specialization
-  protected Object doArray(VirtualFrame frame, TailspinArray array) {
+  protected Object doArray(VirtualFrame frame, TailspinArray array,
+      @Cached(parameters = "true") DoArrayReadNode arrayReadNode) {
     frame.setObjectStatic(LENS_CONTEXT_SLOT, array);
-    frame.setObjectStatic(resultSlot, new ListStream());
-    iterationNode.executeTransform(frame);
-    return frame.getObjectStatic(resultSlot);
+    RangeStream range = (RangeStream) createRangeNode.executeGeneric(frame /*, array*/);
+    Object result = arrayReadNode.executeArrayRead(frame, array, range, indexVar);
+    frame.clearStatic(LENS_CONTEXT_SLOT);
+    return result;
   }
 
   @Specialization
@@ -68,11 +72,13 @@ public abstract class ArrayRangeReadNode extends ValueNode {
   @Specialization(guards = "interop.hasArrayElements(array)", limit = "3")
   @SuppressWarnings("unused")
   protected Object doInteropArray(VirtualFrame frame, Object array,
-      @CachedLibrary("array") InteropLibrary interop) {
+      @CachedLibrary("array") InteropLibrary interop,
+      @Cached(parameters = "true") DoInteropArrayReadNode arrayReadNode) {
     frame.setObjectStatic(LENS_CONTEXT_SLOT, array);
-    frame.setObjectStatic(resultSlot, new ListStream());
-    iterationNode.executeTransform(frame);
-    return frame.getObjectStatic(resultSlot);
+    RangeStream range = (RangeStream) createRangeNode.executeGeneric(frame);
+    Object result = arrayReadNode.executeInteropRead(frame, array, range, indexVar);
+    frame.clearStatic(LENS_CONTEXT_SLOT);
+    return result;
   }
 
   @Specialization
@@ -80,9 +86,8 @@ public abstract class ArrayRangeReadNode extends ValueNode {
     throw new TypeError(String.format("Cannot read %s by range", receiver.getClass()), this);
   }
 
-  public static ArrayRangeReadNode create(RangeIteration iteration, int resultSlot, ValueNode array,
+  public static ArrayRangeReadNode create(ValueNode array, CreateRangeNode createRangeNode, Reference indexVar,
       SourceSection sourceSection) {
-    iteration.setResultSlot(resultSlot);
-    return ArrayRangeReadNodeGen.create(iteration, resultSlot, sourceSection, array);
+    return ArrayRangeReadNodeGen.create(createRangeNode, indexVar, sourceSection, array);
   }
 }

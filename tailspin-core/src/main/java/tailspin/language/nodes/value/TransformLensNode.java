@@ -43,7 +43,7 @@ public abstract class TransformLensNode extends ValueNode {
       @Cached(inline = true) MergeResultNode mergeResultNode) {
     ListStream elements = new ListStream();
     while (many.hasNext()) {
-      elements = (ListStream) mergeResultNode.execute(this, elements,
+      elements = (ListStream) mergeResultNode.execute(frame,this, elements,
           executeDirect(frame, many.next()));
     }
     return TailspinArray.value(Arrays.copyOf(elements.getArray(), elements.size()));

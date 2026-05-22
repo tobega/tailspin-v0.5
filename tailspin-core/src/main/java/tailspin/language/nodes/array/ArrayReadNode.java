@@ -59,14 +59,14 @@ public abstract class ArrayReadNode extends ValueNode {
   @Specialization
   protected Object doSimpleRead(VirtualFrame frame, TailspinArray array,
       @Cached(parameters = "noFail") DoArrayReadNode arrayReadNode) {
-    return arrayReadNode.executeArrayRead(array, lensNode.executeGeneric(frame), indexVar);
+    return arrayReadNode.executeArrayRead(frame, array, lensNode.executeGeneric(frame), indexVar);
   }
 
   @Specialization(guards = "interop.hasArrayElements(array)", limit = "3")
   protected Object doInteropRead(VirtualFrame frame, Object array,
       @Cached(parameters = "noFail") DoInteropArrayReadNode arrayReadNode,
       @CachedLibrary("array") InteropLibrary interop) {
-    return arrayReadNode.executeInteropRead(array, lensNode.executeGeneric(frame), indexVar);
+    return arrayReadNode.executeInteropRead(frame, array, lensNode.executeGeneric(frame), indexVar);
   }
 
   @Specialization

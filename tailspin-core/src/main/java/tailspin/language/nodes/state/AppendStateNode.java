@@ -1,12 +1,17 @@
 package tailspin.language.nodes.state;
 
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
+import tailspin.language.nodes.iterate.EndOfStreamException;
+import tailspin.language.nodes.iterate.GetNextRangeValueNode;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.stream.ListStream;
+import tailspin.language.runtime.stream.RangeStream;
 
 @NodeChild(value = "target", type = ValueNode.class)
 @NodeChild(value = "value", type = ValueNode.class)
@@ -16,26 +21,39 @@ public abstract class AppendStateNode extends ValueNode {
     super(sourceSection);
   }
 
-  public abstract Object executeDirect(Object target, Object value);
+  public abstract Object executeDirect(VirtualFrame frame, Object target, Object value);
 
   @Specialization
-  protected Object appendArrayMany(TailspinArray array, ListStream values) {
+  protected Object appendArrayMany(VirtualFrame frame, TailspinArray array, ListStream values) {
     TailspinArray result = array.getThawed();
     while (values.hasNext()) {
-      executeDirect(result, values.next());
+      executeDirect(frame, result, values.next());
     }
     return result;
   }
 
   @Specialization
-  TailspinArray appendArray(TailspinArray target, Object value) {
+  protected Object appendArrayRange(VirtualFrame frame, TailspinArray array, RangeStream range,
+      @Cached(neverDefault = true, inline = true) GetNextRangeValueNode getNextRangeValueNode) {
+    TailspinArray result = array.getThawed();
+    try {
+      while (true) {
+        Object value = getNextRangeValueNode.execute(frame, this, range);
+        executeDirect(frame, result, value);
+      }
+    } catch (EndOfStreamException e) {}
+    return result;
+  }
+
+  @Specialization
+  TailspinArray appendArray(VirtualFrame frame, TailspinArray target, Object value) {
     TailspinArray result = target.getThawed();
     result.append(value);
     return result;
   }
 
   @Specialization
-  Object cannotAppend(Object target, Object ignored) {
+  Object cannotAppend(VirtualFrame frame, Object target, Object ignored) {
     throw new TypeError("Cannot append to " + target, this);
   }
 

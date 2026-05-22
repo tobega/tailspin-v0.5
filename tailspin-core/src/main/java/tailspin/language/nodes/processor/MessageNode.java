@@ -14,7 +14,7 @@ import tailspin.language.nodes.ValueNode;
 public abstract class MessageNode extends ValueNode {
   public abstract Object executeMessage(Object processor);
 
-  private final String message;
+  final String message;
 
   protected MessageNode(String message, SourceSection sourceSection) {
     super(sourceSection);
@@ -29,7 +29,11 @@ public abstract class MessageNode extends ValueNode {
     };
   }
 
-  @Specialization(guards = "processorInteropLibrary.hasMembers(processor)", limit = "2")
+
+  @Specialization(guards = {
+      "processorInteropLibrary.hasMembers(processor)",
+      "processorInteropLibrary.isMemberReadable(processor, message)"
+  }, limit = "2")
   protected Object doProcessor(Object processor,
       @CachedLibrary("processor") InteropLibrary processorInteropLibrary) {
     try {

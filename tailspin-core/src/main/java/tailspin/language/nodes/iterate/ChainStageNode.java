@@ -27,6 +27,7 @@ import tailspin.language.nodes.ValueNode;
 import tailspin.language.nodes.iterate.ChainStageNodeGen.GetNextStreamValueNodeGen;
 import tailspin.language.nodes.iterate.ChainStageNodeGen.SetChainCvNodeGen;
 import tailspin.language.runtime.stream.ListStream;
+import tailspin.language.runtime.stream.RangeStream;
 
 public abstract class ChainStageNode extends TransformNode {
 
@@ -77,6 +78,16 @@ public abstract class ChainStageNode extends TransformNode {
   public void doValueStream(
       VirtualFrame frame,
       ListStream stream) {
+    frame.setBooleanStatic(IN_STREAM_SLOT, true);
+    loop.execute(frame);
+    frame.setObjectStatic(valuesSlot, null);
+  }
+
+  @Specialization
+  @SuppressWarnings("unused")
+  public void doRange(
+      VirtualFrame frame,
+      RangeStream range) {
     frame.setBooleanStatic(IN_STREAM_SLOT, true);
     loop.execute(frame);
     frame.setObjectStatic(valuesSlot, null);
@@ -166,6 +177,12 @@ public abstract class ChainStageNode extends TransformNode {
         throw new EndOfStreamException();
       }
       return stream.next();
+    }
+
+    @Specialization
+    protected Object doStream(VirtualFrame frame, RangeStream range,
+        @Cached(neverDefault = true, inline = true) GetNextRangeValueNode iterator) {
+      return iterator.execute(frame, this, range);
     }
 
     @Specialization(guards = "interop.isIterator(iterator)", limit = "3")

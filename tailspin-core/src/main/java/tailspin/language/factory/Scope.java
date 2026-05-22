@@ -165,6 +165,7 @@ public class Scope {
       return 0;
     } else {
       needsState = true;
+      if (parent == null) throw new IllegalStateException("Cannot find " + scopeId);
       return 1 + parent.accessState(scopeId);
     }
   }
