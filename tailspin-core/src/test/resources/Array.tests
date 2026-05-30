@@ -191,3 +191,9 @@ end !
 ---message last
 [5..7] -> $::last !
 =3
+---prefix indexing
+[5..7] -> $(1\) !
+=5
+---prefix index second
+[5..7] -> $(2\) !
+=6

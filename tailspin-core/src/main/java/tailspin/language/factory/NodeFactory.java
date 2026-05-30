@@ -23,6 +23,7 @@ import tailspin.language.nodes.array.ArrayLiteral;
 import tailspin.language.nodes.array.ArrayMutateNode;
 import tailspin.language.nodes.array.ArrayRangeReadNode;
 import tailspin.language.nodes.array.ArrayReadNode;
+import tailspin.language.nodes.array.PrefixIndexNode;
 import tailspin.language.nodes.iterate.ChainNode;
 import tailspin.language.nodes.iterate.CreateRangeNode;
 import tailspin.language.nodes.iterate.ResultAggregatingNode;
@@ -826,8 +827,13 @@ public class NodeFactory {
       case ParseNode(String name, Object contents, int start, int end) when name.equals("string-literal") -> visitStringLiteral(contents,
           sourceCode.createSection(start, end - start));
       case ParseNode(String name, List<?> contents, int start, int end) when name.equals("type-cast") && contents.size() == 2 -> visitTypeCast((ParseNode) contents.getFirst(), (ParseNode) contents.getLast());
+      case ParseNode(String name, ParseNode value, int start, int end) when name.equals("prefix-index") -> visitPrefixIndex(value, sourceCode.createSection(start, end - start));
       default -> throw new IllegalStateException("Unexpected value: " + source);
     };
+  }
+
+  private ValueNode visitPrefixIndex(ParseNode value, SourceSection section) {
+    return PrefixIndexNode.create(section, asSingleValueNode(visitSource((ParseNode) value.content())));
   }
 
   private ValueNode visitTypeCast(ParseNode tag, ParseNode value) {

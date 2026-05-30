@@ -36,7 +36,7 @@ public class TailspinParser {
      accumulator-state rule (?<|ignorable-text> <|='->'> ?<|ignorable-text>) <|set-state>
      
      value-chain rule <|range|source> *<|transform|stream>
-     source rule <|type-cast|array-literal|structure-literal|string-literal|arithmetic-expression|reference|single-value-chain> (?<|ignorable-text>)
+     source rule <|type-cast|array-literal|structure-literal|string-literal|prefix-index|arithmetic-expression|reference|single-value-chain> (?<|ignorable-text>)
      reference rule <|='$'> ?<|='@'> ?<|ID> ?<|lens-expression> ?<|message-send>
      single-value-chain rule (<|='('> ?<|ignorable-text>) <|value-chain> (?<|ignorable-text> <|=')'>) ?<|='"1"'|unit>
      range rule <|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) <|range-bound> ?<|stride> (?<|ignorable-text>)
@@ -57,6 +57,7 @@ public class TailspinParser {
      key rule <|ID> (<|=':'> ?<|ignorable-text>)
      next-lens-dimension rule (?<|ignorable-text> <|=';'> ?<|ignorable-text>) <|lens-dimension>
      lens-range rule ?<|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) ?<|range-bound> ?<|stride>
+     prefix-index rule <|range-bound> (?<|ignorable-text> <|='\\'>)
      
      message-send rule (<|='::'>) <|ID>
 

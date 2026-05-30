@@ -44,6 +44,7 @@
 - The mod operator on measures needs to have the same measure on both sides
 - Dividing by the same measure gives a scalar.
 - Recursion is only allowed on matchers (unless you pass the function as a parameter - not yet enabled)
+- Append operator is `..\` and prepend is `\..` instead of `..|` and `|..` to harmonize with relative indexing
 
 ## New features
 - Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `if <.....>`
@@ -51,6 +52,7 @@
 - Type assertions by tagging values, e.g. `foo´{bar: 5}` checks that the structure-literal is of type `foo`
 - There is now a divide operator `/` that creates rational numbers (exact math)
 - Scientific numbers with a specified number of digits precision (inexact math) can also be created and used.
+- Relative indexing of arrays: `$(1\)` is the first element, `$(2\)` the second, `$(\1)` the last, `$(\2)` second last, and so on.
 
 ### Contracts
 - Preconditions specified by an optional `requires <.....>` at the top of a templates definition.

@@ -1,5 +1,7 @@
 package tailspin.language.nodes.array;
 
+import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
+
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -60,14 +62,20 @@ public abstract class ArrayReadNode extends ValueNode {
   @Specialization
   protected Object doSimpleRead(VirtualFrame frame, TailspinArray array,
       @Cached(parameters = "noFail") DoArrayReadNode arrayReadNode) {
-    return arrayReadNode.executeArrayRead(frame, array, lensNode.executeGeneric(frame), indexVar);
+    frame.setObjectStatic(LENS_CONTEXT_SLOT, array);
+    Object result = arrayReadNode.executeArrayRead(frame, array, lensNode.executeGeneric(frame), indexVar);
+    frame.clearStatic(LENS_CONTEXT_SLOT);
+    return result;
   }
 
   @Specialization(guards = "interop.hasArrayElements(array)", limit = "3")
   protected Object doInteropRead(VirtualFrame frame, Object array,
       @Cached(parameters = "noFail") DoInteropArrayReadNode arrayReadNode,
       @CachedLibrary("array") InteropLibrary interop) {
-    return arrayReadNode.executeInteropRead(frame, array, lensNode.executeGeneric(frame), indexVar);
+    frame.setObjectStatic(LENS_CONTEXT_SLOT, array);
+    Object result = arrayReadNode.executeInteropRead(frame, array, lensNode.executeGeneric(frame), indexVar);
+    frame.clearStatic(LENS_CONTEXT_SLOT);
+    return result;
   }
 
   @Specialization

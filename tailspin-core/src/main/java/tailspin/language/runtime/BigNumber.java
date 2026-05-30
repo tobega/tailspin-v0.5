@@ -15,6 +15,9 @@ import java.util.Set;
 @ExportLibrary(InteropLibrary.class)
 @ValueType
 public class BigNumber implements TruffleObject, Comparable<BigNumber> {
+  public static final BigNumber ZERO = new BigNumber(BigInteger.ZERO);
+  public static final BigNumber ONE = new BigNumber(BigInteger.ONE);
+
   private final BigInteger value;
 
   public BigNumber(BigInteger value) {
