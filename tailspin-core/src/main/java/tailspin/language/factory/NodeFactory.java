@@ -1120,8 +1120,11 @@ public class NodeFactory {
     ValueNode start;
     if (separator > 0 && !bounds.getFirst().equals("~")) {
       inclusiveStart = separator == 1;
-      start = asSingleValueNode(visitSource(
-          (ParseNode) ((ParseNode) bounds.getFirst()).content()));
+      ParseNode boundValue = (ParseNode) bounds.getFirst();
+      if (boundValue.name().equals("range-bound")) {
+        boundValue = (ParseNode) boundValue.content();
+      }
+      start = asSingleValueNode(visitSource(boundValue));
     } else {
       inclusiveStart = separator == 0;
       start = VoidValue.create(sourceSection);
@@ -1130,8 +1133,11 @@ public class NodeFactory {
     ValueNode end;
     if (separator + 1 < bounds.size() && !bounds.getLast().equals("~")) {
       inclusiveEnd = separator + 2 == bounds.size();
-      end = asSingleValueNode(visitSource(
-          (ParseNode) ((ParseNode) bounds.getLast()).content()));
+      ParseNode boundValue = (ParseNode) bounds.getLast();
+      if (boundValue.name().equals("range-bound")) {
+        boundValue = (ParseNode) boundValue.content();
+      }
+      end = asSingleValueNode(visitSource(boundValue));
     } else {
       inclusiveEnd = separator + 1 == bounds.size();
       end = VoidValue.create(sourceSection);

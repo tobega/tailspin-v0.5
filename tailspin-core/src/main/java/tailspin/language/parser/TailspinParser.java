@@ -56,7 +56,7 @@ public class TailspinParser {
      index-variable rule (<|='as'> <|ignorable-text>) <|ID> (?<|ignorable-text>)
      key rule <|ID> (<|=':'> ?<|ignorable-text>)
      next-lens-dimension rule (?<|ignorable-text> <|=';'> ?<|ignorable-text>) <|lens-dimension>
-     lens-range rule ?<|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) ?<|range-bound> ?<|stride>
+     lens-range rule ?<|prefix-index|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) ?<|prefix-index|range-bound> ?<|stride>
      prefix-index rule <|range-bound> (?<|ignorable-text> <|='\\'>)
      
      message-send rule (<|='::'>) <|ID>
