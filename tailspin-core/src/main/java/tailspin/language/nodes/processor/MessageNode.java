@@ -47,6 +47,21 @@ public abstract class MessageNode extends ValueNode {
     }
   }
 
+  @Specialization(guards = "processorInteropLibrary.hasArrayElements(array)", limit = "3")
+  protected Object doInteropArray(Object array,
+      @CachedLibrary("array") InteropLibrary processorInteropLibrary) {
+    try {
+      return switch (message) {
+        case "first" -> 0L;
+        case "last" -> processorInteropLibrary.getArraySize(array) - 1L;
+        case "length" -> processorInteropLibrary.getArraySize(array);
+        default -> processorInteropLibrary.readMember(array, message);
+      };
+    } catch (UnsupportedMessageException | UnknownIdentifierException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Specialization
   protected Object doUnknown(Object value) {
     CompilerDirectives.transferToInterpreterAndInvalidate();

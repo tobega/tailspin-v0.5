@@ -49,6 +49,32 @@ public class ListInputTest {
   }
 
   @Test
+  public void prefixIndex() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", List.of(3L, 5L, 6L));
+      assertEquals(
+          3L, truffleContext.eval("tt", "$BINDINGS::input -> $(1\\) !").asLong());
+    }
+  }
+
+  @Test
+  public void suffixIndex() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", List.of(3L, 5L, 6L));
+      assertEquals(
+          6L, truffleContext.eval("tt", "$BINDINGS::input -> $(\\1) !").asLong());
+    }
+  }
+
+  @Test
   public void selection() {
     try (Context truffleContext =
         Context.newBuilder()
