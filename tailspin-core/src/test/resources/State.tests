@@ -210,21 +210,21 @@ end !
 ---append array
 5 -> templates
   @ set [1];
-  ..|@ set $;
+  ..\@ set $;
   $@ !
 end !
 =[1, 5]
 ---append next dimension array
 5 -> templates
   @ set [[1], [1]];
-  ..|@(1) set $;
+  ..\@(1) set $;
   $@ !
 end !
 =[[1, 5], [1]]
 ---append array many values
 5 -> templates
   @ set [1];
-  ..|@ set $..6;
+  ..\@ set $..6;
   $@ !
 end !
 =[1, 5, 6]

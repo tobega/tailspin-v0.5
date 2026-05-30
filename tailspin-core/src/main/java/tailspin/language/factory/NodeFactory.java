@@ -292,7 +292,7 @@ public class NodeFactory {
         value = visitValueChain((ParseNode) l.getLast(), false);
         l = l.subList(0, l.size() - 1);
         Mode mode = Mode.SET;
-        if (l.getFirst().equals("..|")) {
+        if (l.getFirst().equals("..\\")) {
           mode = Mode.APPEND;
           l = l.subList(1, l.size());
         }

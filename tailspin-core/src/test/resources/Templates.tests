@@ -19,8 +19,8 @@ end !
   @ set [];
   $ -> !#
   $@ !
-  when <|..3> do $ + 1 -> # -> ..|@ set $;
-    ..|@ set $;
+  when <|..3> do $ + 1 -> # -> ..\@ set $;
+    ..\@ set $;
   otherwise $ !
 end !
 =[4, 3, 2, 1]
