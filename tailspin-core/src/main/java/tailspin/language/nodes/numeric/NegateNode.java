@@ -2,6 +2,7 @@ package tailspin.language.nodes.numeric;
 
 import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
@@ -71,6 +72,7 @@ public abstract class NegateNode extends ValueNode {
 
     @Specialization
     protected Object typeError(Object value) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       throw new TypeError("Cannot negate " + value, this);
     }
   }

@@ -1,5 +1,6 @@
 package tailspin.language.nodes.matchers;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -25,7 +26,10 @@ public abstract class TagMatcherNode extends MatcherNode {
   }
 
   MatcherNode getConstraint() {
-    return type.getConstraint().orElseThrow(() -> new TypeError(type + "is not defined", this));
+    return type.getConstraint().orElseThrow(() -> {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
+      return new TypeError(type + "is not defined", this);
+    });
   }
 
   protected TagMatcherNode(VocabularyType type, SourceSection sourceSection) {

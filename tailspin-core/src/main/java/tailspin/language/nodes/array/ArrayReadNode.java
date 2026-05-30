@@ -1,5 +1,6 @@
 package tailspin.language.nodes.array;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -71,6 +72,7 @@ public abstract class ArrayReadNode extends ValueNode {
 
   @Specialization
   protected Object doIllegal(VirtualFrame ignored, Object notArray) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError("Cannot read " + notArray + " by array lens", this);
   }
 

@@ -1,5 +1,6 @@
 package tailspin.language.nodes.structure;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -57,6 +58,7 @@ public abstract class WriteKeyValueNode extends ValueNode {
 
   @Fallback
   protected Object doIllegal(Object target, Object values) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError(String.format("Cannot write %s by %s for %s", target.getClass(), type, values.getClass()), this);
   }
 }

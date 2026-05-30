@@ -1,5 +1,6 @@
 package tailspin.language.nodes.array;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.source.SourceSection;
@@ -64,6 +65,7 @@ public abstract class ArrayMutateNode extends ValueNode {
   @Specialization
   @SuppressWarnings("unused")
   protected Object doIllegal(Object receiver, Object lens, Object value) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError(String.format("Cannot access %s by %s to set %s", receiver.getClass(), lens.getClass(), value.getClass()),
         this);
   }

@@ -1,5 +1,6 @@
 package tailspin.language.nodes.value;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -37,6 +38,7 @@ public abstract class TagNode extends ValueNode {
     if (typeConstraint.executeMatcherGeneric(frame, value)) {
       return new TaggedValue(type, value);
     }
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError(value + " is not of type " + type.toString(), this);
   }
 
@@ -46,6 +48,7 @@ public abstract class TagNode extends ValueNode {
     if (typeConstraint.executeMatcherGeneric(frame, value)) {
       return new TaggedValue(type, value);
     }
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError(value + " is not of type " + type.toString(), this);
   }
 
@@ -55,6 +58,7 @@ public abstract class TagNode extends ValueNode {
     if (typeConstraint.executeMatcherGeneric(frame, value)) {
       return new TaggedValue(type, value);
     }
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError(value + " is not of type " + type.toString(), this);
   }
 
@@ -64,6 +68,7 @@ public abstract class TagNode extends ValueNode {
     if (typeConstraint.executeMatcherGeneric(frame, value)) {
       return new TaggedValue(type, value);
     }
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError(value + " is not of type " + type.toString(), this);
   }
 
@@ -73,6 +78,7 @@ public abstract class TagNode extends ValueNode {
     if (typeConstraint.executeMatcherGeneric(frame, value)) {
       return new TaggedValue(type, value);
     }
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError(value + " is not of type " + type.toString(), this);
   }
 
@@ -82,6 +88,7 @@ public abstract class TagNode extends ValueNode {
     if (typeConstraint.executeMatcherGeneric(frame, value)) {
       return value;
     }
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError(value.toString() + " is not of type " + type.toString(), this);
   }
 

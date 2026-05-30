@@ -1,5 +1,6 @@
 package tailspin.language.nodes.transform;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -27,11 +28,13 @@ public abstract class SinkNode extends StatementNode {
   @Specialization(guards = {"stream != null"})
   @TruffleBoundary
   void doEmpty(ListStream stream) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     if (stream.hasNext()) throw new TypeError("Got unexpected values from sink " + stream, this);
   }
 
   @Specialization
   void unexpectedValues(Object result) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError("Got unexpected value from sink " + result, this);
   }
 

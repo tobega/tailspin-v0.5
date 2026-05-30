@@ -1,5 +1,6 @@
 package tailspin.language.nodes.structure;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -48,6 +49,7 @@ public abstract class StructureReadNode extends ValueNode {
 
   @Specialization
   protected Object doIllegal(Object target) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError(String.format("Cannot read %s by %s", target.getClass(), key), this);
   }
 

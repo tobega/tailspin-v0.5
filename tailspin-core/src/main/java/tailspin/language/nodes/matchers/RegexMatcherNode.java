@@ -1,5 +1,6 @@
 package tailspin.language.nodes.matchers;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -31,7 +32,10 @@ public abstract class RegexMatcherNode extends MatcherNode {
   @Specialization
   @SuppressWarnings("unused")
   boolean doIllegal(Object toMatch, TruffleString regex) {
-    if (!isTypeChecked) throw new TypeError("Can't regex match " + toMatch, this);
+    if (!isTypeChecked) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
+      throw new TypeError("Can't regex match " + toMatch, this);
+    }
     return false;
   }
 

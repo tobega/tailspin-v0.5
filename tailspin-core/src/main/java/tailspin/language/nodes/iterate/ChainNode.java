@@ -2,6 +2,7 @@ package tailspin.language.nodes.iterate;
 
 import static tailspin.language.TailspinLanguage.INTERNAL_CODE_SOURCE;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
@@ -49,6 +50,7 @@ public abstract class ChainNode extends TransformNode {
         stages[i].executeTransform(frame);
       }
     } catch (PreconditionFailed pf) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       throw new TypeError(pf.getMessage(), pf.getLocation());
     } catch (RejectSinkReached rsr) {
       throw new PreconditionFailed(rsr.getMessage(), rsr.getLocation());

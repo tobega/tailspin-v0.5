@@ -1,5 +1,6 @@
 package tailspin.language.nodes.numeric;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
@@ -152,6 +153,7 @@ public abstract class MultiplyNode extends ValueNode {
 
     @Specialization
     protected Object typeError(Object left, Object right) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       throw new TypeError("Cannot multiply " + left + " and " + right, this);
     }
   }

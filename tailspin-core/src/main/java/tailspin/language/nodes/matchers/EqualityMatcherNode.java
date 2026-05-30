@@ -1,5 +1,6 @@
 package tailspin.language.nodes.matchers;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Exclusive;
@@ -200,6 +201,7 @@ public abstract class EqualityMatcherNode extends MatcherNode {
       @Cached("autoType(value)") MatcherNode dynamicBound) {
     if (doEqualityNode.executeEquals(this, toMatch, value)) return true;
     if (dynamicBound.executeMatcherGeneric(frame, toMatch)) return false;
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError("Incompatible type comparison " + toMatch + " = " + value, this);
   }
 
@@ -213,6 +215,7 @@ public abstract class EqualityMatcherNode extends MatcherNode {
     if (doEqualityNode.executeEquals(this, toMatch, value)) return true;
     MatcherNode dynamicBound = autoType(value);
     if (dynamicBound.executeMatcherGeneric(frame, toMatch)) return false;
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError("Incompatible type comparison " + toMatch + " = " + value, this);
   }
 

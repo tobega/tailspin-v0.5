@@ -2,6 +2,7 @@ package tailspin.language.nodes.array;
 
 import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -83,6 +84,7 @@ public abstract class ArrayRangeReadNode extends ValueNode {
 
   @Specialization
   protected Object doIllegal(Object receiver) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError(String.format("Cannot read %s by range", receiver.getClass()), this);
   }
 

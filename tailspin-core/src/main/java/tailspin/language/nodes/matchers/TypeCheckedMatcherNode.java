@@ -1,5 +1,6 @@
 package tailspin.language.nodes.matchers;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
@@ -24,6 +25,7 @@ public class TypeCheckedMatcherNode extends MatcherNode {
   @Override
   public boolean executeMatcherGeneric(VirtualFrame frame, Object toMatch) {
     if (!typeCheck.executeMatcherGeneric(frame, toMatch)) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       throw new TypeError(toMatch + " not in type bound", this);
     }
     return matcher.executeMatcherGeneric(frame, toMatch);
@@ -32,6 +34,7 @@ public class TypeCheckedMatcherNode extends MatcherNode {
   @Override
   public boolean executeMatcherLong(VirtualFrame frame, long toMatch) {
     if (!typeCheck.executeMatcherLong(frame, toMatch)) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       throw new TypeError(toMatch + " not in type bound", this);
     }
     return matcher.executeMatcherLong(frame, toMatch);

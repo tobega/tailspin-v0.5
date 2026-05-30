@@ -1,5 +1,6 @@
 package tailspin.language.nodes.processor;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.interop.InteropLibrary;
@@ -25,7 +26,10 @@ public abstract class MessageNode extends ValueNode {
   protected Object doLong(long value) {
     return switch (message) {
       case "raw" -> value;
-      default -> throw new TypeError("Can't send message " + message + " to long " + value, this);
+      default -> {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        throw new TypeError("Can't send message " + message + " to long " + value, this);
+      }
     };
   }
 
@@ -45,6 +49,7 @@ public abstract class MessageNode extends ValueNode {
 
   @Specialization
   protected Object doUnknown(Object value) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new TypeError("Can't send message " + message + " to " + value.getClass(), this);
   }
 
