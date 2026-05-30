@@ -17,9 +17,10 @@ import tailspin.language.parser.composer.SubComposerFactory;
 
 public class TailspinParser {
 
-  static final String tailspinSyntax = """
+  static final String tailspinSyntax =
+      """
      program rule (?<|ignorable-text>) <|statements>
-     
+
      statement rule <|definition|set-state|templates|type-def|terminated-chain> (?<|ignorable-text>)
      block rule <|do-nothing|statements>
      statements rule +<|statement>
@@ -29,14 +30,14 @@ public class TailspinParser {
      definition rule <|ID> (<|ignorable-text> <|='is'> <|ignorable-text>) <|value-chain> (<|=';'> ?<|ignorable-text>)
      type-def rule <|ID> (<|ignorable-text> <|='requires'> <|ignorable-text> <|='<'>) ?<|='~'> (?<|ignorable-text>) +<|membrane> (<|='>'> ?<|ignorable-text>)
      set-state rule ?<|='..\\'> (<|='@'>) ?<|ID> ?<|lens-expression> (?<|ignorable-text> <|='set'> ?<|ignorable-text>) <|value-chain> (<|=';'> ?<|ignorable-text>)
-     
+
      terminated-chain rule <|value-chain> <|emit|sink|accumulator-state>
      emit rule (?<|ignorable-text> <|='!'>)
      sink rule (?<|ignorable-text> <|='->'> ?<|ignorable-text> <|='!'> ?<|ignorable-text>) <|='VOID'|='REJECT'|='#'|templates-call>
      accumulator-state rule (?<|ignorable-text> <|='->'> ?<|ignorable-text>) <|set-state>
-     
+
      value-chain rule <|range|source> *<|transform|stream>
-     source rule <|type-cast|array-literal|structure-literal|string-literal|prefix-index|arithmetic-expression|reference|single-value-chain> (?<|ignorable-text>)
+     source rule <|type-cast|array-literal|structure-literal|string-literal|prefix-index|suffix-index|arithmetic-expression|reference|single-value-chain> (?<|ignorable-text>)
      reference rule <|='$'> ?<|='@'> ?<|ID> ?<|lens-expression> ?<|message-send>
      single-value-chain rule (<|='('> ?<|ignorable-text>) <|value-chain> (?<|ignorable-text> <|=')'>) ?<|='"1"'|unit>
      range rule <|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) <|range-bound> ?<|stride> (?<|ignorable-text>)
@@ -46,25 +47,26 @@ public class TailspinParser {
      unicode-bytes rule (<|='$#U+'>) <|'[0-9a-fA-F]+'> (<|=';'>)
      codepoint rule (<|='$#'> ?<|ignorable-text>) <|value-chain> (<|=';'>)
      interpolate rule (<|='$:'|'(?=\\$)'> ?<|ignorable-text>) <|value-chain> (<|=';'>)
-     
+
      type-cast rule <|tag> <|numeric-literal|structure-literal|string-literal|array-literal|single-value-chain>
      tag rule <|ID> (<|='´'>)
-     
+
      lens-expression rule (<|='('> ?<|ignorable-text>) <|lens-dimension>  ?<|lens-transform> (<|=')'>)
      lens-transform rule (<|=';'> ?<|ignorable-text>) <|transform> *<|transform|stream>
      lens-dimension rule <|lens-range|source|key> (?<|ignorable-text>) ?<|index-variable> ?<|next-lens-dimension> (?<|ignorable-text>)
      index-variable rule (<|='as'> <|ignorable-text>) <|ID> (?<|ignorable-text>)
      key rule <|ID> (<|=':'> ?<|ignorable-text>)
      next-lens-dimension rule (?<|ignorable-text> <|=';'> ?<|ignorable-text>) <|lens-dimension>
-     lens-range rule ?<|prefix-index|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) ?<|prefix-index|range-bound> ?<|stride>
-     prefix-index rule <|range-bound> (?<|ignorable-text> <|='\\'>)
-     
+     lens-range rule ?<|prefix-index|suffix-index|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) ?<|prefix-index|suffix-index|range-bound> ?<|stride>
+     prefix-index rule <|range-bound> (<|='\\'>)
+     suffix-index rule (<|='\\'>) <|range-bound>
+
      message-send rule (<|='::'>) <|ID>
 
      array-literal rule <|array-contents|='['> (?<|ignorable-text> <|=']'> ?<|ignorable-text>)
      array-contents rule (<|='['> ?<|ignorable-text>) <|value-chain> (?<|ignorable-text>) *<|more-array-contents>
      more-array-contents rule (<|=','> ?<|ignorable-text>) <|value-chain> (?<|ignorable-text>)
-     
+
      structure-literal rule <|key-values|='{'> (?<|ignorable-text> <|='}'> ?<|ignorable-text>)
      key-values rule (<|='{'> ?<|ignorable-text>) <|key-value|value-chain> *<|additional-key-value>
      key-value rule <|ID> (<|=':'> ?<|ignorable-text>) <|value-chain>
@@ -78,11 +80,11 @@ public class TailspinParser {
      auxiliary rule <|='auxiliary'> (<|ignorable-text>)
      filter rule (<|='if'> ?<|ignorable-text>) <|matcher>
      stream rule <|='...'> (?<|ignorable-text>)
-     
+
      precondition rule (<|='requires'> <|ignorable-text>) <|matcher> (<|ignorable-text>)
      templates-body rule <|with-block|matchers>
      with-block rule <|block> ?<|matchers>
-     
+
      matchers rule +<|match-template>
      match-template rule <|when-do|otherwise> <|block>
      otherwise rule <|='otherwise'> (?<|ignorable-text>)
@@ -105,7 +107,7 @@ public class TailspinParser {
      additional-key-matcher rule (<|=','> ?<|ignorable-text>) <|key-matcher>
      content-matcher rule (<|='<'>) ?<|='~'> (?<|ignorable-text>) +<|membrane> (<|='>'> ?<|ignorable-text>)
      measure-type-match rule <|='""'|='"1"'|unit> (?<|ignorable-text>)
-     
+
      arithmetic-expression rule <|addition|multiplication|numeric-literal|square-root|negated-term>
      addition rule <|addition|multiplication|term> <|'[+-]'> (?<|ignorable-text>) <|multiplication|term> (?<|ignorable-text>)
      multiplication rule <|multiplication|term> <|'\\*|/|~/|mod'> (?<|ignorable-text>) <|term> (?<|ignorable-text>)
@@ -113,7 +115,7 @@ public class TailspinParser {
      numeric-literal rule <|NUM|INT> ?<|='"1"'|unit>
      term rule <|numeric-literal|negated-term|single-value-chain|reference|square-root> (?<|ignorable-text>)
      negated-term rule (<|='-'>) <|single-value-chain|reference|square-root> (?<|ignorable-text>)
-     
+
      unit rule (<|='"'>) +<|measure-product> ?<|measure-denominator> (<|='"'> ?<|ignorable-text>)
      measure-product rule <|ID> (?<|ignorable-text>)
      measure-denominator rule (<|='/'> ?<|ignorable-text>) +<|measure-product>

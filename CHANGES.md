@@ -45,6 +45,7 @@
 - Dividing by the same measure gives a scalar.
 - Recursion is only allowed on matchers (unless you pass the function as a parameter - not yet enabled)
 - Append operator is `..\` and prepend is `\..` instead of `..|` and `|..` to harmonize with relative indexing
+- Range bounds need to be a numeric literal, a parenthesized value with optional unit, or a reference.
 
 ## New features
 - Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `if <.....>`
