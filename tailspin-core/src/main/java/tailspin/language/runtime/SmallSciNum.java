@@ -66,6 +66,14 @@ public final class SmallSciNum implements TruffleObject {
     return new SmallSciNum(value, 0);
   }
 
+  public static SmallSciNum fromInteropDouble(double value) {
+    return new SmallSciNum(value, 14);
+  }
+
+  public static SmallSciNum fromInteropFloat(float value) {
+    return new SmallSciNum(value, 7);
+  }
+
   public SmallSciNum add(SmallSciNum other) {
     double sum = value + other.value;
     if (Double.isInfinite(sum) || (sum != 0.0 && (sum < 0 ? -sum : sum) < Double.MIN_NORMAL)) {

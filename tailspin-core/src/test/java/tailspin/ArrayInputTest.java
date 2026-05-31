@@ -1,0 +1,145 @@
+package tailspin;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
+import org.graalvm.polyglot.PolyglotAccess;
+import org.junit.jupiter.api.Test;
+
+public class ArrayInputTest {
+  @Test
+  public void stream() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", new long[]{3L, 5L, 6L});
+      assertEquals(
+          "4, 6, 7", truffleContext.eval("tt", "$BINDINGS::input ... -> $ + 1 !").toString());
+    }
+  }
+
+  @Test
+  public void index() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", new long[]{3L, 5L, 6L});
+      assertEquals(
+          5L, truffleContext.eval("tt", "$BINDINGS::input -> $(1) !").asLong());
+    }
+  }
+
+  @Test
+  public void prefixIndex() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", new long[]{3L, 5L, 6L});
+      assertEquals(
+          3L, truffleContext.eval("tt", "$BINDINGS::input -> $(1\\) !").asLong());
+    }
+  }
+
+  @Test
+  public void suffixIndex() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", new long[]{3L, 5L, 6L});
+      assertEquals(
+          6L, truffleContext.eval("tt", "$BINDINGS::input -> $(\\1) !").asLong());
+    }
+  }
+
+  @Test
+  public void selection() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", new long[]{3L, 5L, 6L, 8L});
+      assertEquals(
+          "[8, 3]", truffleContext.eval("tt", "$BINDINGS::input -> $([3,0]) !").toString());
+    }
+  }
+
+  @Test
+  public void selector() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", new long[]{3L, 2L});
+      assertEquals(
+          "[8, 3]", truffleContext.eval("tt", " [1, 3, 8, 9] -> $($BINDINGS::input) !").toString());
+    }
+  }
+
+  @Test
+  public void selectionAndSelector() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", new long[]{0L, 1L, 3L, 8L});
+      truffleContext.getPolyglotBindings().putMember("select", new long[]{3L, 2L});
+      assertEquals(
+          "[8, 3]", truffleContext.eval("tt", " $BINDINGS::input -> $($BINDINGS::select) !").toString());
+    }
+  }
+
+  @Test
+  public void slice() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", new long[]{3L, 5L, 6L, 8L});
+      assertEquals(
+          "[5, 6]", truffleContext.eval("tt", "$BINDINGS::input -> $(1..2) !").toString());
+    }
+  }
+
+  @Test
+  public void repackage() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", new long[]{3L, 5L, 6L, 8L});
+      assertEquals(
+          "[3, 5, 6, 8]", truffleContext.eval("tt", """
+          $BINDINGS::input -> [$...]!
+          """).toString());
+    }
+  }
+
+  @Test
+  public void projectionStream() {
+    try (Context truffleContext =
+        Context.newBuilder()
+            .allowPolyglotAccess(PolyglotAccess.ALL)
+            .allowHostAccess(HostAccess.ALL)
+            .build()) {
+      truffleContext.getPolyglotBindings().putMember("input", new long[]{3L, 5L});
+      assertEquals(
+          "[3, 5, 3, 5]", truffleContext.eval("tt", """
+          [1, 2] -> $(..; -> $BINDINGS::input ...) !
+          """).toString());
+    }
+  }
+}

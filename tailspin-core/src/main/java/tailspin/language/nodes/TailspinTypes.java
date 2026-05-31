@@ -13,6 +13,21 @@ import tailspin.language.runtime.SmallSciNum;
 @TypeSystem({long.class, BigNumber.class, Rational.class, SmallSciNum.class, SciNum.class})
 public abstract class TailspinTypes {
   @ImplicitCast
+  public static long castIntToLong(int value) {
+    return (long) value;
+  }
+
+  @ImplicitCast
+  public static SmallSciNum castDoubleToSmallSciNum(double value) {
+    return SmallSciNum.fromInteropDouble(value);
+  }
+
+  @ImplicitCast
+  public static SmallSciNum castFloatToSmallSciNum(float value) {
+    return SmallSciNum.fromInteropFloat(value);
+  }
+
+  @ImplicitCast
   @TruffleBoundary
   public static BigNumber castBigNumber(long value) {
     return new BigNumber(BigInteger.valueOf(value));
