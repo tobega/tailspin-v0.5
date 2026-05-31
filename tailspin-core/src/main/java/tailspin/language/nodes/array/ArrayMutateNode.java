@@ -1,72 +1,65 @@
 package tailspin.language.nodes.array;
 
+import static tailspin.language.runtime.Templates.LENS_CONTEXT_SLOT;
+
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.stream.ListStream;
 
 @NodeChild(value = "array", type = ValueNode.class)
-@NodeChild(value = "lens", type = ValueNode.class)
 @NodeChild(value = "value", type = ValueNode.class)
 public abstract class ArrayMutateNode extends ValueNode {
 
-  public ArrayMutateNode(SourceSection sourceSection) {
+  @SuppressWarnings("FieldMayBeFinal")
+  @Child
+  ValueNode lensNode;
+
+  public ArrayMutateNode(SourceSection sourceSection, ValueNode lensNode) {
     super(sourceSection);
+    this.lensNode = lensNode;
   }
 
-  public abstract Object executeDirect(Object target, Object index, Object value);
+  public abstract Object executeDirect(VirtualFrame frame, Object target, Object value);
 
-  public static ArrayMutateNode create(ValueNode array, ValueNode index, ValueNode value,
-      SourceSection sourceSection) {
-    return ArrayMutateNodeGen.create(sourceSection, array, index, value);
-  }
-
-  @Specialization
-  protected Object doLong(TailspinArray array, long index, Object value) {
-    TailspinArray result = array.getThawed();
-    result.setNative((int) index - 1, value);
-    return result;
+  public static ArrayMutateNode create(SourceSection sourceSection, ValueNode index, ValueNode array,
+      ValueNode value) {
+    return ArrayMutateNodeGen.create(sourceSection, index, array, value);
   }
 
   @Specialization
-  protected Object doBigNumber(TailspinArray array, BigNumber index, Object value) {
+  protected Object doSimple(VirtualFrame frame, TailspinArray array, Object value,
+      @Cached DoArrayWriteNode arrayWriteNode) {
     TailspinArray result = array.getThawed();
-    result.setNative(index.intValueExact() - 1, value);
-    return result;
-  }
-
-  @Specialization(guards = "indexes.getArraySize() == valueStream.size()")
-  protected Object doArray(TailspinArray array, TailspinArray indexes, ListStream valueStream) {
-    TailspinArray result = array.getThawed();
-    Object[] values = valueStream.getArray();
-    for (int i = 0; i < indexes.getArraySize(); i++) {
-      executeDirect(result, indexes.getNative(i, false), values[i]);
-    }
+    frame.setObjectStatic(LENS_CONTEXT_SLOT, result);
+    arrayWriteNode.executeDirect(result, lensNode.executeGeneric(frame), value);
+    frame.clearObjectStatic(LENS_CONTEXT_SLOT);
     return result;
   }
 
   @Specialization(guards = "arrayStream.size() == valueStream.size()")
   @SuppressWarnings("unchecked")
-  protected Object doMany(ListStream arrayStream, Object index, ListStream valueStream) {
+  protected Object doMany(VirtualFrame frame, ListStream arrayStream, ListStream valueStream) {
     Object[] arrays = arrayStream.getArray();
     Object[] values = valueStream.getArray();
     int size = arrayStream.size();
     for (int i = 0; i < size; i++) {
-      arrays[i] = executeDirect(arrays[i], index, values[i]);
+      arrays[i] = executeDirect(frame, arrays[i], values[i]);
     }
     return arrayStream;
   }
 
   @Specialization
   @SuppressWarnings("unused")
-  protected Object doIllegal(Object receiver, Object lens, Object value) {
+  protected Object doIllegal(VirtualFrame frame, Object receiver, Object value) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
-    throw new TypeError(String.format("Cannot access %s by %s to set %s", receiver.getClass(), lens.getClass(), value.getClass()),
+    throw new TypeError(String.format("Cannot access %s by %s to set %s", receiver.getClass(), lensNode.executeGeneric(frame).getClass(), value.getClass()),
         this);
   }
 }

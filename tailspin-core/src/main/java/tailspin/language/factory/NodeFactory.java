@@ -328,8 +328,8 @@ public class NodeFactory {
       case ParseNode(String type, Object lensDimension, int start, int end) when type.equals("lens-dimension")
           -> visitWriteLensExpression(target, lensDimension, value);
       case ParseNode(String type, ParseNode source, int start, int end) when type.equals("source")
-          -> ArrayMutateNode.create(target, asSingleValueNode(visitSource(source)), asTransformResult(value),
-          sourceCode.createSection(start, end - start));
+          -> ArrayMutateNode.create(sourceCode.createSection(start, end - start),
+          asSingleValueNode(visitSource(source)), target, asTransformResult(value));
       case ParseNode(String type, ParseNode id, int start, int end) when type.equals("key")
           -> WriteKeyValueNode.create(currentScope().getVocabularyType((String) id.content()), target, asTransformResult(value), sourceCode.createSection(start, end - start));
       case List<?> dimension -> {

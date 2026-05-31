@@ -37,7 +37,7 @@ public abstract class MessageNode extends ValueNode {
   @Specialization(guards = {
       "processorInteropLibrary.hasMembers(processor)",
       "processorInteropLibrary.isMemberReadable(processor, message)"
-  }, limit = "2")
+  }, limit = "3")
   protected Object doProcessor(Object processor,
       @CachedLibrary("processor") InteropLibrary processorInteropLibrary) {
     try {

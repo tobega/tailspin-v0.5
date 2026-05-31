@@ -22,7 +22,7 @@ public class SelectionSortBenchmark extends TruffleBenchmark {
           $ -> auxiliary templates
             @ set $(1);
             [$(~..)... -> #] !
-            ..|@select-sort set $@;
+            ..\\@select-sort set $@;
             when <|$@..> do $ !
             otherwise
               $@ !

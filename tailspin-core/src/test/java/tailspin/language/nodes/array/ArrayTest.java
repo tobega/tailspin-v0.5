@@ -54,8 +54,8 @@ public class ArrayTest {
                 IntegerLiteral.create(15L, sourceSection), true,
                 IntegerLiteral.create(5L, sourceSection), sourceSection))),
         sourceSection);
-    ValueNode writeNode = ArrayMutateNode.create(array, IntegerLiteral.create(4, sourceSection), IntegerLiteral.create(35,
-        sourceSection), sourceSection);
+    ValueNode writeNode = ArrayMutateNode.create(sourceSection, IntegerLiteral.create(4, sourceSection), array, IntegerLiteral.create(35,
+        sourceSection));
     ValueNode readNode = ArrayReadNode.create(false, writeNode, IntegerLiteral.create(4,
         sourceSection), null, sourceSection);
     assertEquals(35L, TestUtil.evaluate(readNode, fdb.build(), List.of()));
