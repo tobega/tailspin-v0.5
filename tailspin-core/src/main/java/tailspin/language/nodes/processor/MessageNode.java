@@ -52,8 +52,8 @@ public abstract class MessageNode extends ValueNode {
       @CachedLibrary("array") InteropLibrary processorInteropLibrary) {
     try {
       return switch (message) {
-        case "first" -> 0L;
-        case "last" -> processorInteropLibrary.getArraySize(array) - 1L;
+        case "start" -> 0L;
+        case "end" -> processorInteropLibrary.getArraySize(array) - 1L;
         case "length" -> processorInteropLibrary.getArraySize(array);
         default -> processorInteropLibrary.readMember(array, message);
       };

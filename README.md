@@ -2,11 +2,18 @@
 Reworking syntax and reimplementing [Tailspin from v0](https://github.com/tobega/tailspin-v0/tree/master) to be better [based on concepts](CONCEPTS.md).
 Also aiming for better performance and incremental parsing for creating a REPL and a language server.
 
+Simple examples of code are in the [tests that define behaviour](tailspin-core/src/test/resources).
+
+Also the [benchmark tests](tailspin-benchmarks/src/main/java/tailspin) are a good source of code examples,
+with java equivalents to compare to.
+
+Mostly the code from v0 programs should be possible to run with some syntax modifactions (and as long as the features have been implemented).
 See the [summary of changes](CHANGES.md) for an overview of what is different from v0.
 
-Examples of programs with updated syntax are in the [samples](samples) folder.
+Some other examples of programs with updated syntax are in the [samples](samples) folder,
+and some of the examples on [Rosetta code](https://rosettacode.org/wiki/Category:Tailspin).
 
-Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.com/graal-truffle-tutorial-part-0-what-is-truffle)
+Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.com/graal-truffle-tutorial-part-0-what-is-truffle) that got me started.
 
 ## Status update 2026-04-04
 Improving interop by handling java lists

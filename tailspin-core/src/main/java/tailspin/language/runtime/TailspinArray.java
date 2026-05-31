@@ -8,7 +8,6 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
 import com.oracle.truffle.api.strings.TruffleString;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 import tailspin.language.runtime.stream.ListStream;
@@ -84,11 +83,11 @@ public class TailspinArray implements TruffleObject {
     arrayElements = Arrays.copyOf(arrayElements, newCapacity);
   }
 
-  public Object first() {
+  public Object start() {
     return 1L;
   }
 
-  public Object last() {
+  public Object end() {
     return getArraySize();
   }
 
@@ -134,7 +133,7 @@ public class TailspinArray implements TruffleObject {
     return true;
   }
 
-  final Set<String> supportedMessages = Set.of("first", "last", "length");
+  static final Set<String> supportedMessages = Set.of("start", "end", "length");
 
   @ExportMessage
   public boolean isMemberReadable(String member) {
@@ -144,16 +143,18 @@ public class TailspinArray implements TruffleObject {
   @ExportMessage
   public Object readMember(String member) throws UnknownIdentifierException {
     return switch(member) {
-      case "first" -> first();
-      case "last" -> last();
+      case "start" -> start();
+      case "end" -> end();
       case "length" -> getArraySize();
       default -> throw UnknownIdentifierException.create(member);
     };
   }
 
+  static final TailspinArray MEMBERS = TailspinArray.value(supportedMessages.toArray(new String[0]));
+
   @ExportMessage
   public Object getMembers(@SuppressWarnings("unused") boolean includeInternal) {
-    return TailspinArray.value(new String[]{"first", "last", "length"});
+    return MEMBERS;
   }
 
   @Override

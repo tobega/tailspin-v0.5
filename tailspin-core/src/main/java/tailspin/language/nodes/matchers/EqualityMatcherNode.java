@@ -162,7 +162,7 @@ public abstract class EqualityMatcherNode extends MatcherNode {
         @Cached(inline = false) @Exclusive DoEqualityNode indexEqualityNode,
         @Cached(inline = false) @Exclusive DoEqualityNode sizeEqualityNode,
         @Cached(inline = false) @Shared DoEqualityNode doEqualityNode) {
-      if (!indexEqualityNode.executeEquals(node, left.first(), right.first())) return false;
+      if (!indexEqualityNode.executeEquals(node, left.start(), right.start())) return false;
       if (!sizeEqualityNode.executeEquals(node, left.getArraySize(), right.getArraySize())) return false;
       for (int i = 0; i < left.getArraySize(); i++) {
         if (!doEqualityNode.executeEquals(node, left.getNative(i, false), right.getNative(i, false))) return false;

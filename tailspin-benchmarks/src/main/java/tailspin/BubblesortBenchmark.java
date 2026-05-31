@@ -111,7 +111,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
       sortedCopy templates
         @ set $;
         bubble auxiliary templates
-        requires <|$@sortedCopy::first~..$@sortedCopy::last>
+        requires <|$@sortedCopy::start~..$@sortedCopy::end>
           @ set 1;
           1..$-1 -> !#
           $@ !

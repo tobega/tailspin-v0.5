@@ -16,7 +16,8 @@
 - The current value that a lens applies to is made accessible as $.
 - The special array context words `first` and `last` are removed, just use range without specific bound, e.g. `..`, `~..` or `2..~`. If needed, use `$::first` and `$::last`.
 - `..` will be introduced as a short form of `first..last` (and will also work as an *all* selector for non-indexed collections like relations)
-- A relative bound will be introduced, so `1|..` will be from the first element, `2|..` from the second, `..|2` to the second last, whatever the type or offset of the index.
+- Relative indexing of arrays: `$(1\)` is the first element, `$(2\)` the second, `$(\1)` the last, `$(\2)` second last, and so on.
+- Relative bounds can be used, so `1\..` will be from the first element, `2\..` from the second, `..\2` to the second last, whatever the type or offset of the index.
 - As a consequence, the structure transform projection, e.g. `$({x:, y: §.y + 1"1"})` will become `$(-> {x:, y: $.y + 1"1"})` for a structure value, equivalent to `$ -> {x:, y: $.y + 1"1"}`, or `$(..; -> {x:, y: $.y + 1"1"})` for a collection of structures.
 - Array templates will be folded in as projections, so `$ -> \[i]($ * $i! \)` will be written instead `$(.. as i; -> $ * $i)`
 - The magic property of the structure transform projection to apply no matter how many array dimensions down, will disappear. Maybe it will be enabled by an explicit `;;`
@@ -46,6 +47,7 @@
 - Recursion is only allowed on matchers (unless you pass the function as a parameter - not yet enabled)
 - Append operator is `..\` and prepend is `\..` instead of `..|` and `|..` to harmonize with relative indexing
 - Range bounds need to be a numeric literal, a parenthesized value with optional unit, or a reference.
+- The `first` and `last` messages to arrays are `start` and `end` instead, to clarify it returns the index and not the value.
 
 ## New features
 - Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `if <.....>`
@@ -53,7 +55,6 @@
 - Type assertions by tagging values, e.g. `foo´{bar: 5}` checks that the structure-literal is of type `foo`
 - There is now a divide operator `/` that creates rational numbers (exact math)
 - Scientific numbers with a specified number of digits precision (inexact math) can also be created and used.
-- Relative indexing of arrays: `$(1\)` is the first element, `$(2\)` the second, `$(\1)` the last, `$(\2)` second last, and so on.
 
 ### Contracts
 - Preconditions specified by an optional `requires <.....>` at the top of a templates definition.

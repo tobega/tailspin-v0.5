@@ -19,25 +19,25 @@ public abstract class SuffixIndexNode extends ValueNode {
 
   @SuppressWarnings("FieldMayBeFinal")
   @Child @Executed(with = "lensContext")
-  MessageNode first;
+  MessageNode start;
 
   @SuppressWarnings("FieldMayBeFinal")
   @Child @Executed(with = "lensContext")
   MessageNode length;
 
-  public abstract Object executePrefixIndex(Object prefixIndex, Object lensContext, Object first, long length);
+  public abstract Object executePrefixIndex(Object prefixIndex, Object lensContext, Object start, long length);
 
   public SuffixIndexNode(SourceSection sourceSection, ValueNode suffixIndex) {
     super(sourceSection);
     this.suffixIndex = suffixIndex;
     lensContext = GetLensContextNode.create(sourceSection);
-    first = MessageNode.create("first", null, INTERNAL_CODE_SOURCE);
+    start = MessageNode.create("start", null, INTERNAL_CODE_SOURCE);
     length = MessageNode.create("length", null, INTERNAL_CODE_SOURCE);
   }
 
   @Specialization
-  long doIndexLong(long suffixIndex, Object lensContext, long first, long length) {
-    return first + length - suffixIndex;
+  long doIndexLong(long suffixIndex, Object lensContext, long start, long length) {
+    return start + length - suffixIndex;
   }
 
   public static SuffixIndexNode create(SourceSection sourceSection, ValueNode suffixIndexNode) {

@@ -19,20 +19,20 @@ public abstract class PrefixIndexNode extends ValueNode {
 
   @SuppressWarnings("FieldMayBeFinal")
   @Child @Executed(with = "lensContext")
-  MessageNode first;
+  MessageNode start;
 
-  public abstract Object executePrefixIndex(Object prefixIndex, Object lensContext, Object first);
+  public abstract Object executePrefixIndex(Object prefixIndex, Object lensContext, Object start);
 
   public PrefixIndexNode(SourceSection sourceSection, ValueNode prefixIndex) {
     super(sourceSection);
     this.prefixIndex = prefixIndex;
     lensContext = GetLensContextNode.create(sourceSection);
-    first = MessageNode.create("first", null, INTERNAL_CODE_SOURCE);
+    start = MessageNode.create("start", null, INTERNAL_CODE_SOURCE);
   }
 
   @Specialization
-  long doIndexLong(long prefixIndex, Object lensContext, long first) {
-    return first + prefixIndex - 1L;
+  long doIndexLong(long prefixIndex, Object lensContext, long start) {
+    return start + prefixIndex - 1L;
   }
 
   public static PrefixIndexNode create(SourceSection sourceSection, ValueNode prefixIndexNode) {

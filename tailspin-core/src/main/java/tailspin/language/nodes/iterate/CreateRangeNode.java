@@ -63,11 +63,11 @@ public abstract class CreateRangeNode extends ValueNode {
       @Bind("this") Node node,
       @Cached(inline = true) @Shared GtZeroNode gtZeroNode,
       @Cached("isPositiveIncrement(node, gtZeroNode, increment)") boolean isPositiveIncrement,
-      @Cached(value = "createGetFirst()", neverDefault = true) @Shared MessageNode getFirst,
-      @Cached(value = "createGetLast()", neverDefault = true) @Shared MessageNode getLast) {
+      @Cached(value = "createGetStart()", neverDefault = true) @Shared MessageNode getStart,
+      @Cached(value = "createGetEnd()", neverDefault = true) @Shared MessageNode getEnd) {
     Object context = frame.getObjectStatic(LENS_CONTEXT_SLOT);
-    if (isPositiveIncrement) start = getFirst.executeMessage(context);
-    else start = getLast.executeMessage(context);
+    if (isPositiveIncrement) start = getStart.executeMessage(context);
+    else start = getEnd.executeMessage(context);
     return executeCreateRange(frame, start, end, increment);
   }
 
@@ -80,11 +80,11 @@ public abstract class CreateRangeNode extends ValueNode {
       @Bind("this") Node node,
       @Cached(inline = true) @Shared GtZeroNode gtZeroNode,
       @Cached("isPositiveIncrement(node, gtZeroNode, increment)") boolean isPositiveIncrement,
-      @Cached(value = "createGetFirst()", neverDefault = true) @Shared MessageNode getFirst,
-      @Cached(value = "createGetLast()", neverDefault = true) @Shared MessageNode getLast) {
+      @Cached(value = "createGetStart()", neverDefault = true) @Shared MessageNode getStart,
+      @Cached(value = "createGetEnd()", neverDefault = true) @Shared MessageNode getEnd) {
     Object context = frame.getObjectStatic(LENS_CONTEXT_SLOT);
-    if (isPositiveIncrement) end = getLast.executeMessage(context);
-    else end = getFirst.executeMessage(context);
+    if (isPositiveIncrement) end = getEnd.executeMessage(context);
+    else end = getStart.executeMessage(context);
     return executeCreateRange(frame, start, end, increment);
   }
 
@@ -97,12 +97,12 @@ public abstract class CreateRangeNode extends ValueNode {
     return new RangeStream(start, end, increment, inclusiveEnd);
   }
 
-  MessageNode createGetFirst() {
-    return MessageNode.create("first", null, INTERNAL_CODE_SOURCE);
+  MessageNode createGetStart() {
+    return MessageNode.create("start", null, INTERNAL_CODE_SOURCE);
   }
 
-  MessageNode createGetLast() {
-    return MessageNode.create("last", null, INTERNAL_CODE_SOURCE);
+  MessageNode createGetEnd() {
+    return MessageNode.create("end", null, INTERNAL_CODE_SOURCE);
   }
 
   AddNode createAddNode() {

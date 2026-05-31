@@ -185,11 +185,11 @@ end !
   otherwise 0!
 end !
 =0
----message first
-[5..7] -> $::first !
+---message start
+[5..7] -> $::start !
 =1
----message last
-[5..7] -> $::last !
+---message end
+[5..7] -> $::end !
 =3
 ---prefix indexing
 [5..7] -> $(1\) !
