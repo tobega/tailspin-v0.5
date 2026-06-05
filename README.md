@@ -10,7 +10,7 @@ with java equivalents to compare to.
 Mostly the code from v0 programs should be possible to run with some syntax modifactions (and as long as the features have been implemented).
 See the [summary of changes](CHANGES.md) for an overview of what is different from v0.
 
-Some other examples of programs with updated syntax are in the [samples](samples) folder,
+Driving development with [adventofcode 2025](https://github.com/tobega/aoc2025), see the xxxxtt.java files. Some other examples of programs with updated syntax are in the [samples](samples) folder,
 and some of the examples on [Rosetta code](https://rosettacode.org/wiki/Category:Tailspin).
 
 Great thanks to Adam Ruka for his [Truffle tutorial](https://www.endoflineblog.com/graal-truffle-tutorial-part-0-what-is-truffle) that got me started.

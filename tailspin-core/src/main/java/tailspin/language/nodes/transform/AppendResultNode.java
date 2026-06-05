@@ -13,7 +13,6 @@ import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
 import tailspin.language.nodes.iterate.EndOfStreamException;
-import tailspin.language.nodes.iterate.GetNextRangeValueNode;
 import tailspin.language.runtime.stream.ListStream;
 import tailspin.language.runtime.stream.RangeStream;
 
@@ -36,7 +35,7 @@ public abstract class AppendResultNode extends Node {
     if (previousStream.profile(previous instanceof ListStream)) {
       ListStream merged = mergeResultNode.execute(frame, this, castExact(previous, ListStream.class), result);
       frame.setObjectStatic(resultSlot, merged);
-    } else if(previousNullAndResultStream.profile(previous == null && result instanceof ListStream)) {
+    } else if(previousNullAndResultStream.profile(previous == null && (result instanceof ListStream || result instanceof RangeStream))) {
       frame.setObjectStatic(resultSlot, result);
     } else {
       ListStream stream = new ListStream();
@@ -75,13 +74,8 @@ public abstract class AppendResultNode extends Node {
 
     @Specialization
     @SuppressWarnings("unchecked")
-    static ListStream doMergeRange(VirtualFrame frame, Node node, ListStream previous, RangeStream range,
-        @Cached GetNextRangeValueNode getNextRangeValueNode) {
-      while (true) {
-        Object result = getNextRangeValueNode.execute(frame, node, range);
-        if (result == null) {break;}
-        previous.append(result);
-      }
+    static ListStream doMergeRange(VirtualFrame frame, Node node, ListStream previous, RangeStream range) {
+      previous.append(range);
       return previous;
     }
 

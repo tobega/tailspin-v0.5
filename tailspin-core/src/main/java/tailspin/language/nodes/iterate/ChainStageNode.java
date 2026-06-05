@@ -9,22 +9,17 @@ import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.Executed;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NeverDefault;
-import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.interop.InteropLibrary;
-import com.oracle.truffle.api.interop.StopIterationException;
-import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
-import com.oracle.truffle.api.profiles.CountingConditionProfile;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.iterate.ChainStageNodeGen.GetNextStreamValueNodeGen;
 import tailspin.language.nodes.iterate.ChainStageNodeGen.SetChainCvNodeGen;
 import tailspin.language.runtime.stream.ListStream;
 import tailspin.language.runtime.stream.RangeStream;
@@ -131,7 +126,7 @@ public abstract class ChainStageNode extends TransformNode {
     ChainStageRepeatingNode(int chainValuesSlot, int chainCvSlot, TransformNode stage,
         SourceSection sourceSection) {
       this.setCurrentValue = SetChainCvNode.create(chainCvSlot);
-      this.getNextStreamValueNode = GetNextStreamValueNode.create(chainValuesSlot, sourceSection);
+      this.getNextStreamValueNode = GetNextStreamValueNode.create(StaticReferenceNode.create(chainValuesSlot, sourceSection));
       this.stage = stage;
     }
 
@@ -141,6 +136,8 @@ public abstract class ChainStageNode extends TransformNode {
         setCurrentValue.execute(frame, getNextStreamValueNode.executeStream(frame));
       } catch (EndOfStreamException e) {
         return false;
+      } catch (EndOfSubIteratorException e) {
+        return true;
       }
       stage.executeTransform(frame);
       return true;
@@ -161,50 +158,6 @@ public abstract class ChainStageNode extends TransformNode {
     @NeverDefault
     public static SetChainCvNode create(int slot) {
       return SetChainCvNodeGen.create(slot);
-    }
-  }
-
-  @SuppressWarnings("unused")
-  @NodeChild(value = "valueStream", type = StaticReferenceNode.class)
-  public abstract static class GetNextStreamValueNode extends Node {
-    public abstract Object executeStream(VirtualFrame frame);
-
-    final CountingConditionProfile emptyProfile = CountingConditionProfile.create();
-
-    @Specialization
-    protected Object doStream(VirtualFrame frame, ListStream stream) {
-      if (emptyProfile.profile(!stream.hasNext())) {
-        throw new EndOfStreamException();
-      }
-      return stream.next();
-    }
-
-    @Specialization
-    protected Object doStream(VirtualFrame frame, RangeStream range,
-        @Cached(neverDefault = true, inline = true) GetNextRangeValueNode iterator) {
-      Object value = iterator.execute(frame, this, range);
-      if (value == null) {throw new EndOfStreamException();}
-      return value;
-    }
-
-    @Specialization(guards = "interop.isIterator(iterator)", limit = "3")
-    protected Object doInteropIterator(Object iterator,
-        @CachedLibrary("iterator") InteropLibrary interop) {
-      try {
-        if (interop.hasIteratorNextElement(iterator)) {
-          return interop.getIteratorNextElement(iterator);
-        } else {
-          throw new EndOfStreamException();
-        }
-      } catch (UnsupportedMessageException e) {
-        throw new AssertionError(e);
-      } catch (StopIterationException e) {
-        throw new EndOfStreamException();
-      }
-    }
-
-    public static GetNextStreamValueNode create(int valuesSlot, SourceSection sourceSection) {
-      return GetNextStreamValueNodeGen.create(StaticReferenceNode.create(valuesSlot, sourceSection));
     }
   }
 

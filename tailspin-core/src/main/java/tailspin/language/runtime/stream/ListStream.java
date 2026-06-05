@@ -39,6 +39,10 @@ public final class ListStream implements TruffleObject {
     return elements[index++];
   }
 
+  public void backUp() {
+    index--;
+  }
+
   public void append(Object item) {
     append(item, elements);
   }
