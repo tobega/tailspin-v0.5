@@ -8,7 +8,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 import tailspin.language.TypeError;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.iterate.EndOfStreamException;
 import tailspin.language.nodes.iterate.GetNextRangeValueNode;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.stream.ListStream;
@@ -37,12 +36,11 @@ public abstract class AppendStateNode extends ValueNode {
   protected Object appendArrayRange(VirtualFrame frame, TailspinArray array, RangeStream range,
       @Cached(neverDefault = true, inline = true) GetNextRangeValueNode getNextRangeValueNode) {
     TailspinArray result = array.getThawed();
-    try {
       while (true) {
         Object value = getNextRangeValueNode.execute(frame, this, range);
+        if  (value == null) {break;}
         executeDirect(frame, result, value);
       }
-    } catch (EndOfStreamException e) {}
     return result;
   }
 

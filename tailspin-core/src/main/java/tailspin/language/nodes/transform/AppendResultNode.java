@@ -77,12 +77,11 @@ public abstract class AppendResultNode extends Node {
     @SuppressWarnings("unchecked")
     static ListStream doMergeRange(VirtualFrame frame, Node node, ListStream previous, RangeStream range,
         @Cached GetNextRangeValueNode getNextRangeValueNode) {
-      try {
       while (true) {
         Object result = getNextRangeValueNode.execute(frame, node, range);
+        if (result == null) {break;}
         previous.append(result);
       }
-      } catch (EndOfStreamException e) {}
       return previous;
     }
 

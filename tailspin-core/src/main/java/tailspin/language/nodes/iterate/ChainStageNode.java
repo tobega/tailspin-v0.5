@@ -182,7 +182,9 @@ public abstract class ChainStageNode extends TransformNode {
     @Specialization
     protected Object doStream(VirtualFrame frame, RangeStream range,
         @Cached(neverDefault = true, inline = true) GetNextRangeValueNode iterator) {
-      return iterator.execute(frame, this, range);
+      Object value = iterator.execute(frame, this, range);
+      if (value == null) {throw new EndOfStreamException();}
+      return value;
     }
 
     @Specialization(guards = "interop.isIterator(iterator)", limit = "3")

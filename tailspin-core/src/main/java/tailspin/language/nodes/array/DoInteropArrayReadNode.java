@@ -9,7 +9,6 @@ import com.oracle.truffle.api.interop.InvalidArrayIndexException;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.Node;
-import tailspin.language.nodes.iterate.EndOfStreamException;
 import tailspin.language.nodes.iterate.GetNextRangeValueNode;
 import tailspin.language.runtime.BigNumber;
 import tailspin.language.runtime.IndexedArrayValue;
@@ -89,12 +88,11 @@ public abstract class DoInteropArrayReadNode extends Node {
   protected Object doRange(VirtualFrame frame, Object array, RangeStream range, Reference indexVar,
       @Cached(neverDefault = true, inline = true) GetNextRangeValueNode getNextRangeValueNode) {
     ListStream result = new ListStream();
-    try {
       while (true) {
         Object index = getNextRangeValueNode.execute(frame, this, range);
+        if (index == null) {break;}
         result.append(executeInteropRead(frame, array, index, indexVar));
       }
-    } catch (EndOfStreamException e) {}
     return result;
   }
 

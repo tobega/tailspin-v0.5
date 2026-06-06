@@ -58,7 +58,7 @@ public abstract class GetNextRangeValueNode extends Node {
     }
 
     if (loopProfile.profile(node, isFinished)) {
-      throw new EndOfStreamException();
+      return null;
     }
 
     range.next = addNode.executeAdd(next, increment);

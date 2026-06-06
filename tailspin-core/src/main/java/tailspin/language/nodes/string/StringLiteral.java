@@ -12,7 +12,6 @@ import com.oracle.truffle.api.strings.TruffleString;
 import java.util.List;
 import java.util.Objects;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.iterate.EndOfStreamException;
 import tailspin.language.nodes.iterate.GetNextRangeValueNode;
 import tailspin.language.nodes.string.StringLiteralNodeGen.AppendStringNodeGen;
 import tailspin.language.runtime.TailspinStrings;
@@ -65,12 +64,11 @@ public abstract class StringLiteral extends ValueNode {
     TruffleString doAppendRange(VirtualFrame frame, TruffleString prefix, RangeStream range,
         @Cached(neverDefault = true, inline = true) GetNextRangeValueNode getNextRangeValueNode) {
       TruffleString result = prefix;
-      try {
         while (true) {
           Object suffix = getNextRangeValueNode.execute(frame, this, range);
+          if (suffix == null) { break; }
           result = executeAppend(frame, result, suffix);
         }
-      } catch (EndOfStreamException e) {}
       return result;
     }
 
