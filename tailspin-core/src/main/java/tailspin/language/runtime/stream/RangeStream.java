@@ -35,7 +35,7 @@ public class RangeStream implements TruffleObject {
      @Specialization
      static boolean doHasNext(RangeStream stream,
          @Bind("$node") Node node,
-         @Cached(allowUncached = true, neverDefault = true) GetNextRangeValueNode nextNode) {
+         @SuppressWarnings("truffle-inlining") @Cached(allowUncached = true, neverDefault = true) GetNextRangeValueNode nextNode) {
        if (stream.pendingElement != null) {
          return true;
        }

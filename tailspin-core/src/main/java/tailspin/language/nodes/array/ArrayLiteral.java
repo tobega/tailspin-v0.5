@@ -7,10 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.iterate.GetNextRangeValueNode;
 import tailspin.language.runtime.TailspinArray;
 import tailspin.language.runtime.stream.ListStream;
-import tailspin.language.runtime.stream.RangeStream;
 
 public class ArrayLiteral extends ValueNode {
   private final int buildSlot;
@@ -18,7 +16,7 @@ public class ArrayLiteral extends ValueNode {
   private final TransformNode[] contents;
 
   @Child
-  GetNextRangeValueNode getNextRangeValueNode;
+  FlattenResultNode flattenResultNode;
 
   private ArrayLiteral(int buildSlot, List<TransformNode> contents, SourceSection sourceSection) {
     super(sourceSection);
@@ -27,7 +25,7 @@ public class ArrayLiteral extends ValueNode {
     for (TransformNode content : contents) {
       content.setResultSlot(buildSlot);
     }
-    this.getNextRangeValueNode = GetNextRangeValueNode.create();
+    this.flattenResultNode = FlattenResultNode.create();
   }
 
   public static ArrayLiteral create(int buildSlot, List<TransformNode> contents,
@@ -48,18 +46,7 @@ public class ArrayLiteral extends ValueNode {
       return TailspinArray.value(new Object[0]);
     }
     ListStream result = new ListStream();
-    while (collector.hasNext()) {
-      Object value = collector.next();
-      if (value instanceof RangeStream range) {
-          while (true) {
-            Object rangeValue = getNextRangeValueNode.execute(frame, this, range);
-            if (rangeValue == null) {break;}
-            result.append(rangeValue);
-          }
-      } else {
-        result.append(value);
-      }
-    }
+    flattenResultNode.executeFlatten(frame, result, collector);
     return TailspinArray.value(Arrays.copyOf(result.getArray(), result.size()));
   }
 }

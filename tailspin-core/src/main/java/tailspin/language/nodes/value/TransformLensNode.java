@@ -9,7 +9,7 @@ import com.oracle.truffle.api.source.SourceSection;
 import java.util.Arrays;
 import tailspin.language.nodes.TransformNode;
 import tailspin.language.nodes.ValueNode;
-import tailspin.language.nodes.transform.AppendResultNode.MergeResultNode;
+import tailspin.language.nodes.array.FlattenResultNode;
 import tailspin.language.nodes.value.WriteContextValueNode.WriteLocalValueNode;
 import tailspin.language.runtime.IndexedArrayValue;
 import tailspin.language.runtime.TailspinArray;
@@ -40,11 +40,10 @@ public abstract class TransformLensNode extends ValueNode {
   @Specialization
   @SuppressWarnings("unchecked")
   TailspinArray doTransformMany(VirtualFrame frame, ListStream many,
-      @Cached(inline = true) MergeResultNode mergeResultNode) {
+      @Cached(neverDefault = true) FlattenResultNode flattenResultNode) {
     ListStream elements = new ListStream();
     while (many.hasNext()) {
-      elements = (ListStream) mergeResultNode.execute(frame,this, elements,
-          executeDirect(frame, many.next()));
+      flattenResultNode.executeFlatten(frame, elements, executeDirect(frame, many.next()));
     }
     return TailspinArray.value(Arrays.copyOf(elements.getArray(), elements.size()));
   }
