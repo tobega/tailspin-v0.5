@@ -30,7 +30,7 @@ public abstract class DoArrayReadNode extends Node {
   @Specialization
   protected Object doLong(VirtualFrame frame, TailspinArray array, long index, Reference indexVar) {
     Object value = array.getNative((int) index - 1, noFail);
-    if (indexVar == null) {
+    if (indexVar == null || value == null) {
       return value;
     } else {
       return new IndexedArrayValue(indexVar, index, value);
@@ -40,7 +40,7 @@ public abstract class DoArrayReadNode extends Node {
   @Specialization
   protected Object doBigNumber(VirtualFrame frame, TailspinArray array, BigNumber index, Reference indexVar) {
     Object value = array.getNative(index.intValueExact() - 1, noFail);
-    if (indexVar == null) {
+    if (indexVar == null || value == null) {
       return value;
     } else {
       return new IndexedArrayValue(indexVar, index, value);
