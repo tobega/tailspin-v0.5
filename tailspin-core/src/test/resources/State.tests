@@ -235,3 +235,10 @@ end !
   $@ !
 end !
 =[1, 14, 3]
+---try to set lens transform
+5 -> templates
+  @ set [1..3];
+  @(..; -> [$]) set $;
+  $@ !
+end !
+=*java.lang.IllegalStateException
