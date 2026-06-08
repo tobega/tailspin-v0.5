@@ -230,13 +230,13 @@ end !
 =0
 ---range match rational
 3.0 -> templates
-  when <|5/2..7/2> do 1!
+  when <|(5/2)..(7/2)> do 1!
   otherwise 0!
 end !
 =1
 ---range match rational outside
 3.7 -> templates
-  when <|5/2..7/2> do 1!
+  when <|(5/2)..(7/2)> do 1!
   otherwise 0!
 end !
 =0

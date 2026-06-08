@@ -24,30 +24,38 @@ public class SequenceSubComposer implements SubComposer {
   }
 
   private Memo resolveRemaining(String s, Memo memo) {
-    for (CompositionSpec spec : sequence.subList(value.size(), sequence.size())) {
+    while (value.size() < sequence.size()) {
+      CompositionSpec spec = sequence.get(value.size());
       SubComposer subComposer = resolver.resolveSpec(spec, scope, resolver);
       memo = subComposer.nibble(s, memo);
       if (subComposer.isSatisfied()) {
         value.add(subComposer);
       } else {
-        return backtrack(s, memo);
+        memo = undoLast(s, memo);
+        if (value == null) break;
       }
     }
     return memo;
   }
 
-  @Override
-  public Memo backtrack(String s, Memo memo) {
+  private Memo undoLast(String s, Memo memo) {
     while (!value.isEmpty()) {
       SubComposer subComposer = value.removeLast();
       memo = subComposer.backtrack(s, memo);
       if (subComposer.isSatisfied()) {
         value.add(subComposer);
-        return resolveRemaining(s, memo);
+        break;
       }
     }
-    value = null;
+    if (value.isEmpty()) value = null;
     return memo;
+  }
+
+  @Override
+  public Memo backtrack(String s, Memo memo) {
+    memo = undoLast(s, memo);
+    if (value == null) return memo;
+    else return resolveRemaining(s, memo);
   }
 
   @Override

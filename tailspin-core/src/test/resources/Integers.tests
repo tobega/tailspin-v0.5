@@ -172,12 +172,9 @@ end !
 ---current value in expression
 1 -> $ + 2 !
 =3
----single value chain in expression
-1 + (1 -> templates 2 ! end) !
-=3
----add non-number is type error
+---add non-number is parse error
 1 + ({ foo: 1}) !
-=*TypeError
+=*java.lang.AssertionError
 ---divide gives rational
 3 / 7 !
 =3/7

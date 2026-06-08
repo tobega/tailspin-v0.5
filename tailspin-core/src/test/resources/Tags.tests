@@ -38,13 +38,14 @@ has1´[0..2] !
 has1 requires <|[<|=1>]>
 has1´[2..4] !
 =*TypeError
----tagged single value type check passes
+---tagged parenthesized value type check passes
 is2 requires <|=2>
-is2´(1..3 -> if <~|=1|=3>) !
+foo is 2;
+is2´($foo) !
 =is2´2
----tagged single value type check fails
+---tagged parenthesized value type check fails
 is2 requires <|=2>
-is2´(1..3 -> if <~|=2|=3>) !
+is2´(2 * 2) !
 =*TypeError
 ---tagged number is not raw
 foo´2 -> if <|=2> !

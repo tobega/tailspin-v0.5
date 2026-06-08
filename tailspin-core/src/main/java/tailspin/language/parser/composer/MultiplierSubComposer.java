@@ -66,9 +66,8 @@ public class MultiplierSubComposer implements SubComposer {
     memo = last.backtrack(s, memo);
     if (last.isSatisfied()) {
       values.add(last);
-      return addRepetitions(s, memo);
     }
-    // See if we can accept just one less repetition
+    // Make sure just one less repetition is acceptable
     if (!isSatisfied()) {
       memo = rewind(s, memo);
     }

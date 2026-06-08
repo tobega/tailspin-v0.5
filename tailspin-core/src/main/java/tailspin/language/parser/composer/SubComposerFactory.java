@@ -26,6 +26,7 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
 
   static final HashMap<String, Pattern> namedPatterns = new HashMap<>();
   static final HashMap<String, Function<? super String, Object>> namedValueCreators = new HashMap<>();
+  static final Map<String, Pattern> cachedPatterns = new HashMap<>();
   final Map<String, List<CompositionSpec>> definedSequences;
 
   static {
@@ -98,8 +99,15 @@ public class SubComposerFactory implements CompositionSpec.Resolver {
         }
         yield new RegexpSubComposer(namedPatterns.get(name), namedValueCreators.get(name));
       }
-      case RegexComposition regexSpec -> new RegexpSubComposer(
-          Pattern.compile(regexSpec.pattern()), Function.identity());
+      case RegexComposition regexSpec -> {
+        Pattern pattern = cachedPatterns.get(regexSpec.pattern());
+        if (pattern == null) {
+          pattern = Pattern.compile(regexSpec.pattern());
+          cachedPatterns.put(regexSpec.pattern(), pattern);
+        }
+        yield new RegexpSubComposer(
+          pattern, Function.identity());
+      }
       case StringUnescapeComposition unescapeSpec -> new StringUnescape(resolver.resolveSpec(unescapeSpec.producer(), scope, resolver));
       case SkipComposition skip ->
           new SkipSubComposer(new SequenceSubComposer(skip.skipSpecs(), scope, resolver));

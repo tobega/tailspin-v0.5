@@ -44,7 +44,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
       sortedCopy templates
         bubble templates
           @ set 1;
-          1..$-1 -> !#
+          1..($-1) -> !#
           $@ !
       
           when <|?($@sortedCopy($+1) matches <|..~$@sortedCopy($)>)> do
@@ -66,7 +66,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
       sortedCopy templates
         bubble auxiliary templates
           @ set 1;
-          1..$-1 -> !#
+          1..($-1) -> !#
           $@ !
       
           when <|?($@sortedCopy($+1) matches <|..~$@sortedCopy($)>)> do
@@ -89,7 +89,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         bubble auxiliary templates
         requires <|2..>
           @ set 1;
-          1..$-1 -> !#
+          1..($-1) -> !#
           $@ !
       
           when <|?($@sortedCopy($+1) matches <|..~$@sortedCopy($)>)> do
@@ -113,7 +113,7 @@ public class BubblesortBenchmark extends TruffleBenchmark {
         bubble auxiliary templates
         requires <|$@sortedCopy::start~..$@sortedCopy::end>
           @ set 1;
-          1..$-1 -> !#
+          1..($-1) -> !#
           $@ !
       
           when <|?($@sortedCopy($+1) matches <|..~$@sortedCopy($)>)> do

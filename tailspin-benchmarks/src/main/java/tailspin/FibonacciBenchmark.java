@@ -13,7 +13,10 @@ public class FibonacciBenchmark extends TruffleBenchmark {
       20 -> templates
         when <|=0> do 0 !
         when <|=1> do 1 !
-        otherwise ($ - 1 -> #) + ($ - 2 -> #) !
+        otherwise
+          a is $ - 1 -> #;
+          b is $ - 2 -> #;
+          $a + $b !
       end !
       """;
 
@@ -21,7 +24,10 @@ public class FibonacciBenchmark extends TruffleBenchmark {
       200000000000000000000 -> templates
         when <|=0> do 0 !
         when <|=10000000000000000000> do 1 !
-        otherwise ($ - 10000000000000000000 -> #) + ($ - 20000000000000000000 -> #) !
+        otherwise
+          a is $ - 10000000000000000000 -> #;
+          b is $ - 20000000000000000000 -> #;
+          $a + $b !
       end !
       """;
 
@@ -29,7 +35,10 @@ public class FibonacciBenchmark extends TruffleBenchmark {
       20/3 -> templates
         when <|=0> do 0 !
         when <|=1/3> do 1 !
-        otherwise ($ - 1/3 -> #) + ($ - 2/3 -> #) !
+        otherwise
+          a is $ - 1/3 -> #;
+          b is $ - 2/3 -> #;
+          $a + $b !
       end !
       """;
 
@@ -37,7 +46,10 @@ public class FibonacciBenchmark extends TruffleBenchmark {
       20.0 -> templates
         when <|=0> do 0 !
         when <|=1> do 1 !
-        otherwise ($ - 1 -> #) + ($ - 2 -> #) !
+        otherwise
+          a is $ - 1 -> #;
+          b is $ - 2 -> #;
+          $a + $b !
       end !
       """;
 
@@ -45,7 +57,10 @@ public class FibonacciBenchmark extends TruffleBenchmark {
       20000000000000000000.0 -> templates
         when <|=0> do 0 !
         when <|=1000000000000000000.0> do 1 !
-        otherwise ($ - 1000000000000000000.0 -> #) + ($ - 2000000000000000000.0 -> #) !
+        otherwise
+          a is $ - 1000000000000000000.0 -> #;
+          b is $ - 2000000000000000000.0 -> #;
+          $a + $b !
       end !
       """;
 
@@ -53,7 +68,10 @@ public class FibonacciBenchmark extends TruffleBenchmark {
       20"n" -> templates
         when <|=0"n"> do 0"1" !
         when <|=1"n"> do 1"1" !
-        otherwise ($ - 1"n" -> #) + ($ - 2"n" -> #) !
+        otherwise
+          a is $ - 1"n" -> #;
+          b is $ - 2"n" -> #;
+          $a + $b !
       end !
       """;
 
@@ -61,7 +79,10 @@ public class FibonacciBenchmark extends TruffleBenchmark {
       {n: 20"n"} -> templates
         when <|={n:0"n"}> do 0 !
         when <|={n:1"n"}> do 1 !
-        otherwise ({n: $(n:) - 1"n"} -> #) + ({n:$(n:) - 2"n"} -> #) !
+        otherwise
+          a is {n: $(n:) - 1"n"} -> #;
+          b is {n:$(n:) - 2"n"} -> #;
+          $a + $b !
       end !
       """;
 
@@ -69,7 +90,10 @@ public class FibonacciBenchmark extends TruffleBenchmark {
       [20] -> templates
         when <|=[0]> do 0 !
         when <|=[1]> do 1 !
-        otherwise ([$(1) - 1] -> #) + ([$(1) - 2] -> #) !
+        otherwise
+          a is [$(1) - 1] -> #;
+          b is [$(1) - 2] -> #;
+          $a + $b !
       end !
       """;
 

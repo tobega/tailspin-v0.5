@@ -63,6 +63,13 @@ end !
   $@ !
 end !
 =[5, 2, 3]
+---set array element index expression
+[1, 2, 3] -> templates
+  @ set $;
+  @(1 + 2) set 5;
+  $@ !
+end !
+=[1, 2, 5]
 ---set array element after output
 [1, 2, 3] -> templates
   @ set $;

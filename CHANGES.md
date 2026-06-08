@@ -51,10 +51,13 @@
 
 ## New features
 - Syntax sugar for a filter expression, `\(<.....> $! \)` can be written as `if <.....>`
-- Assert a single value from a chain by surrounding with parentheses, `($source -> filter)`, previously only for arithmetic value
 - Type assertions by tagging values, e.g. `foo´{bar: 5}` checks that the structure-literal is of type `foo`
 - There is now a divide operator `/` that creates rational numbers (exact math)
 - Scientific numbers with a specified number of digits precision (inexact math) can also be created and used.
+
+### Parentheses
+- Parentheses now always indicate a single-value result (checked at runtime).
+- Arithmetic expressions that are part of a larger construct, e.g. a range, must be put in parentheses.
 
 ### Contracts
 - Preconditions specified by an optional `requires <.....>` at the top of a templates definition.

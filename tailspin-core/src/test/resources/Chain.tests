@@ -10,9 +10,6 @@
 ---inline templates current value
 2 -> templates $ ! end !
 =2
----single value chain
-(2 -> templates 5 ! end) !
-=5
 ---define value
 foo is 1;
 $foo + 2 !

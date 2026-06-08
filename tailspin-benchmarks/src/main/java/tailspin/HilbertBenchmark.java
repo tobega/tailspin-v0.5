@@ -43,7 +43,7 @@ public class HilbertBenchmark extends TruffleBenchmark {
           end -> !VOID
         end -> !VOID
         -- 3. Extract the right-hand side (Inverse)
-        $@(..; $n + 1..) !
+        $@(..; ($n + 1)..) !
       end invertHilbert
       """;
 
@@ -104,5 +104,11 @@ public class HilbertBenchmark extends TruffleBenchmark {
     if (sum.result() != n * n) {
       throw new AssertionError("Expected sum " + n*n + " was " + sum.result());
     }
+  }
+
+  public static void main(String[] args) {
+    HilbertBenchmark hilbertBenchmark = new HilbertBenchmark();
+    hilbertBenchmark.setup();
+    hilbertBenchmark.small_rational_tailspin();
   }
 }

@@ -19,7 +19,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
-public abstract class TruffleBenchmark {
+public class TruffleBenchmark {
   protected Context truffleContext;
 
   @Setup

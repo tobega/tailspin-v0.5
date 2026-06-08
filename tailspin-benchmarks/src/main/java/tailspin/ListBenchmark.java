@@ -41,7 +41,9 @@ public class ListBenchmark extends TruffleBenchmark {
       end tail
       
       length templates
-        when <|{ next: }> do 1 + ($(next:) -> #) !
+        when <|{ next: }> do
+          rest is $(next:) -> #;
+          1 + $rest !
         otherwise 1 !
       end length
       
@@ -72,7 +74,9 @@ public class ListBenchmark extends TruffleBenchmark {
       end tail
       
       length templates
-        when <|{ next: <|[](1..)>}> do 1 + ($(next:; 1) -> #) !
+        when <|{ next: <|[](1..)>}> do
+          rest is $(next:; 1) -> #;
+          1 + $rest !
         otherwise 1 !
       end length
       

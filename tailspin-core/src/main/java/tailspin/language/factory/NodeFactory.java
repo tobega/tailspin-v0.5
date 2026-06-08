@@ -109,7 +109,11 @@ public class NodeFactory {
   private final Source sourceCode;
 
   List<Integer> cvSlot = new ArrayList<>();
-  { cvSlot.add(CV_SLOT);}
+
+  {
+    cvSlot.add(CV_SLOT);
+  }
+
   int currentValueSlot() {
     return cvSlot.getLast();
   }
@@ -123,6 +127,7 @@ public class NodeFactory {
   }
 
   List<Scope> scopes = new ArrayList<>();
+
   private void enterNewScope(String scopeId, SourceSection sourceSection) {
     scopes.addLast(new Scope(scopeId, scopes.isEmpty() ? null : scopes.getLast(), sourceSection));
     pushCvSlot(CV_SLOT);
@@ -152,11 +157,17 @@ public class NodeFactory {
 
   private StatementNode visitBlock(Object block, boolean isTailCallEligible) {
     return switch (block) {
-      case ParseNode(String name, Object content, int start, int end) when name.equals("block") -> visitBlock(content, isTailCallEligible);
-      case ParseNode(String name, Object statements, int start, int end) when name.equals("statements") -> visitBlock(statements, isTailCallEligible);
-      case ParseNode(String name, ParseNode statement, int start, int end) when name.equals("statement") -> visitStatement(statement, isTailCallEligible);
-      case ParseNode(String name, String ignored, int start, int end) when name.equals("do-nothing") -> DoNothingNode.create(
-          sourceCode.createSection(start, end - start));
+      case ParseNode(String name, Object content, int start, int end) when name.equals("block") ->
+          visitBlock(content, isTailCallEligible);
+      case ParseNode(String name, Object statements, int start, int end)
+          when name.equals("statements") ->
+          visitBlock(statements, isTailCallEligible);
+      case ParseNode(String name, ParseNode statement, int start, int end)
+          when name.equals("statement") ->
+          visitStatement(statement, isTailCallEligible);
+      case ParseNode(String name, String ignored, int start, int end)
+          when name.equals("do-nothing") ->
+          DoNothingNode.create(sourceCode.createSection(start, end - start));
       case List<?> statements -> {
         int start = ((ParseNode) statements.getFirst()).start();
         int end = ((ParseNode) statements.getLast()).end();
@@ -164,7 +175,8 @@ public class NodeFactory {
         for (int i = 0; i < statements.size() - 1; i++) {
           nodes.addLast(visitStatement((ParseNode) statements.get(i), false));
         }
-        nodes.addLast(visitStatement((ParseNode) statements.get(statements.size() - 1), isTailCallEligible));
+        nodes.addLast(
+            visitStatement((ParseNode) statements.get(statements.size() - 1), isTailCallEligible));
         yield BlockNode.create(nodes, sourceCode.createSection(start, end - start));
       }
       default -> throw new IllegalStateException("Unexpected value: " + block);
@@ -173,11 +185,19 @@ public class NodeFactory {
 
   private StatementNode visitStatement(ParseNode statement, boolean isTailCallEligible) {
     return switch (statement) {
-      case ParseNode(String name, ParseNode stmt, int start, int end) when name.equals("statement") -> visitStatement(stmt, isTailCallEligible);
-      case ParseNode(String name, Object stmt, int start, int end) when name.equals("terminated-chain") -> visitTerminatedChain(stmt, isTailCallEligible);
-      case ParseNode(String name, List<?> def, int start, int end) when name.equals("definition") -> visitDefinition(def);
-      case ParseNode(String name, Object setExpr, int start, int end) when name.equals("set-state") -> visitSetState(setExpr, sourceCode.createSection(start, end - start));
-      case ParseNode(String type, List<?> content, int start, int end) when type.equals("templates") -> {
+      case ParseNode(String name, ParseNode stmt, int start, int end)
+          when name.equals("statement") ->
+          visitStatement(stmt, isTailCallEligible);
+      case ParseNode(String name, Object stmt, int start, int end)
+          when name.equals("terminated-chain") ->
+          visitTerminatedChain(stmt, isTailCallEligible);
+      case ParseNode(String name, List<?> def, int start, int end) when name.equals("definition") ->
+          visitDefinition(def);
+      case ParseNode(String name, Object setExpr, int start, int end)
+          when name.equals("set-state") ->
+          visitSetState(setExpr, sourceCode.createSection(start, end - start));
+      case ParseNode(String type, List<?> content, int start, int end)
+          when type.equals("templates") -> {
         String name = (String) content.getLast();
         boolean isAuxiliary = false;
         if (content.getFirst() instanceof ParseNode p && p.name().equals("auxiliary")) {
@@ -189,10 +209,16 @@ public class NodeFactory {
         int nextPart = content.size() - 2;
         visitTemplatesBody((ParseNode) content.get(nextPart));
         nextPart--;
-        if (nextPart > 0 && content.get(nextPart) instanceof ParseNode contract && contract.name().equals("precondition")) {
+        if (nextPart > 0
+            && content.get(nextPart) instanceof ParseNode contract
+            && contract.name().equals("precondition")) {
           MatcherNode precondition = visitMatcher(((ParseNode) contract.content()).content());
-          currentScope().setPrecondition(PreconditionNode.create(precondition,
-              sourceCode.createSection(contract.start(), contract.end() - contract.start())));
+          currentScope()
+              .setPrecondition(
+                  PreconditionNode.create(
+                      precondition,
+                      sourceCode.createSection(
+                          contract.start(), contract.end() - contract.start())));
         }
         Scope scope = exitScope();
         Templates templates = scope.getTemplates();
@@ -202,31 +228,47 @@ public class NodeFactory {
         currentScope().registerTemplates(name, templates);
         yield DoNothingNode.create(sourceCode.createSection(start, end - start));
       }
-      case ParseNode(String stmtType, List<?> def, int start, int end) when stmtType.equals("type-def") -> {
-        VocabularyType type = currentScope().getVocabularyType(((ParseNode) def.getFirst()).content().toString());
+      case ParseNode(String stmtType, List<?> def, int start, int end)
+          when stmtType.equals("type-def") -> {
+        VocabularyType type =
+            currentScope().getVocabularyType(((ParseNode) def.getFirst()).content().toString());
         enterNewScope(null, sourceCode.createSection(start, end - start));
         Templates matchTemplates = currentScope().getOrCreateMatcherTemplates();
-        StatementNode passThrough = EmitNode.create(SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size() - 1, matchTemplates,
-                sourceCode.createSection(start, end - start)),
-            sourceCode.createSection(start, end - start));
+        StatementNode passThrough =
+            EmitNode.create(
+                SendToTemplatesNode.create(
+                    ReadContextValueNode.create(-1, currentValueSlot()),
+                    scopes.size() - 1,
+                    matchTemplates,
+                    sourceCode.createSection(start, end - start)),
+                sourceCode.createSection(start, end - start));
         currentScope().setBlock(passThrough);
         enterNewScope(null, INTERNAL_CODE_SOURCE);
         currentScope().setMatcherTemplates(matchTemplates);
         MatcherNode constraint = visitAlternativeMembranes(null, true, def.subList(1, def.size()));
-        currentScope().setBlock(MatchBlockNode.create(List.of(
-            MatchTemplateNode.create(constraint, EmitNode.create(asTransformNode(ReadContextValueNode.create(-1, CV_SLOT)),
-                    INTERNAL_CODE_SOURCE),
-                INTERNAL_CODE_SOURCE)
-        ), INTERNAL_CODE_SOURCE));
+        currentScope()
+            .setBlock(
+                MatchBlockNode.create(
+                    List.of(
+                        MatchTemplateNode.create(
+                            constraint,
+                            EmitNode.create(
+                                asTransformNode(ReadContextValueNode.create(-1, CV_SLOT)),
+                                INTERNAL_CODE_SOURCE),
+                            INTERNAL_CODE_SOURCE)),
+                    INTERNAL_CODE_SOURCE));
         currentScope().getTemplates();
         exitScope();
         Scope definedScope = exitScope();
         Templates templates = definedScope.getTemplates();
         if (templates.needsScope() || templates.needsState()) {
           definedScope.getOrCreateMatcherTemplates().setDefinitionLevel(scopes.size());
-          TemplatesInstance definedTemplates = new TemplatesInstance(null, templates.getCallTarget());
-          type.setConstraint(CallDefinedTypeMatcherNode.create(definedTemplates, INTERNAL_CODE_SOURCE));
-          yield DefineTypeConstraintNode.create(definedTemplates, sourceCode.createSection(start, end - start));
+          TemplatesInstance definedTemplates =
+              new TemplatesInstance(null, templates.getCallTarget());
+          type.setConstraint(
+              CallDefinedTypeMatcherNode.create(definedTemplates, INTERNAL_CODE_SOURCE));
+          yield DefineTypeConstraintNode.create(
+              definedTemplates, sourceCode.createSection(start, end - start));
         }
         type.setConstraint(constraint);
         yield DoNothingNode.create(INTERNAL_CODE_SOURCE);
@@ -236,10 +278,15 @@ public class NodeFactory {
   }
 
   private StatementNode visitTerminatedChain(Object stmt, boolean isTailCallEligible) {
-    return switch(stmt) {
-      case ParseNode valueChain -> EmitNode.create(asTransformNode(visitValueChain(valueChain, isTailCallEligible)),
-          sourceCode.createSection(valueChain.start(), valueChain.end() - valueChain.start()));
-      case List<?> parts when parts.getLast() instanceof ParseNode(String name, Object sinkType, int start, int end) && name.equals("sink") -> {
+    return switch (stmt) {
+      case ParseNode valueChain ->
+          EmitNode.create(
+              asTransformNode(visitValueChain(valueChain, isTailCallEligible)),
+              sourceCode.createSection(valueChain.start(), valueChain.end() - valueChain.start()));
+      case List<?> parts
+          when parts.getLast()
+                  instanceof ParseNode(String name, Object sinkType, int start, int end)
+              && name.equals("sink") -> {
         ParseNode valueChain = (ParseNode) parts.getFirst();
         ArrayList<Object> transforms = new ArrayList<>();
         if (valueChain.content() instanceof List<?> l) {
@@ -253,17 +300,25 @@ public class NodeFactory {
           transforms.addLast("REJECT");
         } else if (sinkType.equals("#")) {
           transforms.addLast(new ParseNode("transform", "#", start, end));
-        } else if (sinkType instanceof ParseNode(String call, ParseNode id, int cs, int ce) && call.equals("templates-call")) {
+        } else if (sinkType instanceof ParseNode(String call, ParseNode id, int cs, int ce)
+            && call.equals("templates-call")) {
           Templates sink = currentScope().findTemplates(id.content().toString());
-          if (!sink.getType().equals("sink")) throw new IllegalStateException("Can only sink to sink " + id.content());
+          if (!sink.getType().equals("sink"))
+            throw new IllegalStateException("Can only sink to sink " + id.content());
           transforms.addLast(new ParseNode("transform", sinkType, start, end));
         } else {
           throw new IllegalStateException("Unexpected value: " + sinkType);
         }
-        yield SinkNode.create(asTransformNode(visitValueChain(new ParseNode(valueChain.name(), transforms, start, end), isTailCallEligible)),
+        yield SinkNode.create(
+            asTransformNode(
+                visitValueChain(
+                    new ParseNode(valueChain.name(), transforms, start, end), isTailCallEligible)),
             sourceCode.createSection(start, end - start));
       }
-      case List<?> parts when parts.getLast() instanceof ParseNode(String name, ParseNode setState, int start, int end) && name.equals("accumulator-state") -> {
+      case List<?> parts
+          when parts.getLast()
+                  instanceof ParseNode(String name, ParseNode setState, int start, int end)
+              && name.equals("accumulator-state") -> {
         ParseNode valueChain = (ParseNode) parts.getFirst();
         ArrayList<Object> transforms = new ArrayList<>();
         if (valueChain.content() instanceof List<?> l) {
@@ -272,7 +327,10 @@ public class NodeFactory {
           transforms.add(valueChain.content());
         }
         transforms.add(setState);
-        yield SinkNode.create(asTransformNode(visitValueChain(new ParseNode(valueChain.name(), transforms, start, end), isTailCallEligible)),
+        yield SinkNode.create(
+            asTransformNode(
+                visitValueChain(
+                    new ParseNode(valueChain.name(), transforms, start, end), isTailCallEligible)),
             sourceCode.createSection(start, end - start));
       }
       default -> throw new IllegalStateException("Unexpected value: " + stmt);
@@ -280,7 +338,10 @@ public class NodeFactory {
   }
 
   private StatementNode visitSetState(Object expr, SourceSection sourceSection) {
-    enum Mode {SET, APPEND}
+    enum Mode {
+      SET,
+      APPEND
+    }
     TailspinNode value;
     String scopeId = null;
     int stateLevel;
@@ -297,17 +358,24 @@ public class NodeFactory {
           mode = Mode.APPEND;
           l = l.subList(1, l.size());
         }
-        if (!l.isEmpty() && l.getFirst() instanceof ParseNode(String type, String identifier, int start, int end) && type.equals("ID")) {
+        if (!l.isEmpty()
+            && l.getFirst() instanceof ParseNode(String type, String identifier, int start, int end)
+            && type.equals("ID")) {
           scopeId = identifier;
           l = l.subList(1, l.size());
         }
         stateLevel = currentScope().accessState(scopeId);
         ValueNode target = ReadStateValueNode.create(stateLevel);
         if (!l.isEmpty()) {
-          if (l.getFirst() instanceof ParseNode(String type, Object lensExpr, int start, int end) && type.equals("lens-expression")) {
+          if (l.getFirst() instanceof ParseNode(String type, Object lensExpr, int start, int end)
+              && type.equals("lens-expression")) {
             if (mode == Mode.APPEND) {
-              value = visitAppendState(target, lensExpr, asTransformResult(value),
-                  (target1, value1) -> AppendStateNode.create(target1, value1, sourceSection));
+              value =
+                  visitAppendState(
+                      target,
+                      lensExpr,
+                      asTransformResult(value),
+                      (target1, value1) -> AppendStateNode.create(target1, value1, sourceSection));
             } else {
               value = visitWriteLensExpression(target, lensExpr, value);
             }
@@ -323,47 +391,90 @@ public class NodeFactory {
     return WriteStateValueNode.create(stateLevel, asSingleValueNode(value));
   }
 
-  private ValueNode visitWriteLensExpression(ValueNode target, Object lensExpression, TailspinNode value) {
+  private ValueNode visitWriteLensExpression(
+      ValueNode target, Object lensExpression, TailspinNode value) {
     return switch (lensExpression) {
-      case ParseNode(String type, Object lensDimension, int start, int end) when type.equals("lens-dimension")
-          -> visitWriteLensExpression(target, lensDimension, value);
-      case ParseNode(String type, ParseNode source, int start, int end) when type.equals("source")
-          -> ArrayMutateNode.create(sourceCode.createSection(start, end - start),
-          asSingleValueNode(visitSource(source)), target, asTransformResult(value));
-      case ParseNode(String type, ParseNode id, int start, int end) when type.equals("key")
-          -> WriteKeyValueNode.create(currentScope().getVocabularyType((String) id.content()), target, asTransformResult(value), sourceCode.createSection(start, end - start));
+      case ParseNode(String type, Object lensDimension, int start, int end)
+          when type.equals("lens-dimension") ->
+          visitWriteLensExpression(target, lensDimension, value);
+      case ParseNode(String type, Object contents, int start, int end)
+          when type.equals("array-literal") ->
+          ArrayMutateNode.create(
+              sourceCode.createSection(start, end - start),
+              visitArrayLiteral(contents, sourceCode.createSection(start, end - start)),
+              target,
+              asTransformResult(value));
+      case ParseNode(String type, Object contents, int start, int end)
+          when type.equals("numericish") ->
+          ArrayMutateNode.create(
+              sourceCode.createSection(start, end - start),
+              asSingleValueNode(visitNumericish(contents)),
+              target,
+              asTransformResult(value));
+      case ParseNode(String type, ParseNode id, int start, int end) when type.equals("key") ->
+          WriteKeyValueNode.create(
+              currentScope().getVocabularyType((String) id.content()),
+              target,
+              asTransformResult(value),
+              sourceCode.createSection(start, end - start));
       case List<?> dimension -> {
         Reference indexVar = null;
-        if (dimension.get(1) instanceof ParseNode(String type, ParseNode(String ignored, String identifier, int is, int ie), int start, int end) && type.equals("index-variable")) {
+        if (dimension.get(1)
+                instanceof
+                ParseNode(
+                    String type,
+                    ParseNode(String ignored, String identifier, int is, int ie),
+                    int start,
+                    int end)
+            && type.equals("index-variable")) {
           indexVar = currentScope().defineValue(identifier);
         }
         ValueNode thisDimension = visitReadLensDimension(target, dimension.getFirst(), indexVar);
-        ValueNode modifiedTarget = visitWriteLensExpression(thisDimension, ((ParseNode) dimension.getLast()).content(), value);
+        ValueNode modifiedTarget =
+            visitWriteLensExpression(
+                thisDimension, ((ParseNode) dimension.getLast()).content(), value);
         yield visitWriteLensExpression(target, dimension.getFirst(), modifiedTarget);
       }
       default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
     };
   }
 
-  private ValueNode visitAppendState(ValueNode target, Object lensExpression, ValueNode value, BinaryOperator<ValueNode> create) {
+  private ValueNode visitAppendState(
+      ValueNode target, Object lensExpression, ValueNode value, BinaryOperator<ValueNode> create) {
     return switch (lensExpression) {
-      case ParseNode(String type, Object lensDimension, int start, int end) when type.equals("lens-dimension")
-          -> visitAppendState(target, lensDimension, value, create);
+      case ParseNode(String type, Object lensDimension, int start, int end)
+          when type.equals("lens-dimension") ->
+          visitAppendState(target, lensDimension, value, create);
       case List<?> dimension -> {
         Reference indexVar = null;
-        if (dimension.size() > 1 && dimension.get(1) instanceof ParseNode(String type, ParseNode(String ignored, String identifier, int is, int ie), int start, int end) && type.equals("index-variable")) {
+        if (dimension.size() > 1
+            && dimension.get(1)
+                instanceof
+                ParseNode(
+                    String type,
+                    ParseNode(String ignored, String identifier, int is, int ie),
+                    int start,
+                    int end)
+            && type.equals("index-variable")) {
           indexVar = currentScope().defineValue(identifier);
         }
         ValueNode thisDimension = visitReadLensDimension(target, dimension.getFirst(), indexVar);
-        ValueNode modifiedTarget = visitAppendState(thisDimension, ((ParseNode) dimension.getLast()).content(), value, create);
+        ValueNode modifiedTarget =
+            visitAppendState(
+                thisDimension, ((ParseNode) dimension.getLast()).content(), value, create);
         yield visitWriteLensExpression(target, dimension.getFirst(), modifiedTarget);
       }
-      default -> visitWriteLensExpression(target, lensExpression, create.apply(visitReadLensDimension(target, lensExpression, null), value));
-     };
+      default ->
+          visitWriteLensExpression(
+              target,
+              lensExpression,
+              create.apply(visitReadLensDimension(target, lensExpression, null), value));
+    };
   }
 
   private StatementNode visitDefinition(List<?> def) {
-    if (def.getFirst() instanceof ParseNode(String name, String identifier, int start, int end) && name.equals("ID")) {
+    if (def.getFirst() instanceof ParseNode(String name, String identifier, int start, int end)
+        && name.equals("ID")) {
       Reference defined = currentScope().defineValue(identifier);
       TailspinNode expr = visitValueChain((ParseNode) def.getLast(), false);
       return WriteContextValueNode.create(defined, asSingleValueNode(expr));
@@ -372,38 +483,60 @@ public class NodeFactory {
   }
 
   private TailspinNode visitValueChain(ParseNode valueChain, boolean isTailCallEligible) {
-    if (!valueChain.name().equals("value-chain")) throw new IllegalStateException("Unexpected value: " + valueChain);
-    if (valueChain.content() instanceof ParseNode(String name, List<?> bounds, int start, int end) && name.equals("range")) {
+    if (!valueChain.name().equals("value-chain"))
+      throw new IllegalStateException("Unexpected value: " + valueChain);
+    if (valueChain.content() instanceof ParseNode(String name, List<?> bounds, int start, int end)
+        && name.equals("range")) {
       return visitRange(bounds, sourceCode.createSection(start, end - start));
-    } else if (valueChain.content() instanceof ParseNode(String name, ParseNode source, int start, int end) && name.equals("source")) {
+    } else if (valueChain.content()
+            instanceof ParseNode(String name, ParseNode source, int start, int end)
+        && name.equals("source")) {
       return visitSource(source);
     } else if (valueChain.content() instanceof List<?> chain) {
-      ChainSlots chainSlots = currentScope().newChainSlots();
-      List<TransformNode> stages = new ArrayList<>();
-      for (int i = 0; i < chain.size(); i++) {
-        Object stage = chain.get(i);
-        boolean isLast = i == chain.size() - 1;
-        TailspinNode stageNode = switch (stage) {
-          case ParseNode(String name, Object transform, int start, int end) when name.equals("transform") -> visitTransform(transform, isLast && isTailCallEligible);
-          case ParseNode(String name, List<?> bounds, int start, int end) when name.equals("range") -> visitRange(bounds,
-              sourceCode.createSection(start, end - start));
-          case ParseNode(String name, ParseNode transform, int start, int end) when name.equals("source") -> visitSource(transform);
-          case ParseNode(String name, String ignored, int start, int end) when name.equals("stream") -> StreamNode.create(ReadContextValueNode.create(-1, currentValueSlot()),
-              sourceCode.createSection(start, end - start));
-          case ParseNode(String name, Object setState, int start, int end) when name.equals("set-state") -> visitSetState(setState, sourceCode.createSection(start, end - start));
-          case String v when v.equals("VOID") -> VoidValue.create(sourceCode.createSection(valueChain.end() - 4, 4));
-          case String v when v.equals("REJECT") -> RejectValue.create(sourceCode.createSection(valueChain.end() - 4, 4));
-          default -> throw new IllegalStateException("Unexpected value: " + stage);
-        };
-        if (stages.isEmpty()) { // after the first
-          pushCvSlot(chainSlots.cv());
-        }
-        stages.add(asTransformNode(stageNode));
-      }
-      popCvSlot();
-      return ChainNode.create(chainSlots.values(), chainSlots.cv(), chainSlots.result(), stages);
+      return getChainNode(valueChain.end(), isTailCallEligible, chain);
     }
     throw new IllegalStateException("Unexpected value " + valueChain.content());
+  }
+
+  private ChainNode getChainNode(int chainSourceEnd, boolean isTailCallEligible, List<?> chain) {
+    ChainSlots chainSlots = currentScope().newChainSlots();
+    List<TransformNode> stages = new ArrayList<>();
+    for (int i = 0; i < chain.size(); i++) {
+      Object stage = chain.get(i);
+      boolean isLast = i == chain.size() - 1;
+      TailspinNode stageNode =
+          switch (stage) {
+            case ValueNode source -> source; // Special case for lens-transforms
+            case ParseNode(String name, Object transform, int start, int end)
+                when name.equals("transform") ->
+                visitTransform(transform, isLast && isTailCallEligible);
+            case ParseNode(String name, List<?> bounds, int start, int end)
+                when name.equals("range") ->
+                visitRange(bounds, sourceCode.createSection(start, end - start));
+            case ParseNode(String name, ParseNode transform, int start, int end)
+                when name.equals("source") ->
+                visitSource(transform);
+            case ParseNode(String name, String ignored, int start, int end)
+                when name.equals("stream") ->
+                StreamNode.create(
+                    ReadContextValueNode.create(-1, currentValueSlot()),
+                    sourceCode.createSection(start, end - start));
+            case ParseNode(String name, Object setState, int start, int end)
+                when name.equals("set-state") ->
+                visitSetState(setState, sourceCode.createSection(start, end - start));
+            case String v when v.equals("VOID") ->
+                VoidValue.create(sourceCode.createSection(chainSourceEnd - 4, 4));
+            case String v when v.equals("REJECT") ->
+                RejectValue.create(sourceCode.createSection(chainSourceEnd - 6, 6));
+            default -> throw new IllegalStateException("Unexpected value: " + stage);
+          };
+      if (stages.isEmpty()) { // after the first
+        pushCvSlot(chainSlots.cv());
+      }
+      stages.add(asTransformNode(stageNode));
+    }
+    popCvSlot();
+    return ChainNode.create(chainSlots.values(), chainSlots.cv(), chainSlots.result(), stages);
   }
 
   private TransformNode asTransformNode(TailspinNode node) {
@@ -412,36 +545,35 @@ public class NodeFactory {
       resultAggregatingNode.setResultSlot(currentScope().newResultSlot());
       return resultAggregatingNode;
     }
-    if (node instanceof TransformNode t)
-      return t;
+    if (node instanceof TransformNode t) return t;
     if (node instanceof StatementNode s)
       return StatementTransformNode.create(s, INTERNAL_CODE_SOURCE);
     throw new IllegalStateException("Unknown source node " + node);
   }
 
   private ValueNode asTransformResult(TailspinNode node) {
-    if (node instanceof ValueNode v)
-      return v;
-    if (node instanceof TransformNode t)
-      return new TransformResultNode(t, INTERNAL_CODE_SOURCE);
+    if (node instanceof ValueNode v) return v;
+    if (node instanceof TransformNode t) return new TransformResultNode(t, INTERNAL_CODE_SOURCE);
     throw new IllegalStateException("Unknown source node " + node);
   }
 
   private ValueNode asSingleValueNode(TailspinNode node) {
-    if (node instanceof ValueNode v)
-      return v;
-    if (node instanceof TransformNode t)
-      return SingleValueNode.create(t);
+    if (node instanceof ValueNode v) return v;
+    if (node instanceof TransformNode t) return SingleValueNode.create(t);
     throw new IllegalStateException("Unknown source node " + node);
   }
 
   private TransformNode visitTransform(Object transform, boolean isTailCall) {
-    return switch(transform) {
-      case ParseNode(String name, ParseNode source, int start, int end) when name.equals("source") -> asTransformNode(visitSource(source));
-      case ParseNode(String name, List<?> bounds, int start, int end) when name.equals("range") -> asTransformNode(visitRange(bounds,
-          sourceCode.createSection(start, end - start)));
-      case ParseNode(String name, Object implementation, int start, int end) when name.equals("inline-templates-call") -> {
-        List<?> content = implementation instanceof List<?> objects ? objects : List.of(implementation);
+    return switch (transform) {
+      case ParseNode(String name, ParseNode source, int start, int end)
+          when name.equals("source") ->
+          asTransformNode(visitSource(source));
+      case ParseNode(String name, List<?> bounds, int start, int end) when name.equals("range") ->
+          asTransformNode(visitRange(bounds, sourceCode.createSection(start, end - start)));
+      case ParseNode(String name, Object implementation, int start, int end)
+          when name.equals("inline-templates-call") -> {
+        List<?> content =
+            implementation instanceof List<?> objects ? objects : List.of(implementation);
         boolean isTry = false;
         if (content.getFirst() instanceof ParseNode p && p.name().equals("try")) {
           isTry = true;
@@ -456,17 +588,27 @@ public class NodeFactory {
         int nextPart = content.size() - 1;
         visitTemplatesBody((ParseNode) content.get(nextPart));
         nextPart--;
-        if (nextPart >= 0 && content.get(nextPart) instanceof ParseNode contract && contract.name().equals("precondition")) {
+        if (nextPart >= 0
+            && content.get(nextPart) instanceof ParseNode contract
+            && contract.name().equals("precondition")) {
           MatcherNode precondition = visitMatcher(((ParseNode) contract.content()).content());
-          currentScope().setPrecondition(PreconditionNode.create(precondition,
-              sourceCode.createSection(contract.start(), contract.end() - contract.start())));
+          currentScope()
+              .setPrecondition(
+                  PreconditionNode.create(
+                      precondition,
+                      sourceCode.createSection(
+                          contract.start(), contract.end() - contract.start())));
         }
         Scope scope = exitScope();
         Templates templates = scope.getTemplates();
         templates.setDefinitionLevel(scopes.size());
         if (isAuxiliary) templates.setAuxiliary();
-        TransformNode tn = SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(), templates,
-            INTERNAL_CODE_SOURCE);
+        TransformNode tn =
+            SendToTemplatesNode.create(
+                ReadContextValueNode.create(-1, currentValueSlot()),
+                scopes.size(),
+                templates,
+                INTERNAL_CODE_SOURCE);
         if (isTry) {
           SourceSection tss = tn.getEncapsulatingSourceSection();
           yield TryNode.create(tn, tss);
@@ -476,19 +618,31 @@ public class NodeFactory {
       }
       case String crosshatch when crosshatch.equals("#") -> {
         Templates matchers = currentScope().getOrCreateMatcherTemplates();
-        SendToTemplatesNode call = SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(), matchers,
-            INTERNAL_CODE_SOURCE);
+        SendToTemplatesNode call =
+            SendToTemplatesNode.create(
+                ReadContextValueNode.create(-1, currentValueSlot()),
+                scopes.size(),
+                matchers,
+                INTERNAL_CODE_SOURCE);
         if (isTailCall) call.setTailPosition();
         yield call;
       }
-      case ParseNode(String type, Object call, int start, int end) when type.equals("templates-call") -> {
+      case ParseNode(String type, Object call, int start, int end)
+          when type.equals("templates-call") -> {
         boolean isTry = false;
-        if (call instanceof List<?> l && l.size() == 2 && l.getFirst() instanceof ParseNode p && p.name().equals("try")) {
+        if (call instanceof List<?> l
+            && l.size() == 2
+            && l.getFirst() instanceof ParseNode p
+            && p.name().equals("try")) {
           isTry = true;
           call = l.getLast();
         }
-        TransformNode tn = SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(),
-            currentScope().findTemplates((String) ((ParseNode) call).content()), sourceCode.createSection(start, end - start));
+        TransformNode tn =
+            SendToTemplatesNode.create(
+                ReadContextValueNode.create(-1, currentValueSlot()),
+                scopes.size(),
+                currentScope().findTemplates((String) ((ParseNode) call).content()),
+                sourceCode.createSection(start, end - start));
         if (isTry) {
           SourceSection tss = tn.getEncapsulatingSourceSection();
           yield TryNode.create(tn, tss);
@@ -496,16 +650,24 @@ public class NodeFactory {
           yield tn;
         }
       }
-      case ParseNode(String type, ParseNode matcher, int start, int end) when type.equals("filter")
-          -> FilterNode.create(ReadContextValueNode.create(-1, currentValueSlot()), visitMatcher(matcher.content()), sourceCode.createSection(start, end - start));
+      case ParseNode(String type, ParseNode matcher, int start, int end)
+          when type.equals("filter") ->
+          FilterNode.create(
+              ReadContextValueNode.create(-1, currentValueSlot()),
+              visitMatcher(matcher.content()),
+              sourceCode.createSection(start, end - start));
       default -> throw new IllegalStateException("Unexpected value: " + transform);
     };
   }
 
   private void visitTemplatesBody(ParseNode body) {
     switch (body) {
-      case ParseNode(@SuppressWarnings("unused") String bodyName, ParseNode(String name, Object block, int bs, int be), int start, int end)
-          when name.equals("with-block"):
+      case ParseNode(
+          @SuppressWarnings("unused") String bodyName,
+          ParseNode(String name, Object block, int bs, int be),
+          int start,
+          int end)
+      when name.equals("with-block"):
         Object matchBlock = null;
         if (block instanceof List<?> list
             && list.size() == 2
@@ -519,17 +681,27 @@ public class NodeFactory {
         if (matchBlock != null) {
           visitMatchers(matchBlock);
         }
-      break;
-      case ParseNode(@SuppressWarnings("unused") String bodyName, ParseNode(String name, Object matchers, int ms, int me), int start, int end)
-          when name.equals("matchers"):
+        break;
+      case ParseNode(
+          @SuppressWarnings("unused") String bodyName,
+          ParseNode(String name, Object matchers, int ms, int me),
+          int start,
+          int end)
+      when name.equals("matchers"):
         Templates matchTemplates = currentScope().getOrCreateMatcherTemplates();
-        StatementNode passThrough = EmitNode.create(SendToTemplatesNode.create(ReadContextValueNode.create(-1, currentValueSlot()), scopes.size(), matchTemplates,
-                INTERNAL_CODE_SOURCE),
-            INTERNAL_CODE_SOURCE);
+        StatementNode passThrough =
+            EmitNode.create(
+                SendToTemplatesNode.create(
+                    ReadContextValueNode.create(-1, currentValueSlot()),
+                    scopes.size(),
+                    matchTemplates,
+                    INTERNAL_CODE_SOURCE),
+                INTERNAL_CODE_SOURCE);
         currentScope().setBlock(passThrough);
         visitMatchers(matchers);
-      break;
-      default: throw new IllegalStateException("Unexpected value: " + body);
+        break;
+      default:
+        throw new IllegalStateException("Unexpected value: " + body);
     }
   }
 
@@ -538,16 +710,34 @@ public class NodeFactory {
     matcherTemplates.setDefinitionLevel(scopes.size());
     enterNewScope(null, INTERNAL_CODE_SOURCE);
     currentScope().setMatcherTemplates(matcherTemplates);
-    MatchBlockNode matchBlockNode = switch (matchers) {
-      case ParseNode(String name, List<?> matchTemplate, int start, int end) when name.equals("match-template") -> MatchBlockNode.create(List.of(visitMatchTemplate(matchTemplate)),
-          sourceCode.createSection(start, end - start));
-      case List<?> matchTemplates -> MatchBlockNode.create(matchTemplates.stream()
-          .map(mt -> {
-            if (mt instanceof ParseNode(String name, List<?> matchTemplate, int start, int end) && name.equals("match-template")) return visitMatchTemplate(matchTemplate);
-            else throw new IllegalStateException("Expected match-template got " + mt);
-          }).toList(), INTERNAL_CODE_SOURCE);
-      default -> throw new IllegalStateException("Unexpected value: " + matchers);
-    };
+    MatchBlockNode matchBlockNode =
+        switch (matchers) {
+          case ParseNode(String name, List<?> matchTemplate, int start, int end)
+              when name.equals("match-template") ->
+              MatchBlockNode.create(
+                  List.of(visitMatchTemplate(matchTemplate)),
+                  sourceCode.createSection(start, end - start));
+          case List<?> matchTemplates ->
+              MatchBlockNode.create(
+                  matchTemplates.stream()
+                      .map(
+                          mt -> {
+                            if (mt
+                                    instanceof
+                                    ParseNode(
+                                        String name,
+                                        List<?> matchTemplate,
+                                        int start,
+                                        int end)
+                                && name.equals("match-template"))
+                              return visitMatchTemplate(matchTemplate);
+                            else
+                              throw new IllegalStateException("Expected match-template got " + mt);
+                          })
+                      .toList(),
+                  INTERNAL_CODE_SOURCE);
+          default -> throw new IllegalStateException("Unexpected value: " + matchers);
+        };
     currentScope().setBlock(matchBlockNode);
     currentScope().getTemplates();
     exitScope();
@@ -555,14 +745,19 @@ public class NodeFactory {
 
   private MatchTemplateNode visitMatchTemplate(List<?> matchTemplate) {
     currentScope().pushTemporaryVariables();
-    MatcherNode matcherNode = switch (matchTemplate.getFirst()) {
-      case ParseNode(String name, @SuppressWarnings("unused")Object c, int start, int end)
-          when name.equals("otherwise") -> AlwaysTrueMatcherNode.create(sourceCode.createSection(start, end - start));
-      case ParseNode(String name, ParseNode matcher, int start, int end)
-          when name.equals("when-do") -> visitMatcher(matcher.content());
-      default -> throw new IllegalStateException("Unexpected value: " + matchTemplate.getFirst());
-    };
-    if (matchTemplate.size() != 2) throw new IllegalStateException("Unexpected list size in match template");
+    MatcherNode matcherNode =
+        switch (matchTemplate.getFirst()) {
+          case ParseNode(String name, @SuppressWarnings("unused") Object c, int start, int end)
+              when name.equals("otherwise") ->
+              AlwaysTrueMatcherNode.create(sourceCode.createSection(start, end - start));
+          case ParseNode(String name, ParseNode matcher, int start, int end)
+              when name.equals("when-do") ->
+              visitMatcher(matcher.content());
+          default ->
+              throw new IllegalStateException("Unexpected value: " + matchTemplate.getFirst());
+        };
+    if (matchTemplate.size() != 2)
+      throw new IllegalStateException("Unexpected list size in match template");
     StatementNode block = visitBlock(matchTemplate.getLast(), true);
     currentScope().deleteTemporaryValues();
     return MatchTemplateNode.create(matcherNode, block, INTERNAL_CODE_SOURCE);
@@ -573,14 +768,17 @@ public class NodeFactory {
         && membranes.getFirst() instanceof ParseNode(String tb, Object types, int start, int end)
         && tb.equals("type-bound")) {
       MatcherNode typeBound = visitAlternativeMembranes(null, true, types);
-      return TypeCheckedMatcherNode.create(typeBound, visitAlternativeMembranes(null, true, membranes.subList(1, membranes.size())),
+      return TypeCheckedMatcherNode.create(
+          typeBound,
+          visitAlternativeMembranes(null, true, membranes.subList(1, membranes.size())),
           sourceCode.createSection(start, end - start));
     } else {
       return visitAlternativeMembranes(null, false, matcherContent);
     }
   }
 
-  private MatcherNode visitAlternativeMembranes(VocabularyType contextType, boolean isTypeChecked, Object membranes) {
+  private MatcherNode visitAlternativeMembranes(
+      VocabularyType contextType, boolean isTypeChecked, Object membranes) {
     List<MatcherNode> alternatives = new ArrayList<>();
     List<?> membraneSpecs;
     if (membranes instanceof List<?> l) {
@@ -589,11 +787,14 @@ public class NodeFactory {
       membraneSpecs = List.of(membranes);
     }
     if (membraneSpecs.getFirst().equals("~")) {
-      return InvertNode.create(visitAlternativeMembranes(contextType, isTypeChecked,
-          membraneSpecs.subList(1, membraneSpecs.size())), INTERNAL_CODE_SOURCE);
+      return InvertNode.create(
+          visitAlternativeMembranes(
+              contextType, isTypeChecked, membraneSpecs.subList(1, membraneSpecs.size())),
+          INTERNAL_CODE_SOURCE);
     }
     for (Object membraneSpec : membraneSpecs) {
-      if (membraneSpec instanceof ParseNode(String m, Object conditions, int start, int end) && m.equals("membrane")) {
+      if (membraneSpec instanceof ParseNode(String m, Object conditions, int start, int end)
+          && m.equals("membrane")) {
         alternatives.add(visitMembrane(contextType, isTypeChecked, conditions));
       } else {
         throw new IllegalStateException("Unknown membrane " + membraneSpec);
@@ -605,7 +806,8 @@ public class NodeFactory {
     return AnyOfNode.create(alternatives, INTERNAL_CODE_SOURCE);
   }
 
-  private MatcherNode visitMembrane(VocabularyType contextType, boolean isTypeChecked, Object conditions) {
+  private MatcherNode visitMembrane(
+      VocabularyType contextType, boolean isTypeChecked, Object conditions) {
     Integer conditionSlot = null;
     List<MatcherNode> conjunction = new ArrayList<>();
     List<?> conditionSpecs;
@@ -616,17 +818,25 @@ public class NodeFactory {
     }
     for (Object conditionSpec : conditionSpecs) {
       switch (conditionSpec) {
-        case ParseNode(String type, ParseNode typeMatch, int start, int end) when type.equals("type-match")
-            -> conjunction.addAll(visitTypeMatch(contextType, isTypeChecked, typeMatch));
-        case ParseNode(String type, ParseNode(String name, ParseNode value, int ns, int ne), int start, int end) when type.equals("literal-match") && name.equals("source")
-            -> {
+        case ParseNode(String type, ParseNode typeMatch, int start, int end)
+            when type.equals("type-match") ->
+            conjunction.addAll(visitTypeMatch(contextType, isTypeChecked, typeMatch));
+        case ParseNode(
+                String type,
+                ParseNode(String name, ParseNode value, int ns, int ne),
+                int start,
+                int end)
+            when type.equals("literal-match") && name.equals("source") -> {
           ValueNode valueNode = asSingleValueNode(visitSource(value));
           if (contextType != null) {
             valueNode = TagNode.create(contextType, valueNode, INTERNAL_CODE_SOURCE);
           }
-          conjunction.add(EqualityMatcherNode.create(isTypeChecked, valueNode, sourceCode.createSection(start, end - start)));
+          conjunction.add(
+              EqualityMatcherNode.create(
+                  isTypeChecked, valueNode, sourceCode.createSection(start, end - start)));
         }
-        case ParseNode(String type, List<?> condition, int start, int end) when type.equals("condition") -> {
+        case ParseNode(String type, List<?> condition, int start, int end)
+            when type.equals("condition") -> {
           if (conditionSlot == null) {
             conditionSlot = currentScope().newTempSlot();
             pushCvSlot(conditionSlot);
@@ -647,13 +857,17 @@ public class NodeFactory {
     if (condition.size() != 2) throw new IllegalStateException("Unexpected condition " + condition);
     ValueNode toMatch = asSingleValueNode(visitValueChain((ParseNode) condition.getFirst(), false));
     ParseNode matcher = (ParseNode) condition.getLast();
-    return ConditionNode.create(conditionSlot, toMatch, visitMatcher(matcher.content()), sourceCode.createSection(
-        matcher.start(), matcher.end() - matcher.start()));
+    return ConditionNode.create(
+        conditionSlot,
+        toMatch,
+        visitMatcher(matcher.content()),
+        sourceCode.createSection(matcher.start(), matcher.end() - matcher.start()));
   }
 
-  private List<MatcherNode> visitTypeMatch(VocabularyType contextType, boolean isTypeChecked, ParseNode typeMatch) {
-    SourceSection sourceSection = sourceCode.createSection(
-        typeMatch.start(), typeMatch.end() - typeMatch.start());
+  private List<MatcherNode> visitTypeMatch(
+      VocabularyType contextType, boolean isTypeChecked, ParseNode typeMatch) {
+    SourceSection sourceSection =
+        sourceCode.createSection(typeMatch.start(), typeMatch.end() - typeMatch.start());
     return switch (typeMatch.name()) {
       case "range-match" -> {
         if (typeMatch.content() instanceof List<?> bounds)
@@ -664,14 +878,19 @@ public class NodeFactory {
         List<MatcherNode> conditionNodes = new ArrayList<>();
         conditionNodes.addLast(ArrayTypeMatcherNode.create(sourceSection));
         if (typeMatch.content() instanceof List<?> conditions) {
-          if (conditions.getLast() instanceof ParseNode(String type, ParseNode content, int start, int end)
+          if (conditions.getLast()
+                  instanceof ParseNode(String type, ParseNode content, int start, int end)
               && type.equals("array-length-condition")) {
             conditionNodes.addLast(visitArrayLengthCondition(isTypeChecked, content));
             conditions = conditions.subList(0, conditions.size() - 1);
           }
-          if (!conditions.getFirst().equals("[")) throw new IllegalStateException("Unexpected array match: " + conditions.getFirst());
-          if (conditions.size() > 1) conditionNodes.addAll(visitArrayContentMatchers(conditions.subList(1, conditions.size())));
-        } else if (!typeMatch.content().equals("[")) throw new IllegalStateException("Unexpected conditions: " + typeMatch.content());
+          if (!conditions.getFirst().equals("["))
+            throw new IllegalStateException("Unexpected array match: " + conditions.getFirst());
+          if (conditions.size() > 1)
+            conditionNodes.addAll(
+                visitArrayContentMatchers(conditions.subList(1, conditions.size())));
+        } else if (!typeMatch.content().equals("["))
+          throw new IllegalStateException("Unexpected conditions: " + typeMatch.content());
         yield conditionNodes;
       }
       case "structure-match" -> {
@@ -679,13 +898,21 @@ public class NodeFactory {
         List<Object> conditions;
         if (typeMatch.content() instanceof List<?> l && "VOID".equals(l.getLast())) {
           allowExtraFields = false;
-          typeMatch = new ParseNode(typeMatch.name(), ((List<?>) typeMatch.content()).getFirst(), typeMatch.start(),
-              typeMatch.end());
+          typeMatch =
+              new ParseNode(
+                  typeMatch.name(),
+                  ((List<?>) typeMatch.content()).getFirst(),
+                  typeMatch.start(),
+                  typeMatch.end());
         }
         if (typeMatch.content().equals("{")) conditions = List.of();
-        else if (typeMatch.content() instanceof ParseNode(String name, ParseNode keyMatcher, int start, int end) && name.equals("key-matchers")) {
+        else if (typeMatch.content()
+                instanceof ParseNode(String name, ParseNode keyMatcher, int start, int end)
+            && name.equals("key-matchers")) {
           conditions = List.of(keyMatcher.content());
-        } else if (typeMatch.content() instanceof ParseNode(String name, List<?> kms, int start, int end) && name.equals("key-matchers")) {
+        } else if (typeMatch.content()
+                instanceof ParseNode(String name, List<?> kms, int start, int end)
+            && name.equals("key-matchers")) {
           conditions = new ArrayList<>();
           conditions.add(((ParseNode) kms.getFirst()).content());
           for (Object akm : kms.subList(1, kms.size())) {
@@ -698,7 +925,8 @@ public class NodeFactory {
         List<VocabularyType> optionalKeys = new ArrayList<>();
         for (Object condition : conditions) {
           switch (condition) {
-            case ParseNode(String ignored, String key, int start, int end) -> requiredKeys.add(currentScope().getVocabularyType(key));
+            case ParseNode(String ignored, String key, int start, int end) ->
+                requiredKeys.add(currentScope().getVocabularyType(key));
             case List<?> km -> {
               boolean isOptional = false;
               if (km.getFirst() instanceof String s && "?".equals(s)) {
@@ -713,17 +941,21 @@ public class NodeFactory {
                 requiredKeys.add(type);
               }
               if (km.size() > 1) {
-                MatcherNode matcher = visitAlternativeMembranes(type,
-                    true, ((ParseNode) km.getLast()).content());
-                conditionNodes.addLast(StructureKeyMatcherNode.create(type, matcher, isOptional,
-                    sourceSection));
+                MatcherNode matcher =
+                    visitAlternativeMembranes(type, true, ((ParseNode) km.getLast()).content());
+                conditionNodes.addLast(
+                    StructureKeyMatcherNode.create(type, matcher, isOptional, sourceSection));
               }
             }
             default -> throw new IllegalStateException("Unexpected value: " + condition);
           }
         }
-        conditionNodes.addFirst(StructureTypeMatcherNode.create(requiredKeys.toArray(VocabularyType[]::new), allowExtraFields, optionalKeys.toArray(VocabularyType[]::new),
-            sourceSection));
+        conditionNodes.addFirst(
+            StructureTypeMatcherNode.create(
+                requiredKeys.toArray(VocabularyType[]::new),
+                allowExtraFields,
+                optionalKeys.toArray(VocabularyType[]::new),
+                sourceSection));
         yield conditionNodes;
       }
       case "ID" -> {
@@ -740,9 +972,14 @@ public class NodeFactory {
         if (typeMatch.content().equals("'")) {
           yield List.of(StringTypeMatcherNode.create());
         }
-        yield List.of(RegexMatcherNode.create(isTypeChecked, visitStringLiteral(typeMatch.content(),
-                sourceCode.createSection(typeMatch.start(), typeMatch.end() - typeMatch.start())),
-            INTERNAL_CODE_SOURCE));
+        yield List.of(
+            RegexMatcherNode.create(
+                isTypeChecked,
+                visitStringLiteral(
+                    typeMatch.content(),
+                    sourceCode.createSection(
+                        typeMatch.start(), typeMatch.end() - typeMatch.start())),
+                INTERNAL_CODE_SOURCE));
       }
       default -> throw new IllegalStateException("Unexpected value: " + typeMatch);
     };
@@ -753,8 +990,10 @@ public class NodeFactory {
     for (Object acm : arrayContentMatchers) {
       if (acm instanceof ParseNode pn && pn.name().equals("array-content-matcher")) {
         ParseNode matcher = (ParseNode) pn.content();
-        contentMatchers.add(ArrayContentMatcherNode.create(visitMatcher(matcher.content()),
-            sourceCode.createSection(pn.start(), pn.end() - pn.start())));
+        contentMatchers.add(
+            ArrayContentMatcherNode.create(
+                visitMatcher(matcher.content()),
+                sourceCode.createSection(pn.start(), pn.end() - pn.start())));
       }
     }
     return contentMatchers;
@@ -763,42 +1002,80 @@ public class NodeFactory {
   private MatcherNode visitArrayLengthCondition(boolean isTypeChecked, ParseNode content) {
     int conditionSlot = currentScope().newTempSlot();
     pushCvSlot(conditionSlot);
-    List<MatcherNode> lengthCondition = switch (content) {
-      case ParseNode(String type, ParseNode(String name, ParseNode value, int ns, int ne), int start, int end) when type.equals("literal-match") && name.equals("source")
-          -> List.of(EqualityMatcherNode.create(isTypeChecked, asSingleValueNode(visitSource(value)),
-          sourceCode.createSection(start, end - start)));
-      case ParseNode(String type, List<?> range, int start, int end) when type.equals("range-match") -> visitRangeMatch(
-          null, isTypeChecked, range);
-      default -> throw new IllegalStateException("Unexpected value: " + content);
-    };
+    List<MatcherNode> lengthCondition =
+        switch (content) {
+          case ParseNode(
+                  String type,
+                  ParseNode(String name, ParseNode value, int ns, int ne),
+                  int start,
+                  int end)
+              when type.equals("literal-match") && name.equals("source") ->
+              List.of(
+                  EqualityMatcherNode.create(
+                      isTypeChecked,
+                      asSingleValueNode(visitSource(value)),
+                      sourceCode.createSection(start, end - start)));
+          case ParseNode(String type, List<?> range, int start, int end)
+              when type.equals("range-match") ->
+              visitRangeMatch(null, isTypeChecked, range);
+          default -> throw new IllegalStateException("Unexpected value: " + content);
+        };
     popCvSlot();
-    return ConditionNode.create(conditionSlot,
-        MessageNode.create("length", ReadContextValueNode.create(-1, conditionSlot), INTERNAL_CODE_SOURCE),
-        lengthCondition.size() == 1 ? lengthCondition.getFirst() : AllOfNode.create(lengthCondition,
-            INTERNAL_CODE_SOURCE), sourceCode.createSection(content.start(), content.end() - content.start()));
+    return ConditionNode.create(
+        conditionSlot,
+        MessageNode.create(
+            "length", ReadContextValueNode.create(-1, conditionSlot), INTERNAL_CODE_SOURCE),
+        lengthCondition.size() == 1
+            ? lengthCondition.getFirst()
+            : AllOfNode.create(lengthCondition, INTERNAL_CODE_SOURCE),
+        sourceCode.createSection(content.start(), content.end() - content.start()));
   }
 
-  private List<MatcherNode> visitRangeMatch(VocabularyType contextType, boolean isTypeChecked, List<?> content) {
+  private List<MatcherNode> visitRangeMatch(
+      VocabularyType contextType, boolean isTypeChecked, List<?> content) {
     List<MatcherNode> bounds = new ArrayList<>();
     int separator = content.indexOf("..");
     if (separator > 0) {
       boolean inclusive = !content.get(separator - 1).equals("~");
-      ValueNode low = asSingleValueNode(visitSource(
-          (ParseNode) ((ParseNode) content.get(separator - (inclusive ? 1 : 2))).content()));
-      if (content.getFirst() instanceof ParseNode(String type, ParseNode(String ignored, String key, int is, int ie), int start, int end) && type.equals("tag")) {
-        low = TagNode.create(currentScope().getVocabularyType(key), low, sourceCode.createSection(start, end - start));
+      ValueNode low =
+          visitArithmeticTerm(
+              (ParseNode) ((ParseNode) content.get(separator - (inclusive ? 1 : 2))).content());
+      if (content.getFirst()
+              instanceof
+              ParseNode(
+                  String type,
+                  ParseNode(String ignored, String key, int is, int ie),
+                  int start,
+                  int end)
+          && type.equals("tag")) {
+        low =
+            TagNode.create(
+                currentScope().getVocabularyType(key),
+                low,
+                sourceCode.createSection(start, end - start));
       }
       if (contextType != null) {
         low = TagNode.create(contextType, low, INTERNAL_CODE_SOURCE);
       }
-      bounds.add(GreaterThanMatcherNode.create(isTypeChecked, inclusive, low, INTERNAL_CODE_SOURCE));
+      bounds.add(
+          GreaterThanMatcherNode.create(isTypeChecked, inclusive, low, INTERNAL_CODE_SOURCE));
     }
     if (separator + 1 < content.size()) {
       boolean inclusive = !content.get(separator + 1).equals("~");
-      ValueNode high = asSingleValueNode(visitSource(
-          (ParseNode) ((ParseNode) content.getLast()).content()));
-      if (content.get(separator + (inclusive ? 1 : 2)) instanceof ParseNode(String type, ParseNode(String ignored, String key, int is, int ie), int start, int end) && type.equals("tag")) {
-        high = TagNode.create(currentScope().getVocabularyType(key), high, sourceCode.createSection(start, end - start));
+      ValueNode high = visitArithmeticTerm((ParseNode) ((ParseNode) content.getLast()).content());
+      if (content.get(separator + (inclusive ? 1 : 2))
+              instanceof
+              ParseNode(
+                  String type,
+                  ParseNode(String ignored, String key, int is, int ie),
+                  int start,
+                  int end)
+          && type.equals("tag")) {
+        high =
+            TagNode.create(
+                currentScope().getVocabularyType(key),
+                high,
+                sourceCode.createSection(start, end - start));
       }
       if (contextType != null) {
         high = TagNode.create(contextType, high, INTERNAL_CODE_SOURCE);
@@ -808,52 +1085,96 @@ public class NodeFactory {
     return bounds;
   }
 
+  private ValueNode visitArithmeticTerm(ParseNode term) {
+    return asSingleValueNode(visitTerm(term));
+  }
+
   private TailspinNode visitSource(ParseNode source) {
     return switch (source) {
-      case ParseNode(String name, ParseNode ae, int start, int end) when name.equals("arithmetic-expression") -> visitArithmeticExpression(ae);
-      case ParseNode(String name, Object ref, int start, int end) when name.equals("reference") -> visitReference(ref);
-      case ParseNode(String name, ParseNode vc, int start, int end) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc, false));
-      case ParseNode(String name, List<?> cast, int start, int end) when name.equals("single-value-chain") -> {
-        ParseNode vc = (ParseNode) cast.getFirst();
-        TruffleString unit = visitUnit(cast.getLast());
-        currentScope().setUntypedArithmetic(true);
-        ValueNode value = asSingleValueNode(visitValueChain(vc, false));
-        currentScope().setUntypedArithmetic(false);
-        yield MeasureLiteral.create(value, unit, sourceCode.createSection(start, end - start));
-      }
-      case ParseNode(String name, Object contents, int start, int end) when name.equals("array-literal") -> visitArrayLiteral(contents,
-          sourceCode.createSection(start, end - start));
-      case ParseNode(String name, Object contents, int start, int end) when name.equals("structure-literal") -> visitStructureLiteral(contents,
-          sourceCode.createSection(start, end - start));
-      case ParseNode(String name, Object contents, int start, int end) when name.equals("string-literal") -> visitStringLiteral(contents,
-          sourceCode.createSection(start, end - start));
-      case ParseNode(String name, List<?> contents, int start, int end) when name.equals("type-cast") && contents.size() == 2 -> visitTypeCast((ParseNode) contents.getFirst(), (ParseNode) contents.getLast());
-      case ParseNode(String name, ParseNode value, int start, int end) when name.equals("prefix-index") -> visitPrefixIndex(value, sourceCode.createSection(start, end - start));
-      case ParseNode(String name, ParseNode value, int start, int end) when name.equals("suffix-index") -> visitSuffixIndex(value, sourceCode.createSection(start, end - start));
+      case ParseNode(String name, List<?> parts, int start, int end)
+          when name.equals("type-cast") ->
+          visitTypeCast(parts);
+      case ParseNode(String name, Object expression, int start, int end)
+          when name.equals("numericish") ->
+          visitNumericish(expression);
+      case ParseNode(
+              String name,
+              ParseNode(String type, Object contents, int s, int e),
+              int start,
+              int end)
+          when name.equals("non-numeric") && type.equals("array-literal") ->
+          visitArrayLiteral(contents, sourceCode.createSection(start, end - start));
+      case ParseNode(
+              String name,
+              ParseNode(String type, Object contents, int s, int e),
+              int start,
+              int end)
+          when name.equals("non-numeric") && type.equals("structure-literal") ->
+          visitStructureLiteral(contents, sourceCode.createSection(start, end - start));
+      case ParseNode(
+              String name,
+              ParseNode(String type, Object contents, int s, int e),
+              int start,
+              int end)
+          when name.equals("non-numeric") && type.equals("string-literal") ->
+          visitStringLiteral(contents, sourceCode.createSection(start, end - start));
       default -> throw new IllegalStateException("Unexpected value: " + source);
     };
   }
 
-  private ValueNode visitPrefixIndex(ParseNode value, SourceSection section) {
-    return PrefixIndexNode.create(section, asSingleValueNode(visitSource((ParseNode) value.content())));
+  private ValueNode visitPrefixIndex(ParseNode prefixIndexContent) {
+    return PrefixIndexNode.create(
+        sourceCode.createSection(
+            prefixIndexContent.start(), prefixIndexContent.end() - prefixIndexContent.start()),
+        visitArithmeticTerm(prefixIndexContent));
   }
 
-  private ValueNode visitSuffixIndex(ParseNode value, SourceSection section) {
-    return SuffixIndexNode.create(section, asSingleValueNode(visitSource((ParseNode) value.content())));
+  private ValueNode visitSuffixIndex(ParseNode suffixIndexContent) {
+    return SuffixIndexNode.create(
+        sourceCode.createSection(
+            suffixIndexContent.start(), suffixIndexContent.end() - suffixIndexContent.start()),
+        visitArithmeticTerm(suffixIndexContent));
   }
 
-  private ValueNode visitTypeCast(ParseNode tag, ParseNode value) {
-    ValueNode valueNode = switch (value) {
-      case ParseNode(String name, Object content, int start, int end) when name.equals("numeric-literal") -> visitNumericLiteral(content, sourceCode.createSection(start, end - start));
-      case ParseNode(String name, Object content, int start, int end) when name.equals("structure-literal") -> visitStructureLiteral(content, sourceCode.createSection(start, end - start));
-      case ParseNode(String name, Object content, int start, int end) when name.equals("string-literal") -> visitStringLiteral(content, sourceCode.createSection(start, end - start));
-      case ParseNode(String name, Object content, int start, int end) when name.equals("array-literal") -> visitArrayLiteral(content,
-          sourceCode.createSection(start, end - start));
-      case ParseNode(String name, ParseNode content, int start, int end) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(content, false));
-      default -> throw new IllegalStateException("Unexpected value: " + value);
-    };
+  private ValueNode visitTypeCast(List<?> parts) {
+    ParseNode tag = (ParseNode) parts.getFirst();
+    ParseNode simpleValue = (ParseNode) parts.getLast();
+    ValueNode valueNode =
+        switch (simpleValue.content()) {
+          case ParseNode(String name, Object parenthesized, int start, int end)
+              when name.equals("parenthesized-expression") ->
+              visitParenthesizedExpression(parenthesized);
+          case ParseNode(String name, Object literal, int start, int end)
+              when name.equals("numeric-literal") ->
+              visitNumericLiteral(literal, sourceCode.createSection(start, end - start));
+          case ParseNode(
+              String name,
+              ParseNode(String type, Object contents, int s, int e),
+              int start,
+              int end)
+              when name.equals("non-numeric") && type.equals("array-literal") ->
+              visitArrayLiteral(contents, sourceCode.createSection(start, end - start));
+          case ParseNode(
+              String name,
+              ParseNode(String type, Object contents, int s, int e),
+              int start,
+              int end)
+              when name.equals("non-numeric") && type.equals("structure-literal") ->
+              visitStructureLiteral(contents, sourceCode.createSection(start, end - start));
+          case ParseNode(
+              String name,
+              ParseNode(String type, Object contents, int s, int e),
+              int start,
+              int end)
+              when name.equals("non-numeric") && type.equals("string-literal") ->
+              visitStringLiteral(contents, sourceCode.createSection(start, end - start));
+          default -> throw new IllegalStateException("Unexpected value: " + simpleValue);
+        };
     String key = (String) ((ParseNode) tag.content()).content();
-    return TagNode.create(currentScope().getVocabularyType(key), valueNode, sourceCode.createSection(tag.start(), tag.end() - tag.start()));
+    return TagNode.create(
+        currentScope().getVocabularyType(key),
+        valueNode,
+        sourceCode.createSection(tag.start(), tag.end() - tag.start()));
   }
 
   private ValueNode visitStringLiteral(Object contents, SourceSection sourceSection) {
@@ -868,15 +1189,25 @@ public class NodeFactory {
 
   private ValueNode visitStringPart(Object partSpec) {
     return switch (partSpec) {
-      case ParseNode(String name, String part, int start, int end) when name.equals("string-part") -> StringPart.create(part,
-          sourceCode.createSection(start, end - start));
+      case ParseNode(String name, String part, int start, int end)
+          when name.equals("string-part") ->
+          StringPart.create(part, sourceCode.createSection(start, end - start));
       case String s when s.equals("''") -> StringPart.create("'", INTERNAL_CODE_SOURCE);
       case String s when s.equals("$$") -> StringPart.create("$", INTERNAL_CODE_SOURCE);
-      case ParseNode(String name, ParseNode valueChain, int start, int end) when name.equals("interpolate") -> asTransformResult(visitValueChain(valueChain, false));
-      case ParseNode(String name, ParseNode valueChain, int start, int end) when name.equals("codepoint") -> CodepointNode.create(asSingleValueNode(visitValueChain(valueChain, false)),
-          sourceCode.createSection(start, end - start));
-      case ParseNode(String name, String bytes, int start, int end) when name.equals("unicode-bytes") -> CodepointNode.create(IntegerLiteral.create(Long.valueOf(bytes, 16),
-          sourceCode.createSection(start, end - start)), sourceCode.createSection(start, end - start));
+      case ParseNode(String name, ParseNode valueChain, int start, int end)
+          when name.equals("interpolate") ->
+          asTransformResult(visitValueChain(valueChain, false));
+      case ParseNode(String name, ParseNode valueChain, int start, int end)
+          when name.equals("codepoint") ->
+          CodepointNode.create(
+              asSingleValueNode(visitValueChain(valueChain, false)),
+              sourceCode.createSection(start, end - start));
+      case ParseNode(String name, String bytes, int start, int end)
+          when name.equals("unicode-bytes") ->
+          CodepointNode.create(
+              IntegerLiteral.create(
+                  Long.valueOf(bytes, 16), sourceCode.createSection(start, end - start)),
+              sourceCode.createSection(start, end - start));
       default -> throw new IllegalStateException("Unexpected value: " + partSpec);
     };
   }
@@ -898,7 +1229,8 @@ public class NodeFactory {
     List<VocabularyType> keys = new ArrayList<>();
     List<ValueNode> values = new ArrayList<>();
     for (Object sc : keyValues) {
-      if (sc instanceof ParseNode(String name, List<?> kv, int start, int end) && name.equals("key-value")) {
+      if (sc instanceof ParseNode(String name, List<?> kv, int start, int end)
+          && name.equals("key-value")) {
         String key = ((ParseNode) kv.getFirst()).content().toString();
         keys.add(currentScope().getVocabularyType(key));
         values.add(asSingleValueNode(visitValueChain((ParseNode) kv.getLast(), false)));
@@ -911,8 +1243,7 @@ public class NodeFactory {
   }
 
   private CreateRangeNode visitRange(List<?> bounds, SourceSection sourceSection) {
-    ValueNode start = asSingleValueNode(visitSource(
-        (ParseNode) ((ParseNode) bounds.getFirst()).content()));
+    ValueNode start = visitArithmeticTerm((ParseNode) ((ParseNode) bounds.getFirst()).content());
     boolean inclusiveStart = true;
     int index = 1;
     if (bounds.get(index).equals("~")) {
@@ -925,13 +1256,11 @@ public class NodeFactory {
       inclusiveEnd = false;
       index++;
     }
-    ValueNode end = asSingleValueNode(visitSource(
-        (ParseNode) ((ParseNode) bounds.get(index)).content()));
+    ValueNode end = visitArithmeticTerm((ParseNode) ((ParseNode) bounds.get(index)).content());
     index++;
     ValueNode stride;
     if (index < bounds.size()) {
-      stride = asSingleValueNode(visitSource((ParseNode) (
-          (ParseNode) ((ParseNode) bounds.get(index)).content()).content()));
+      stride = visitArithmeticTerm((ParseNode) ((ParseNode) bounds.getLast()).content());
     } else {
       stride = VoidValue.create(INTERNAL_CODE_SOURCE);
     }
@@ -939,37 +1268,42 @@ public class NodeFactory {
   }
 
   private ValueNode visitArrayLiteral(Object contents, SourceSection sourceSection) {
-    List<TransformNode> contentNodes = switch (contents) {
-      case String bracket when bracket.equals("[") -> List.of();
-      case ParseNode(String name, ParseNode value, int start, int end) when name.equals("array-contents")
-          -> List.of(asTransformNode(visitValueChain(value, false)));
-      case ParseNode(String name, List<?> values, int start, int end) when name.equals("array-contents") -> {
-        List<TransformNode> valueNodes = new ArrayList<>();
-        valueNodes.add(asTransformNode(visitValueChain((ParseNode) values.getFirst(), false)));
-        for (int i = 1; i < values.size(); i++) {
-          Object valueChain = ((ParseNode) values.get(i)).content();
-          valueNodes.add(asTransformNode(visitValueChain((ParseNode) valueChain, false)));
-        }
-        yield valueNodes;
-      }
-      default -> throw new IllegalStateException("Unexpected value: " + contents);
-    };
+    List<TransformNode> contentNodes =
+        switch (contents) {
+          case String bracket when bracket.equals("[") -> List.of();
+          case ParseNode(String name, ParseNode value, int start, int end)
+              when name.equals("array-contents") ->
+              List.of(asTransformNode(visitValueChain(value, false)));
+          case ParseNode(String name, List<?> values, int start, int end)
+              when name.equals("array-contents") -> {
+            List<TransformNode> valueNodes = new ArrayList<>();
+            valueNodes.add(asTransformNode(visitValueChain((ParseNode) values.getFirst(), false)));
+            for (int i = 1; i < values.size(); i++) {
+              Object valueChain = ((ParseNode) values.get(i)).content();
+              valueNodes.add(asTransformNode(visitValueChain((ParseNode) valueChain, false)));
+            }
+            yield valueNodes;
+          }
+          default -> throw new IllegalStateException("Unexpected value: " + contents);
+        };
     return ArrayLiteral.create(currentScope().createBuildSlot(), contentNodes, sourceSection);
   }
 
   private ValueNode visitNumericLiteral(Object literal, SourceSection section) {
     return switch (literal) {
-      case ParseNode(String name, Long value, int start, int end) when name.equals("INT") -> IntegerLiteral.create(value,
-          sourceCode.createSection(start, end - start));
-      case ParseNode(String name, BigInteger value, int start, int end) when name.equals("INT") -> BigIntegerLiteral.create(value,
-          sourceCode.createSection(start, end - start));
-      case ParseNode(String name, SmallSciNum value, int start, int end) when name.equals("NUM") -> SmallSciNumLiteral.create(value,
-          sourceCode.createSection(start, end - start));
-      case ParseNode(String name, SciNum value, int start, int end) when name.equals("NUM") -> SciNumLiteral.create(value,
-          sourceCode.createSection(start, end - start));
-      case List<?> m when m.size() == 2 -> MeasureLiteral.create(visitNumericLiteral(m.getFirst(),
-              INTERNAL_CODE_SOURCE), visitUnit(m.getLast()),
-          section);
+      case ParseNode(String name, Long value, int start, int end) when name.equals("INT") ->
+          IntegerLiteral.create(value, sourceCode.createSection(start, end - start));
+      case ParseNode(String name, BigInteger value, int start, int end) when name.equals("INT") ->
+          BigIntegerLiteral.create(value, sourceCode.createSection(start, end - start));
+      case ParseNode(String name, SmallSciNum value, int start, int end) when name.equals("NUM") ->
+          SmallSciNumLiteral.create(value, sourceCode.createSection(start, end - start));
+      case ParseNode(String name, SciNum value, int start, int end) when name.equals("NUM") ->
+          SciNumLiteral.create(value, sourceCode.createSection(start, end - start));
+      case List<?> m when m.size() == 2 ->
+          MeasureLiteral.create(
+              visitNumericLiteral(m.getFirst(), INTERNAL_CODE_SOURCE),
+              visitUnit(m.getLast()),
+              section);
       default -> throw new IllegalStateException("Unexpected value: " + literal);
     };
   }
@@ -978,7 +1312,8 @@ public class NodeFactory {
 
   private TruffleString visitUnit(Object unitSpec) {
     if (unitSpec instanceof String ignored) return Measure.SCALAR;
-    if (!(unitSpec instanceof ParseNode p && p.name().equals("unit"))) throw new IllegalStateException("Unexpected value: " + unitSpec);
+    if (!(unitSpec instanceof ParseNode p && p.name().equals("unit")))
+      throw new IllegalStateException("Unexpected value: " + unitSpec);
     List<?> items;
     if (p.content() instanceof List<?> l) items = l;
     else items = List.of(p.content());
@@ -986,15 +1321,24 @@ public class NodeFactory {
     while (!items.isEmpty()) {
       Object item = items.getFirst();
       items = items.subList(1, items.size());
-      if (item instanceof ParseNode(String mp, ParseNode(String ignored, String part, int is, int ie), int start, int end) && mp.equals("measure-product")) {
+      if (item
+              instanceof
+              ParseNode(
+                  String mp,
+                  ParseNode(String ignored, String part, int is, int ie),
+                  int start,
+                  int end)
+          && mp.equals("measure-product")) {
         unit.append(part).append(' ');
-      } else if (item instanceof ParseNode(String md, Object denominator, int start, int end) && md.equals("measure-denominator")) {
+      } else if (item instanceof ParseNode(String md, Object denominator, int start, int end)
+          && md.equals("measure-denominator")) {
         unit.deleteCharAt(unit.length() - 1).append('/');
         if (denominator instanceof List<?> l) items = l;
         else items = List.of(denominator);
       } else throw new IllegalStateException("Unexpected value: " + item);
     }
-    TruffleString s = TailspinStrings.fromJavaString(unit.deleteCharAt(unit.length() - 1).toString());
+    TruffleString s =
+        TailspinStrings.fromJavaString(unit.deleteCharAt(unit.length() - 1).toString());
     TruffleString result = units.putIfAbsent(s, s);
     return result == null ? s : result;
   }
@@ -1002,68 +1346,133 @@ public class NodeFactory {
   private TailspinNode visitReference(Object ref) {
     boolean readsState = false;
     List<?> predicate = List.of();
-    TailspinNode value = switch (ref) {
-      case String s when s.equals("$") -> ReadContextValueNode.create(-1, currentValueSlot());
-      case List<?> l when l.getFirst().equals("$") && l.get(1) instanceof ParseNode(String ignored, String identifier, int start, int end) -> {
-        Object source = currentScope().getSource(identifier, -1);
-        if (source instanceof Reference reference) {
-          predicate = l.subList(2, l.size());
-          yield ReadContextValueNode.create(reference);
-        } else if (source instanceof Templates templates){
-          if (l.size() > 2) throw new IllegalStateException("Cannot have lens expressions or message sends on call to " + identifier);
-          yield SendToTemplatesNode.create(VoidValue.create(INTERNAL_CODE_SOURCE), scopes.size(), templates,
-              sourceCode.createSection(start, end - start));
-        } else {
-          throw new IllegalStateException("Cannot use " + identifier + " as a source");
-        }
-      }
-      case List<?> l when l.getFirst().equals("$") && l.get(1).equals("@") -> {
-        readsState = true;
-        predicate = l.subList(2, l.size());
-        String scopeId = null;
-        if (!predicate.isEmpty() && predicate.getFirst() instanceof ParseNode(String ignored, String identifier, int start, int end)) {
-          scopeId = identifier;
-          predicate = predicate.subList(1, predicate.size());
-        }
-        yield ReadStateValueNode.create(currentScope().accessState(scopeId));
-      }
-      case List<?> l when l.getFirst().equals("$") -> {
-        predicate = l.subList(1, l.size());
-        yield ReadContextValueNode.create(-1, currentValueSlot());
-      }
-      default -> throw new IllegalStateException("Unexpected value: " + ref);
-    };
-    if (!predicate.isEmpty() && predicate.getFirst() instanceof ParseNode(String type, Object lensExpression, int start, int end) && type.equals("lens-expression")){
+    TailspinNode value =
+        switch (ref) {
+          case String s when s.equals("$") -> ReadContextValueNode.create(-1, currentValueSlot());
+          case List<?> l
+              when l.getFirst().equals("$")
+                  && l.get(1)
+                      instanceof
+                      ParseNode(String ignored, String identifier, int start, int end) -> {
+            Object source = currentScope().getSource(identifier, -1);
+            if (source instanceof Reference reference) {
+              predicate = l.subList(2, l.size());
+              yield ReadContextValueNode.create(reference);
+            } else if (source instanceof Templates templates) {
+              if (l.size() > 2)
+                throw new IllegalStateException(
+                    "Cannot have lens expressions or message sends on call to " + identifier);
+              yield SendToTemplatesNode.create(
+                  VoidValue.create(INTERNAL_CODE_SOURCE),
+                  scopes.size(),
+                  templates,
+                  sourceCode.createSection(start, end - start));
+            } else {
+              throw new IllegalStateException("Cannot use " + identifier + " as a source");
+            }
+          }
+          case List<?> l when l.getFirst().equals("$") && l.get(1).equals("@") -> {
+            readsState = true;
+            predicate = l.subList(2, l.size());
+            String scopeId = null;
+            if (!predicate.isEmpty()
+                && predicate.getFirst()
+                    instanceof ParseNode(String ignored, String identifier, int start, int end)) {
+              scopeId = identifier;
+              predicate = predicate.subList(1, predicate.size());
+            }
+            yield ReadStateValueNode.create(currentScope().accessState(scopeId));
+          }
+          case List<?> l when l.getFirst().equals("$") -> {
+            predicate = l.subList(1, l.size());
+            yield ReadContextValueNode.create(-1, currentValueSlot());
+          }
+          default -> throw new IllegalStateException("Unexpected value: " + ref);
+        };
+    if (!predicate.isEmpty()
+        && predicate.getFirst()
+            instanceof ParseNode(String type, Object lensExpression, int start, int end)
+        && type.equals("lens-expression")) {
       value = visitReadLensExpression(asSingleValueNode(value), lensExpression);
       value = ConsolidateLensResultNode.create(asTransformResult(value));
     }
     if (readsState) {
       value = ReadStateNode.create((ValueNode) value, INTERNAL_CODE_SOURCE);
     }
-    if (!predicate.isEmpty() && predicate.getLast() instanceof ParseNode(String sendType, ParseNode(String ignored, String message, int is, int ie), int start, int end)
-        && sendType.equals("message-send")){
-      value = MessageNode.create(message, asSingleValueNode(value), sourceCode.createSection(start, end - start));
+    if (!predicate.isEmpty()
+        && predicate.getLast()
+            instanceof
+            ParseNode(
+                String sendType,
+                ParseNode(String ignored, String message, int is, int ie),
+                int start,
+                int end)
+        && sendType.equals("message-send")) {
+      value =
+          MessageNode.create(
+              message, asSingleValueNode(value), sourceCode.createSection(start, end - start));
     }
     return value;
   }
 
-  private ValueNode visitReadLensDimension(ValueNode target, Object lensDimension, Reference indexVar) {
+  private ValueNode visitReadLensDimension(
+      ValueNode target, Object lensDimension, Reference indexVar) {
     return switch (lensDimension) {
-      case ParseNode(String type, ParseNode source, int start, int end) when type.equals("source")
-          -> ArrayReadNode.create(false, target, asSingleValueNode(visitSource(source)), indexVar,
-          sourceCode.createSection(start, end - start));
-      case ParseNode(String type, Object bounds, int start, int end) when type.equals("lens-range")
-          -> visitLensRange(target, bounds, indexVar, sourceCode.createSection(start, end - start));
-      case ParseNode(String type, ParseNode(String ignored, String key, int is, int ie), int start, int end) when type.equals("key")
-          -> StructureReadNode.create(target, currentScope().getVocabularyType(key), sourceCode.createSection(start, end - start));
+      case ParseNode(String type, ParseNode term, int start, int end)
+          when type.equals("numericish") ->
+          ArrayReadNode.create(
+              false,
+              target,
+              visitArithmeticTerm(term),
+              indexVar,
+              sourceCode.createSection(start, end - start));
+      case ParseNode(String type, List<?> expression, int start, int end)
+          when type.equals("numericish") ->
+          ArrayReadNode.create(
+              false,
+              target,
+              asSingleValueNode(visitNumericish(expression)),
+              indexVar,
+              sourceCode.createSection(start, end - start));
+      case ParseNode(String type, ParseNode contents, int start, int end)
+          when type.equals("array-literal") ->
+          ArrayReadNode.create(
+              false,
+              target,
+              visitArrayLiteral(contents, sourceCode.createSection(start, end - start)),
+              indexVar,
+              sourceCode.createSection(start, end - start));
+      case ParseNode(String type, Object bounds, int start, int end)
+          when type.equals("lens-range") ->
+          visitLensRange(target, bounds, indexVar, sourceCode.createSection(start, end - start));
+      case ParseNode(
+              String type,
+              ParseNode(String ignored, String key, int is, int ie),
+              int start,
+              int end)
+          when type.equals("key") ->
+          StructureReadNode.create(
+              target,
+              currentScope().getVocabularyType(key),
+              sourceCode.createSection(start, end - start));
       case List<?> dimension -> {
         indexVar = null;
-        if (dimension.get(1) instanceof ParseNode(String type, ParseNode(String ignored, String identifier, int is, int ie), int start, int end) && type.equals("index-variable")) {
+        if (dimension.get(1)
+                instanceof
+                ParseNode(
+                    String type,
+                    ParseNode(String ignored, String identifier, int is, int ie),
+                    int start,
+                    int end)
+            && type.equals("index-variable")) {
           indexVar = currentScope().defineValue(identifier);
           currentScope().markTemporary(identifier);
         }
         ValueNode thisDimension = visitReadLensDimension(target, dimension.getFirst(), indexVar);
-        if (!dimension.isEmpty() && dimension.getLast() instanceof ParseNode(String type, ParseNode nextDimension, int start, int end) && type.equals("next-lens-dimension")) {
+        if (!dimension.isEmpty()
+            && dimension.getLast()
+                instanceof ParseNode(String type, ParseNode nextDimension, int start, int end)
+            && type.equals("next-lens-dimension")) {
           thisDimension = visitReadLensDimension(thisDimension, nextDimension.content(), null);
         }
         yield thisDimension;
@@ -1075,39 +1484,46 @@ public class NodeFactory {
   @SuppressWarnings("unchecked")
   private ValueNode visitReadLensExpression(ValueNode target, Object lensExpression) {
     currentScope().pushTemporaryVariables();
-    ValueNode expression = switch (lensExpression) {
-      case ParseNode(String type, Object lensDimension, int start, int end) when type.equals("lens-dimension")
-          -> visitReadLensDimension(target, lensDimension, null);
-      case List<?> dimension -> {
-        ParseNode lensDimension = (ParseNode) dimension.getFirst();
-        ValueNode thisDimension = visitReadLensDimension(target, lensDimension.content(), null);
-        Object lensTransforms = ((ParseNode) dimension.getLast()).content();
-        List<ParseNode> transforms = new ArrayList<>();
-        if (lensTransforms instanceof ParseNode p) {
-          transforms.add(p);
-        } else {
-          transforms.addAll((List<ParseNode>) lensTransforms);
-        }
-        if (!transforms.isEmpty()) {
-          pushCvSlot(currentScope().newTempSlot());
-          transforms.addFirst(new ParseNode("source", new ParseNode("reference", "$", transforms.getFirst().start(), transforms.getFirst().start()), transforms.getFirst().start(), transforms.getFirst().start()));
-          thisDimension = TransformLensNode.create(asTransformResult(thisDimension),
-              currentValueSlot(),
-              asTransformNode(visitValueChain(new ParseNode("value-chain", transforms, transforms.getFirst().start(), transforms.getLast().end()), false)),
-              currentScope().newResultSlot(), sourceCode.createSection(lensDimension.start(), transforms.getLast().end() - lensDimension.start()));
-          popCvSlot();
-        }
-        yield thisDimension;
-      }
-      default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
-    };
+    ValueNode expression =
+        switch (lensExpression) {
+          case ParseNode(String type, Object lensDimension, int start, int end)
+              when type.equals("lens-dimension") ->
+              visitReadLensDimension(target, lensDimension, null);
+          case List<?> dimension -> {
+            ParseNode lensDimension = (ParseNode) dimension.getFirst();
+            ValueNode thisDimension = visitReadLensDimension(target, lensDimension.content(), null);
+            Object lensTransforms = ((ParseNode) dimension.getLast()).content();
+            List<Object> transforms = new ArrayList<>();
+            if (lensTransforms instanceof ParseNode p) {
+              transforms.add(p);
+            } else {
+              transforms.addAll((List<ParseNode>) lensTransforms);
+            }
+            if (!transforms.isEmpty()) {
+              pushCvSlot(currentScope().newTempSlot());
+              transforms.addFirst(ReadContextValueNode.create(-1, currentValueSlot()));
+              thisDimension =
+                  TransformLensNode.create(
+                      asTransformResult(thisDimension),
+                      currentValueSlot(),
+                      asTransformNode(getChainNode(0, false, transforms)),
+                      currentScope().newResultSlot(),
+                      sourceCode.createSection(
+                          lensDimension.start(),
+                          ((ParseNode) dimension.getLast()).end() - lensDimension.start()));
+              popCvSlot();
+            }
+            yield thisDimension;
+          }
+          default -> throw new IllegalStateException("Unexpected value: " + lensExpression);
+        };
     currentScope().deleteTemporaryValues();
     return expression;
   }
 
   @SuppressWarnings("unchecked")
-  private ArrayRangeReadNode visitLensRange(ValueNode target, Object boundsSpec, Reference indexVar,
-      SourceSection sourceSection) {
+  private ArrayRangeReadNode visitLensRange(
+      ValueNode target, Object boundsSpec, Reference indexVar, SourceSection sourceSection) {
     List<Object> bounds;
     if (boundsSpec instanceof List<?> l) {
       bounds = (List<Object>) l;
@@ -1116,8 +1532,9 @@ public class NodeFactory {
     }
     int separator = bounds.indexOf("..");
     ValueNode stride;
-    if (bounds.getLast() instanceof ParseNode(String name, ParseNode content, int start, int end) && name.equals("stride")) {
-      stride = asSingleValueNode(visitSource((ParseNode) content.content()));
+    if (bounds.getLast() instanceof ParseNode(String name, ParseNode term, int start, int end)
+        && name.equals("stride")) {
+      stride = visitArithmeticTerm(term);
       bounds = bounds.subList(0, bounds.size() - 1);
     } else {
       stride = VoidValue.create(sourceSection);
@@ -1127,10 +1544,7 @@ public class NodeFactory {
     if (separator > 0 && !bounds.getFirst().equals("~")) {
       inclusiveStart = separator == 1;
       ParseNode boundValue = (ParseNode) bounds.getFirst();
-      if (boundValue.name().equals("range-bound")) {
-        boundValue = (ParseNode) boundValue.content();
-      }
-      start = asSingleValueNode(visitSource(boundValue));
+      start = visitArithmeticTerm(boundValue);
     } else {
       inclusiveStart = separator == 0;
       start = VoidValue.create(sourceSection);
@@ -1140,87 +1554,143 @@ public class NodeFactory {
     if (separator + 1 < bounds.size() && !bounds.getLast().equals("~")) {
       inclusiveEnd = separator + 2 == bounds.size();
       ParseNode boundValue = (ParseNode) bounds.getLast();
-      if (boundValue.name().equals("range-bound")) {
-        boundValue = (ParseNode) boundValue.content();
-      }
-      end = asSingleValueNode(visitSource(boundValue));
+      end = visitArithmeticTerm(boundValue);
     } else {
       inclusiveEnd = separator + 1 == bounds.size();
       end = VoidValue.create(sourceSection);
     }
-    return ArrayRangeReadNode.create(target,
+    return ArrayRangeReadNode.create(
+        target,
         CreateRangeNode.create(start, inclusiveStart, end, inclusiveEnd, stride, sourceSection),
-        indexVar, sourceSection);
+        indexVar,
+        sourceSection);
   }
 
-  private ValueNode visitArithmeticExpression(ParseNode ae) {
-    return switch (ae) {
-      case ParseNode(String name, Object literal, int start, int end) when name.equals("numeric-literal") -> visitNumericLiteral(literal,
-          sourceCode.createSection(start, end - start));
-      case ParseNode(String name, List<?> addition, int start, int end) when name.equals("addition") -> visitAddition(addition);
-      case ParseNode(String name, List<?> multiplication, int start, int end) when name.equals("multiplication") -> visitMultiplication(multiplication);
-      case ParseNode(String name, ParseNode(String ignored, ParseNode square, int is, int ie), int start, int end) when name.equals("square-root") -> SquareRootNode.create(visitTerm(square), currentScope().isUntypedRegion(),
-          sourceCode.createSection(start, end - start));
-      // We also handle term here just to simplify the recursive expression parsing
-      case ParseNode(String name, ParseNode term, int start, int end) when name.equals("term") -> visitTerm(term);
-      case ParseNode(String name, ParseNode term, int start, int end) when name.equals("negated-term") -> NegateNode.create(visitTerm(term));
-      default -> throw new IllegalStateException("Unexpected value: " + ae);
-    };
+  // This will be a single value unless it is a lone reference
+  private TailspinNode visitNumericish(Object content) {
+    if (content instanceof ParseNode loneTerm) {
+      return visitTerm(loneTerm);
+    }
+    List<?> expression = (List<?>) content;
+    ValueNode result = visitArithmeticTerm((ParseNode) expression.getFirst());
+    for (Object part : expression.subList(1,  expression.size())) {
+      result =
+          switch (part) {
+            case ParseNode(String name, List<?> addition, int start, int end)
+                when name.equals("addition") ->
+                visitAddition(result, addition);
+            case ParseNode(String name, List<?> multiplication, int start, int end)
+                when name.equals("multiplication") ->
+                visitMultiplication(result, multiplication);
+            default -> throw new IllegalStateException("Unexpected value: " + expression);
+          };
+    }
+    return result;
   }
 
-  private ValueNode visitAddition(List<?> addition) {
-    ParseNode first = (ParseNode) addition.getFirst();
-    ValueNode left = visitArithmeticExpression(first);
-    ParseNode last = (ParseNode) addition.getLast();
-    ValueNode right = visitArithmeticExpression(last);
-    if(addition.get(1).equals("+")) {
-      return AddNode.create(left, right, currentScope().isUntypedRegion(), sourceCode.createSection(
-          first.start(), last.end() - first.start()));
-    } else if(addition.get(1).equals("-")) {
-      return SubtractNode.create(left, right, currentScope().isUntypedRegion(), sourceCode.createSection(
-          first.start(), last.end() - first.start()));
+  private ValueNode visitAddition(ValueNode left, List<?> addition) {
+    String operation = (String) addition.getFirst();
+    ParseNode term = (ParseNode) addition.get(1);
+    ValueNode right = visitArithmeticTerm(term);
+    for (int i = 2; i < addition.size(); i++) {
+      ParseNode multiplication = (ParseNode) addition.get(i);
+      right = visitMultiplication(right, (List<?>) multiplication.content());
+    }
+    SourceSection sourceSection = sourceCode.createSection(term.start(), term.end() - term.start());
+    if (operation.equals("+")) {
+      return AddNode.create(left, right, currentScope().isUntypedRegion(), sourceSection);
+    } else if (operation.equals("-")) {
+      return SubtractNode.create(left, right, currentScope().isUntypedRegion(), sourceSection);
     }
     throw new IllegalStateException("Unexpected value: " + addition);
   }
 
-  private ValueNode visitMultiplication(List<?> multiplication) {
-    ParseNode first = (ParseNode) multiplication.getFirst();
-    ValueNode left = visitArithmeticExpression(first);
-    ParseNode last = (ParseNode) multiplication.getLast();
-    ValueNode right = visitArithmeticExpression(last);
-    if(multiplication.get(1).equals("*")) {
-      return MultiplyNode.create(left, right, currentScope().isUntypedRegion(), sourceCode.createSection(
-          first.start(), last.end() - first.start()));
-    } else if(multiplication.get(1).equals("/")) {
-      return DivideNode.create(left, right, currentScope().isUntypedRegion(), sourceCode.createSection(
-          first.start(), last.end() - first.start()));
-    } else if(multiplication.get(1).equals("~/")) {
-      return TruncateDivideNode.create(left, right, currentScope().isUntypedRegion(), sourceCode.createSection(
-          first.start(), last.end() - first.start()));
-    } else if(multiplication.get(1).equals("mod")) {
-      return MathModNode.create(left, right, currentScope().isUntypedRegion(), sourceCode.createSection(
-          first.start(), last.end() - first.start()));
+  private ValueNode visitMultiplication(ValueNode left, List<?> multiplication) {
+    String operation = (String) multiplication.getFirst();
+    ParseNode term = (ParseNode) multiplication.getLast();
+    ValueNode right = visitArithmeticTerm(term);
+    SourceSection sourceSection = sourceCode.createSection(term.start(), term.end() - term.start());
+    if (operation.equals("*")) {
+      return MultiplyNode.create(left, right, currentScope().isUntypedRegion(), sourceSection);
+    } else if (operation.equals("/")) {
+      return DivideNode.create(left, right, currentScope().isUntypedRegion(), sourceSection);
+    } else if (operation.equals("~/")) {
+      return TruncateDivideNode.create(
+          left, right, currentScope().isUntypedRegion(), sourceSection);
+    } else if (operation.equals("mod")) {
+      return MathModNode.create(left, right, currentScope().isUntypedRegion(), sourceSection);
     }
     throw new IllegalStateException("Unexpected value: " + multiplication);
   }
 
-  private ValueNode visitTerm(ParseNode term) {
-    return switch (term) {
-      case ParseNode(String name, Object literal, int start, int end) when name.equals("numeric-literal") -> visitNumericLiteral(literal,
-          sourceCode.createSection(start, end - start));
-      case ParseNode(String name, ParseNode negated, int start, int end) when name.equals("negated-term") -> NegateNode.create(visitTerm(negated));
-      case ParseNode(String name, Object ref, int start, int end) when name.equals("reference") -> asSingleValueNode(visitReference(ref));
-      case ParseNode(String name, ParseNode vc, int start, int end) when name.equals("single-value-chain") -> asSingleValueNode(visitValueChain(vc, false));
-      case ParseNode(String name, List<?> cast, int start, int end) when name.equals("single-value-chain") -> {
-        ParseNode vc = (ParseNode) cast.getFirst();
-        TruffleString unit = visitUnit(cast.getLast());
-        currentScope().setUntypedArithmetic(true);
-        ValueNode value = asSingleValueNode(visitValueChain(vc, false));
-        currentScope().setUntypedArithmetic(false);
-        yield MeasureLiteral.create(value, unit, sourceCode.createSection(start, end - start));
+  private TailspinNode visitTerm(ParseNode term) {
+    if (term.name().equals("term")) {
+      if (term.content() instanceof List<?> l) {
+        if (l.size() != 2) throw new AssertionError("Index cannot be both a prefix and a suffix");
+        if (l.getFirst().equals("\\")) {
+          return visitSuffixIndex((ParseNode) l.getLast());
+        } else {
+          if (!l.getLast().equals("\\"))
+            throw new AssertionError("Index cannot be neither a prefix nor a suffix");
+          return visitPrefixIndex((ParseNode) l.getFirst());
+        }
+      } else {
+        term = (ParseNode) term.content();
       }
-      case ParseNode(String name, ParseNode(String ignored, ParseNode square, int is, int ie), int start, int end) when name.equals("square-root") -> SquareRootNode.create(visitTerm(square), currentScope().isUntypedRegion(), sourceCode.createSection(start, end - start));
+    }
+    return switch (term) {
+      case ParseNode(String name, Object literal, int start, int end)
+          when name.equals("numeric-literal") ->
+          visitNumericLiteral(literal, sourceCode.createSection(start, end - start));
+      // could be a solitary reference, which may be non-numeric or stream
+      case ParseNode(String name, ParseNode positive, int start, int end)
+          when name.equals("signed-numeric-expression") -> visitNumericExpression(positive);
+      case ParseNode(String name, List<?> negated, int start, int end)
+          when name.equals("signed-numeric-expression") ->
+          NegateNode.create(asSingleValueNode(visitNumericExpression((ParseNode) negated.getLast())));
       default -> throw new IllegalStateException("Unexpected value: " + term);
+    };
+  }
+
+  // Potentially numeric. May be just a single reference, which could be non-numeric or stream
+  private TailspinNode visitNumericExpression(ParseNode expression) {
+    return switch (expression.content()) {
+      case ParseNode(String name, Object parenthesized, int start, int end)
+          when name.equals("parenthesized-expression") ->
+          visitParenthesizedExpression(parenthesized);
+      // This is the odd case where it may not be a single value if the reference is the only thing in the expression
+      case ParseNode(String name, Object reference, int start, int end)
+          when name.equals("reference") -> visitReference(reference);
+      case ParseNode(
+              String name,
+              ParseNode(String ignored, ParseNode square, int is, int ie),
+              int start,
+              int end)
+          when name.equals("square-root") ->
+          SquareRootNode.create(
+              visitArithmeticTerm(square),
+              currentScope().isUntypedRegion(),
+              sourceCode.createSection(start, end - start));
+      default -> throw new IllegalStateException("Unexpected value: " + expression);
+    };
+  }
+
+  private ValueNode visitParenthesizedExpression(Object expression) {
+    return switch(expression) {
+      case ParseNode maybeNumeric ->
+          asSingleValueNode(visitNumericish(maybeNumeric.content()));
+      case List casts -> {
+        currentScope().setUntypedArithmetic(true);
+        ParseNode maybeNumeric = (ParseNode) casts.getFirst();
+        ValueNode measureCast =
+            MeasureLiteral.create(
+                asSingleValueNode(visitNumericish(maybeNumeric.content())),
+                visitUnit(casts.getLast()),
+                sourceCode.createSection(maybeNumeric.start(), maybeNumeric.end() - maybeNumeric.start()));
+        currentScope().setUntypedArithmetic(false);
+        yield measureCast;
+      }
+      default -> throw new IllegalStateException("Unexpected value: " + expression);
     };
   }
 }

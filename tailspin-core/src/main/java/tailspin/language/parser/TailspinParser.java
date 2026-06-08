@@ -37,29 +37,30 @@ public class TailspinParser {
      accumulator-state rule (?<|ignorable-text> <|='->'> ?<|ignorable-text>) <|set-state>
 
      value-chain rule <|range|source> *<|transform|stream>
-     source rule <|type-cast|array-literal|structure-literal|string-literal|prefix-index|suffix-index|arithmetic-expression|reference|single-value-chain> (?<|ignorable-text>)
+
+     simple-value rule <|non-numeric|numeric-literal|parenthesized-expression>
+     non-numeric rule <|structure-literal|string-literal|array-literal>
+     source rule <|type-cast|numericish|non-numeric>
      reference rule <|='$'> ?<|='@'> ?<|ID> ?<|lens-expression> ?<|message-send>
-     single-value-chain rule (<|='('> ?<|ignorable-text>) <|value-chain> (?<|ignorable-text> <|=')'>) ?<|='"1"'|unit>
-     range rule <|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) <|range-bound> ?<|stride> (?<|ignorable-text>)
-     stride rule (<|=':'> ?<|ignorable-text>) <|range-bound> (?<|ignorable-text>)
+     parenthesized-expression rule (<|='('> ?<|ignorable-text>) <|numericish> (?<|ignorable-text> <|=')'>) ?<|='"1"'|unit>
+     range rule <|term> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) <|term> ?<|stride> (?<|ignorable-text>)
+     stride rule (<|=':'> ?<|ignorable-text>) <|term> (?<|ignorable-text>)
      string-literal rule <|=''''> *<|string-part|=''''''|='$$'|unicode-bytes|codepoint|interpolate> (<|=''''> ?<|ignorable-text>)
      string-part rule <|'[^''$]+'>
      unicode-bytes rule (<|='$#U+'>) <|'[0-9a-fA-F]+'> (<|=';'>)
      codepoint rule (<|='$#'> ?<|ignorable-text>) <|value-chain> (<|=';'>)
      interpolate rule (<|='$:'|'(?=\\$)'> ?<|ignorable-text>) <|value-chain> (<|=';'>)
 
-     type-cast rule <|tag> <|numeric-literal|structure-literal|string-literal|array-literal|single-value-chain>
+     type-cast rule <|tag> <|simple-value>
      tag rule <|ID> (<|='´'>)
 
      lens-expression rule (<|='('> ?<|ignorable-text>) <|lens-dimension>  ?<|lens-transform> (<|=')'>)
      lens-transform rule (<|=';'> ?<|ignorable-text>) <|transform> *<|transform|stream>
-     lens-dimension rule <|lens-range|source|key> (?<|ignorable-text>) ?<|index-variable> ?<|next-lens-dimension> (?<|ignorable-text>)
+     lens-dimension rule <|lens-range|numericish|array-literal|key> (?<|ignorable-text>) ?<|index-variable> ?<|next-lens-dimension> (?<|ignorable-text>)
      index-variable rule (<|='as'> <|ignorable-text>) <|ID> (?<|ignorable-text>)
      key rule <|ID> (<|=':'> ?<|ignorable-text>)
      next-lens-dimension rule (?<|ignorable-text> <|=';'> ?<|ignorable-text>) <|lens-dimension>
-     lens-range rule ?<|prefix-index|suffix-index|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) ?<|prefix-index|suffix-index|range-bound> ?<|stride>
-     prefix-index rule <|range-bound> (<|='\\'>)
-     suffix-index rule (<|='\\'>) <|range-bound>
+     lens-range rule ?<|term> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) ?<|term> ?<|stride>
 
      message-send rule (<|='::'>) <|ID>
 
@@ -96,8 +97,7 @@ public class TailspinParser {
 
      literal-match rule (<|='='> ?<|ignorable-text>) <|source>
      type-match rule <|range-match|array-match|structure-match|measure-type-match|string-literal|ID>
-     range-match rule ?<|tag> ?<|range-bound> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) ?<|tag> ?<|range-bound>
-     range-bound rule <|arithmetic-expression|reference>
+     range-match rule ?<|tag> ?<|term> ?<|='~'> <|='..'> ?<|='~'> (?<|ignorable-text>) ?<|tag> ?<|term>
      array-match rule <|='['> (?<|ignorable-text>) *<|array-content-matcher> (<|=']'> ?<|ignorable-text>) ?<|array-length-condition>
      array-content-matcher rule <|matcher>
      array-length-condition rule (<|='('> ?<|ignorable-text>) <|literal-match|range-match> (?<|ignorable-text> <|=')'> ?<|ignorable-text>)
@@ -108,13 +108,14 @@ public class TailspinParser {
      content-matcher rule (<|='<'>) ?<|='~'> (?<|ignorable-text>) +<|membrane> (<|='>'> ?<|ignorable-text>)
      measure-type-match rule <|='""'|='"1"'|unit> (?<|ignorable-text>)
 
-     arithmetic-expression rule <|addition|multiplication|numeric-literal|square-root|negated-term>
-     addition rule <|addition|multiplication|term> <|'[+-]'> (?<|ignorable-text>) <|multiplication|term> (?<|ignorable-text>)
-     multiplication rule <|multiplication|term> <|'\\*|/|~/|mod'> (?<|ignorable-text>) <|term> (?<|ignorable-text>)
+     numericish rule <|term> *<|multiplication> *<|addition> (?<|ignorable-text>)
+     multiplication rule <|'\\*|/|~/|mod'> (?<|ignorable-text>) <|term>
+     addition rule <|'[+-]'> (?<|ignorable-text>) <|term> *<|multiplication>
+     term rule ?<|='\\'> <|numeric-literal|signed-numeric-expression> ?<|='\\'> (?<|ignorable-text>)
+     signed-numeric-expression rule ?<|='-'> <|numeric-expression>
+     numeric-expression rule <|parenthesized-expression|reference|square-root> (?<|ignorable-text>)
      square-root rule (<|='√'>) <|term>
-     numeric-literal rule <|NUM|INT> ?<|='"1"'|unit>
-     term rule <|numeric-literal|negated-term|single-value-chain|reference|square-root> (?<|ignorable-text>)
-     negated-term rule (<|='-'>) <|single-value-chain|reference|square-root> (?<|ignorable-text>)
+     numeric-literal rule <|NUM|INT> ?<|='"1"'|unit> (?<|ignorable-text>)
 
      unit rule (<|='"'>) +<|measure-product> ?<|measure-denominator> (<|='"'> ?<|ignorable-text>)
      measure-product rule <|ID> (?<|ignorable-text>)
