@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.PolyglotException;
+import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +35,8 @@ public class SampleTests {
               if (line.startsWith("=")) {
                 Value result;
                 try {
-                  result = context.eval("tt", testProgram);
+                  result = context.eval(
+                      Source.newBuilder("tt", testProgram, testName).cached(false).build());
                   assertEquals(line.substring(1), result.toString(), "Failed: " + testName);
                 } catch (PolyglotException e) {
                   if (!line.startsWith("=*") || !e.getMessage().startsWith(line.substring(2))) throw new AssertionError("Failed: " + testName, e);
