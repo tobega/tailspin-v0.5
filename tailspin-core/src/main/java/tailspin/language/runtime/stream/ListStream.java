@@ -14,16 +14,26 @@ import java.util.stream.Collectors;
 public final class ListStream implements TruffleObject {
   private static final Object[] EMPTY = new Object[0];
   private Object[] elements;
-  private int size = 0;
+  private int size;
   private int index = 0;
+  public final boolean flat;
+
+  private ListStream(boolean flat, Object[] items) {
+    this.flat = flat;
+    this.elements = items;
+    this.size = items.length;
+  }
 
   public ListStream() {
-    this.elements = EMPTY;
+    this(EMPTY);
   }
 
   public ListStream(Object[] items) {
-    this.elements = items;
-    this.size = items.length;
+    this(false, items);
+  }
+
+  static public ListStream flat() {
+    return new ListStream(true, EMPTY);
   }
 
   public int size() {

@@ -7,6 +7,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import tailspin.language.nodes.iterate.GetNextRangeValueNode;
+import tailspin.language.nodes.transform.AppendResultNode.MergeResultNode;
 import tailspin.language.runtime.stream.ListStream;
 import tailspin.language.runtime.stream.RangeStream;
 
@@ -37,8 +38,9 @@ public abstract class FlattenResultNode extends Node {
   }
 
   @Fallback
-  public void doObject(VirtualFrame frame, ListStream collector, Object value) {
-    collector.append(value);
+  public void doObject(VirtualFrame frame, ListStream collector, Object value,
+      @Cached(inline = true) MergeResultNode mergeResultNode) {
+    mergeResultNode.execute(frame, this, collector, value);
   }
 
   public static FlattenResultNode create() {

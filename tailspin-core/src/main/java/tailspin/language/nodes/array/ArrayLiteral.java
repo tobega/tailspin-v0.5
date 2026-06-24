@@ -15,9 +15,6 @@ public class ArrayLiteral extends ValueNode {
   @Children
   private final TransformNode[] contents;
 
-  @Child
-  FlattenResultNode flattenResultNode;
-
   private ArrayLiteral(int buildSlot, List<TransformNode> contents, SourceSection sourceSection) {
     super(sourceSection);
     this.buildSlot = buildSlot;
@@ -25,7 +22,6 @@ public class ArrayLiteral extends ValueNode {
     for (TransformNode content : contents) {
       content.setResultSlot(buildSlot);
     }
-    this.flattenResultNode = FlattenResultNode.create();
   }
 
   public static ArrayLiteral create(int buildSlot, List<TransformNode> contents,
@@ -36,17 +32,13 @@ public class ArrayLiteral extends ValueNode {
   @Override
   @ExplodeLoop
   public Object executeGeneric(VirtualFrame frame) {
-    frame.setObjectStatic(buildSlot, new ListStream());
+    frame.setObjectStatic(buildSlot, ListStream.flat());
     for (TransformNode content : this.contents) {
       content.executeTransform(frame);
     }
+    // This could get set to null on try-reject
     ListStream collector = (ListStream) frame.getObjectStatic(buildSlot);
     frame.setObjectStatic(buildSlot, null);
-    if (collector == null) {
-      return TailspinArray.value(new Object[0]);
-    }
-    ListStream result = new ListStream();
-    flattenResultNode.executeFlatten(frame, result, collector);
-    return TailspinArray.value(Arrays.copyOf(result.getArray(), result.size()));
+    return TailspinArray.value(collector == null ? new Object[0] : Arrays.copyOf(collector.getArray(), collector.size()));
   }
 }

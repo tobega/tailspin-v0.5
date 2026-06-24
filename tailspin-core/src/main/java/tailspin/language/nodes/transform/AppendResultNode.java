@@ -12,6 +12,7 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
+import tailspin.language.nodes.array.FlattenResultNode;
 import tailspin.language.nodes.iterate.EndOfStreamException;
 import tailspin.language.runtime.stream.ListStream;
 import tailspin.language.runtime.stream.RangeStream;
@@ -27,14 +28,14 @@ public abstract class AppendResultNode extends Node {
 
   @Specialization
   void doAppendResult(VirtualFrame frame, int resultSlot, Object result,
-      @Cached(inline = true) MergeResultNode mergeResultNode) {
+      @Cached AppendListStreamNode appendListStreamNode) {
     if (resultNull.profile(result == null)) {
       return;
     }
     Object previous = frame.getObjectStatic(resultSlot);
     if (previousStream.profile(previous instanceof ListStream)) {
-      ListStream merged = mergeResultNode.execute(frame, this, castExact(previous, ListStream.class), result);
-      frame.setObjectStatic(resultSlot, merged);
+      ListStream stream = castExact(previous, ListStream.class);
+      appendListStreamNode.execute(frame, stream, result);
     } else if(previousNullAndResultStream.profile(previous == null && (result instanceof ListStream || result instanceof RangeStream))) {
       frame.setObjectStatic(resultSlot, result);
     } else {
@@ -42,11 +43,11 @@ public abstract class AppendResultNode extends Node {
       if (previousNotNull.profile(previous != null)) {
         stream.append(previous);
       }
-      ListStream merged = mergeResultNode.execute(frame,this, stream, result);
-      if (merged.size() == 1) {
-        frame.setObjectStatic(resultSlot, merged.next());
+      appendListStreamNode.execute(frame, stream, result);
+      if (stream.size() == 1) {
+        frame.setObjectStatic(resultSlot, stream.next());
       } else {
-        frame.setObjectStatic(resultSlot, merged);
+        frame.setObjectStatic(resultSlot, stream );
       }
     }
   }
@@ -55,39 +56,52 @@ public abstract class AppendResultNode extends Node {
     return AppendResultNodeGen.create();
   }
 
+  public static abstract class AppendListStreamNode extends Node {
+    public abstract void execute(VirtualFrame frame, ListStream previous, Object result);
+
+    @Specialization(guards = "!previous.flat")
+    void doRegular(VirtualFrame frame, ListStream previous, Object result,
+        @Cached(inline = true) MergeResultNode mergeResultNode) {
+      mergeResultNode.execute(frame, this, previous, result);
+    }
+
+    @Specialization(guards = "previous.flat")
+    void doFlat(VirtualFrame frame, ListStream previous, Object result,
+        @Cached(neverDefault = true) FlattenResultNode flattenResultNode) {
+      flattenResultNode.executeFlatten(frame, previous, result);
+    }
+  }
+
   /* The way we use this class, previous is always a ListStream */
   @GenerateInline
   public static abstract class MergeResultNode extends Node {
-    public abstract ListStream execute(VirtualFrame frame, Node node, ListStream previous, Object result);
+    public abstract void execute(VirtualFrame frame, Node node, ListStream previous, Object result);
 
     @Specialization(guards = "result == null")
-    static ListStream doResultNull(VirtualFrame frame, Node node, ListStream previous, @SuppressWarnings("unused") Object result) {
-      return previous;
+    static void doResultNull(VirtualFrame frame, Node node, ListStream previous, @SuppressWarnings("unused") Object result) {
+      // do nothing
     }
 
     @Specialization
     @SuppressWarnings("unchecked")
-    static ListStream doMerge(VirtualFrame frame, Node node, ListStream previous, ListStream result) {
+    static void doMerge(VirtualFrame frame, Node node, ListStream previous, ListStream result) {
       previous.merge(result);
-      return previous;
     }
 
     @Specialization
     @SuppressWarnings("unchecked")
-    static ListStream doMergeRange(VirtualFrame frame, Node node, ListStream previous, RangeStream range) {
+    static void doMergeRange(VirtualFrame frame, Node node, ListStream previous, RangeStream range) {
       previous.append(range);
-      return previous;
     }
 
     @Specialization(guards = "interop.isIterator(iterator)", limit = "3")
     @SuppressWarnings("unused")
-    static ListStream doIterator(VirtualFrame frame, Node node, ListStream previous, Object iterator,
+    static void doIterator(VirtualFrame frame, Node node, ListStream previous, Object iterator,
         @CachedLibrary("iterator") InteropLibrary interop) {
       try {
         while (interop.hasIteratorNextElement(iterator)) {
           previous.append(interop.getIteratorNextElement(iterator));
         }
-        return previous;
       } catch (UnsupportedMessageException e) {
         throw new AssertionError(e);
       } catch (StopIterationException e) {
@@ -97,9 +111,8 @@ public abstract class AppendResultNode extends Node {
 
     @Specialization(guards = "result != null")
     @SuppressWarnings("unchecked")
-    static ListStream doAppend(VirtualFrame frame, Node node, ListStream previous, Object result) {
+    static void doAppend(VirtualFrame frame, Node node, ListStream previous, Object result) {
       previous.append(result);
-      return previous;
     }
   }
 }
